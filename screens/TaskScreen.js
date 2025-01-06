@@ -1,9 +1,15 @@
-import { View, Text } from "react-native";
+import { FlatList } from "react-native";
+import { TASK_SECTIONS } from "../data/dummy-data";
 function TaskScreen() {
+  function renderSectionItem(sectionData) {}
+
   return (
-    <View>
-      <Text>Task Screen</Text>
-    </View>
+    <FlatList
+      data={TASK_SECTIONS}
+      keyExtractor={(section) => section.id}
+      renderItem={renderSectionItem}
+      numColumns={3}
+    />
   );
 }
 
