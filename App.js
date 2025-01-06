@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { useContext } from "react";
 import LoginScreen from "./screens/LoginScreen";
 import SignupScreen from "./screens/SignupScreen";
-import WelcomeScreen from "./screens/WelcomeScreen";
+import TaskDetailScreen from "./screens/TaskDetailScreen";
 import { GlobalColors } from "./constants/GlobalColors";
 import AuthContextProvider, { AuthContext } from "./store/auth-context";
 import { View, Text } from "react-native";
@@ -166,7 +166,14 @@ function AuthenticatedStack() {
           headerShown: false,
         }}
       />
-      <Stack.Screen name="Welcome" component={WelcomeScreen} />
+      <Stack.Screen
+        name="TaskDetail"
+        component={TaskDetailScreen}
+        options={{
+          headerTitle: "Activity Task",
+          headerTitleAlign: "center",
+        }}
+      />
     </Stack.Navigator>
   );
 }
