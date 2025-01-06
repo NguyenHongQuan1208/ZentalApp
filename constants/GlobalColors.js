@@ -3,6 +3,7 @@ export const GlobalColors = {
   secondColor: "#41ffd0",
   thirdColor: "#106f57",
   primaryBlack: "#373737",
+  inActivetabBarColor: "#767676",
   error100: "#fcdcbf",
   error500: "#f37c13",
 };

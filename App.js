@@ -9,8 +9,104 @@ import { GlobalColors } from "./constants/GlobalColors";
 import AuthContextProvider, { AuthContext } from "./store/auth-context";
 import { View, Text } from "react-native";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import HomeScreen from "./screens/HomeScreen";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import IconButton from "./components/ui/IconButton";
+import TaskScreen from "./screens/TaskScreen";
+import NewPosts from "./screens/NewPostScreen";
+import ChatScreen from "./screens/ChatScreen";
+import ProfileScreen from "./screens/ProfileScreen";
 
 const Stack = createNativeStackNavigator();
+const BottomTabs = createBottomTabNavigator();
+
+function AppOverview() {
+  const authCtx = useContext(AuthContext);
+  function logoutHandler() {
+    authCtx.logout();
+  }
+  return (
+    <BottomTabs.Navigator
+      screenOptions={() => ({
+        headerStyle: { backgroundColor: GlobalColors.primaryColor },
+        headerTintColor: "white",
+        headerTitleAlign: "center",
+        tabBarStyle: { backgroundColor: GlobalColors.primaryColor },
+        tabBarActiveTintColor: "black",
+        tabBarInactiveTintColor: GlobalColors.inActivetabBarColor,
+        headerRight: ({ tintColor }) => {
+          return (
+            <IconButton
+              icon="exit"
+              size={24}
+              color={tintColor}
+              onPress={logoutHandler}
+            />
+          );
+        },
+      })}
+    >
+      <BottomTabs.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          title: "Zental Home",
+          tabBarLabel: "Home",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <BottomTabs.Screen
+        name="Task"
+        component={TaskScreen}
+        options={{
+          title: "Today Tasks",
+          tabBarLabel: "Task",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="sunny" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <BottomTabs.Screen
+        name="Posts"
+        component={NewPosts}
+        options={{
+          title: "New Posts",
+          tabBarLabel: "Posts",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="paper-plane" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <BottomTabs.Screen
+        name="Chats"
+        component={ChatScreen}
+        options={{
+          title: "Start Chatting",
+          tabBarLabel: "Chats",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubbles" size={size} color={color} />
+          ),
+        }}
+      />
+      <BottomTabs.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          title: "My Profile",
+          tabBarLabel: "Profile",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="list" size={size} color={color} />
+          ),
+        }}
+      />
+    </BottomTabs.Navigator>
+  );
+}
 
 function AuthStack() {
   return (
@@ -63,6 +159,13 @@ function AuthenticatedStack() {
         contentStyle: { backgroundColor: GlobalColors.primaryBlack },
       }}
     >
+      <Stack.Screen
+        name="AppOverview"
+        component={AppOverview}
+        options={{
+          headerShown: false,
+        }}
+      />
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
     </Stack.Navigator>
   );
@@ -75,6 +178,7 @@ function Navigation() {
     <NavigationContainer>
       {!authCtx.isAuthenticated && <AuthStack />}
       {authCtx.isAuthenticated && <AuthenticatedStack />}
+      {/* {true && <AuthenticatedStack />} */}
     </NavigationContainer>
   );
 }
