@@ -1,17 +1,25 @@
 import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { GlobalColors } from "../constants/GlobalColors";
+import TaskBenefits from "../components/TaskSection/TaskBenefits";
+import DecisionBox from "../components/TaskSection/Decision";
 
 function TaskDetailScreen({ route }) {
   const id = route.params.id;
+  const frameColor = route.params.color;
+  const benefits = route.params.benefits;
+
   return (
     <View style={styles.rootContainer}>
-      <View style={styles.boxContainer}>
-        <View style={styles.header}>
-          <Ionicons name="flask" size={24} color={GlobalColors.primaryColor} />
-          <Text style={styles.headerText}>Benefits</Text>
+      <View style={[styles.boxContainer, { borderColor: frameColor }]}>
+        <View style={[styles.header, { borderBottomColor: frameColor }]}>
+          <Ionicons name="flask" size={24} color={frameColor} />
+          <Text style={[styles.headerText, { color: frameColor }]}>
+            Benefits
+          </Text>
         </View>
-        <Text style={styles.contentText}>Sẽ có list benefits dưới sau</Text>
+        <TaskBenefits benefits={benefits} color={frameColor} />
+        <DecisionBox color={frameColor} id={id} />
       </View>
     </View>
   );
@@ -30,7 +38,6 @@ const styles = StyleSheet.create({
     width: "100%",
     padding: 16,
     borderWidth: 3,
-    borderColor: GlobalColors.primaryColor,
     borderRadius: 8,
     backgroundColor: GlobalColors.secondBlack,
     shadowColor: "black",
@@ -42,19 +49,13 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingBottom: 4,
-    marginBottom: 8,
+    paddingBottom: 12,
+    marginBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: GlobalColors.primaryColor,
   },
   headerText: {
     marginLeft: 8,
     fontSize: 20,
     fontWeight: "bold",
-    color: GlobalColors.primaryColor,
-  },
-  contentText: {
-    fontSize: 14,
-    color: "white",
   },
 });

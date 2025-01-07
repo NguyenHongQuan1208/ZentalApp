@@ -17,6 +17,7 @@ import TaskScreen from "./screens/TaskScreen";
 import NewPosts from "./screens/NewPostScreen";
 import ChatScreen from "./screens/ChatScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import TaskNoteScreen from "./screens/TaskNoteScreen";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -35,16 +36,6 @@ function AppOverview() {
         tabBarStyle: { backgroundColor: GlobalColors.primaryColor },
         tabBarActiveTintColor: "black",
         tabBarInactiveTintColor: GlobalColors.inActivetabBarColor,
-        headerRight: ({ tintColor }) => {
-          return (
-            <IconButton
-              icon="exit"
-              size={24}
-              color={tintColor}
-              onPress={logoutHandler}
-            />
-          );
-        },
       })}
     >
       <BottomTabs.Screen
@@ -102,6 +93,16 @@ function AppOverview() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="list" size={size} color={color} />
           ),
+          headerRight: ({ tintColor }) => {
+            return (
+              <IconButton
+                icon="exit"
+                size={24}
+                color={tintColor}
+                onPress={logoutHandler}
+              />
+            );
+          },
         }}
       />
     </BottomTabs.Navigator>
@@ -171,6 +172,15 @@ function AuthenticatedStack() {
         component={TaskDetailScreen}
         options={{
           headerTitle: "Activity Task",
+          headerTitleAlign: "center",
+        }}
+      />
+
+      <Stack.Screen
+        name="TaskNote"
+        component={TaskNoteScreen}
+        options={{
+          headerTitle: "Note Your Task",
           headerTitleAlign: "center",
         }}
       />

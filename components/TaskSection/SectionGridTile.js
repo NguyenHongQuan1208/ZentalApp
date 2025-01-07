@@ -12,7 +12,7 @@ function SectionGridTile({ title, color, onPress, icon }) {
         ]}
       >
         <View style={[styles.iconWrapper, { backgroundColor: color }]}>
-          <Ionicons name={icon} size={32} color="white" />
+          <Ionicons name={icon} size={34} color="white" />
         </View>
         <Text style={styles.title}>{title}</Text>
       </Pressable>
@@ -34,8 +34,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   iconWrapper: {
-    width: 60,
-    height: 60,
+    width: 75,
+    height: 75,
     justifyContent: "center", // Căn giữa theo chiều dọc
     alignItems: "center", // Căn giữa theo chiều ngang
     borderRadius: 25, // Tùy chỉnh góc bo tròn nếu cần

@@ -7,6 +7,8 @@ function TaskScreen({ navigation }) {
     function pressHandler() {
       navigation.navigate("TaskDetail", {
         id: sectionData.item.id,
+        color: sectionData.item.color,
+        benefits: sectionData.item.benefits,
       });
     }
     return (
