@@ -20,6 +20,7 @@ import ProfileScreen from "./screens/ProfileScreen";
 import TaskNoteScreen from "./screens/TaskNoteScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AppLoading from "expo-app-loading";
+import UserContextProvider from "./store/user-context";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -233,7 +234,9 @@ export default function App() {
     <>
       <StatusBar style="light" />
       <AuthContextProvider>
-        <Root />
+        <UserContextProvider>
+          <Root />
+        </UserContextProvider>
       </AuthContextProvider>
     </>
   );
