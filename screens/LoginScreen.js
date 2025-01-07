@@ -4,6 +4,7 @@ import { useContext, useState } from "react";
 import LoadingOverlay from "../components/ui/LoadingOverlay";
 import { Alert } from "react-native";
 import { AuthContext } from "../store/auth-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function LoginScreen() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -20,7 +21,6 @@ function LoginScreen() {
         "Could not log you in. Please check your credentials"
       );
     }
-
     setIsAuthenticating(false);
   }
 
