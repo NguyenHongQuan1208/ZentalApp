@@ -13,6 +13,7 @@ function DecisionBox({ color, id }) {
   function startHandler() {
     navigation.navigate("TaskNote", {
       id: id,
+      color: color,
     });
   }
   return (

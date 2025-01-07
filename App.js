@@ -160,6 +160,7 @@ function AuthenticatedStack() {
         headerStyle: { backgroundColor: GlobalColors.primaryColor },
         headerTintColor: "white",
         contentStyle: { backgroundColor: GlobalColors.primaryBlack },
+        headerBackButtonDisplayMode: "minimal",
       }}
     >
       <Stack.Screen
