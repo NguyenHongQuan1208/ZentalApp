@@ -7,7 +7,7 @@ import SignupScreen from "./screens/SignupScreen";
 import TaskDetailScreen from "./screens/TaskDetailScreen";
 import { GlobalColors } from "./constants/GlobalColors";
 import AuthContextProvider, { AuthContext } from "./store/auth-context";
-import { View, Text } from "react-native";
+import { View, Text, Alert } from "react-native";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeScreen from "./screens/HomeScreen";
@@ -28,7 +28,18 @@ const BottomTabs = createBottomTabNavigator();
 function AppOverview() {
   const authCtx = useContext(AuthContext);
   function logoutHandler() {
-    authCtx.logout();
+    Alert.alert("Confirm", "Are you sure you want to logout?", [
+      {
+        text: "Cancel",
+        onPress: () => console.log("Modal cancelled"),
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        onPress: () => authCtx.logout(),
+        style: "destructive",
+      },
+    ]);
   }
   return (
     <BottomTabs.Navigator
