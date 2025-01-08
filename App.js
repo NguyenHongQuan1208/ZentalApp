@@ -20,6 +20,7 @@ import ProfileScreen from "./screens/ProfileScreen";
 import TaskNoteScreen from "./screens/TaskNoteScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AppLoading from "expo-app-loading";
+import EnterUserNameScreen from "./screens/EnterUserNameScreen";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -154,6 +155,11 @@ function AuthStack() {
 
 function AuthenticatedStack() {
   const authCtx = useContext(AuthContext);
+  /***************** */
+  function logoutHandler() {
+    authCtx.logout();
+  }
+  /*************** */
   return (
     <Stack.Navigator
       screenOptions={{
@@ -163,6 +169,22 @@ function AuthenticatedStack() {
         headerBackButtonDisplayMode: "minimal",
       }}
     >
+      <Stack.Screen
+        name="EnterUserName"
+        component={EnterUserNameScreen}
+        options={{
+          headerRight: ({ tintColor }) => {
+            return (
+              <IconButton
+                icon="exit"
+                size={24}
+                color={tintColor}
+                onPress={logoutHandler}
+              />
+            );
+          },
+        }}
+      />
       <Stack.Screen
         name="AppOverview"
         component={AppOverview}

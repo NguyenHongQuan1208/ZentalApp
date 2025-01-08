@@ -22,13 +22,11 @@ export async function createUser(email, password) {
 export function login(email, password) {
   return authenticate("signInWithPassword", email, password);
 }
-// export async function createUser(email, password) {
-//   const respone = await axios.post(
-//     "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + API_KEY,
-//     {
-//       email: email,
-//       password: password,
-//       returnSecureToken: true,
-//     }
-//   );
-// }
+
+export async function getUserData(token) {
+  const url = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${API_KEY}`;
+  const respone = await axios.post(url, {
+    idToken: token,
+  });
+  return respone.data.users[0];
+}
