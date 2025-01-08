@@ -30,3 +30,32 @@ export async function getUserData(token) {
   });
   return respone.data.users[0];
 }
+
+export async function updateProfile(
+  token,
+  displayName,
+  photoUrl,
+  deleteAttributes = [],
+  returnSecureToken = true
+) {
+  const url = `https://identitytoolkit.googleapis.com/v1/accounts:update?key=${API_KEY}`;
+
+  const payload = {
+    idToken: token,
+    displayName,
+    photoUrl,
+    deleteAttribute: deleteAttributes,
+    returnSecureToken,
+  };
+
+  try {
+    const response = await axios.post(url, payload);
+    return response.data; // Contains updated user information
+  } catch (error) {
+    console.error(
+      "Profile update failed:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+}

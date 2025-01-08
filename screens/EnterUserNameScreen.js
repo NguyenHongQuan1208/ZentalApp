@@ -1,32 +1,51 @@
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import { useContext, useState } from "react";
+import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthContext } from "../store/auth-context";
-import { getUserData } from "../util/auth";
-import { storeUser } from "../util/user-info-http";
-import axios from "axios";
-
-const BACKEND_URL =
-  "https://zentalapp-default-rtdb.asia-southeast1.firebasedatabase.app/";
+import { getUserData, updateProfile } from "../util/auth";
 
 function EnterUserNameScreen({ navigation }) {
   const [username, setUsername] = useState("");
   const authCtx = useContext(AuthContext);
+  const token = authCtx.token;
+  useEffect(() => {
+    async function checkIfUserNameSet() {
+      try {
+        const response = await getUserData(token); // Đảm bảo sử dụng await
+        const uid = response.localId;
+
+        const isUserNameSet = await AsyncStorage.getItem(`userNameSet_${uid}`);
+        if (isUserNameSet === "true") {
+          navigation.replace("AppOverview"); // Chuyển hướng nếu đã đặt tên
+        }
+      } catch (error) {
+        console.error("Error checking username set:", error);
+      }
+    }
+    checkIfUserNameSet();
+  }, [navigation, token]);
 
   async function saveUserToDatabase() {
-    const token = authCtx.token;
-    const userData = await getUserData(token);
+    if (username.trim() === "") {
+      Alert.alert("Invalid Input", "Please enter a valid username.");
+      return;
+    }
 
-    const email = userData.email;
-    const uid = userData.localId;
-    console.log(userData);
-    const userInfo = {
-      email: email,
-      username: username,
-    };
+    try {
+      const response = await updateProfile(token, username); // Đảm bảo API trả về localId
+      const uid = response.localId;
 
-    await axios.put(`${BACKEND_URL}/users/${uid}.json`, userInfo);
+      await AsyncStorage.setItem(`userNameSet_${uid}`, "true"); // Lưu trạng thái đã đặt tên
+      navigation.replace("AppOverview"); // Chuyển hướng sau khi lưu
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        "Failed to update user information. Please try again."
+      );
+      console.error("Error updating profile:", error);
+    }
   }
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Enter Username</Text>
