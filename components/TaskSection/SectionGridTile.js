@@ -1,5 +1,6 @@
 import { Pressable, View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { GlobalColors } from "../../constants/GlobalColors";
 
 function SectionGridTile({ title, color, onPress, icon }) {
   return (
@@ -45,6 +46,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
     textAlign: "center",
-    color: "white",
+    color: GlobalColors.secondBlack,
   },
 });

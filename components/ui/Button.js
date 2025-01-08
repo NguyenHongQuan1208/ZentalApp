@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingVertical: 6,
     paddingHorizontal: 12,
-    backgroundColor: GlobalColors.primaryColor,
+    backgroundColor: GlobalColors.thirdColor,
     elevation: 2,
     shadowColor: "black",
     shadowOffset: { width: 1, height: 1 },

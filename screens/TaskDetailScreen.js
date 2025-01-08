@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     padding: 32,
-    backgroundColor: GlobalColors.primaryBlack, // Thêm màu nền nếu cần
+    backgroundColor: GlobalColors.primaryGrey, // Thêm màu nền nếu cần
   },
   boxContainer: {
     width: "100%",

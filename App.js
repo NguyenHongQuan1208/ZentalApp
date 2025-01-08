@@ -37,7 +37,7 @@ function AppOverview() {
         headerTintColor: "white",
         headerTitleAlign: "center",
         tabBarStyle: { backgroundColor: GlobalColors.primaryColor },
-        tabBarActiveTintColor: "black",
+        tabBarActiveTintColor: GlobalColors.primaryBlack,
         tabBarInactiveTintColor: GlobalColors.inActivetabBarColor,
       })}
     >
@@ -118,7 +118,7 @@ function AuthStack() {
       screenOptions={{
         headerStyle: { backgroundColor: GlobalColors.primaryColor },
         headerTintColor: "white",
-        contentStyle: { backgroundColor: GlobalColors.primaryBlack },
+        contentStyle: { backgroundColor: GlobalColors.primaryGrey },
       }}
     >
       <Stack.Screen
@@ -148,7 +148,14 @@ function AuthStack() {
           headerTitleAlign: "center", // Căn giữa tiêu đề
         }}
       />
-      <Stack.Screen name="Signup" component={SignupScreen} />
+      <Stack.Screen
+        name="Signup"
+        component={SignupScreen}
+        options={{
+          headerTitle: "Sign up to feel Relief",
+          headerTitleAlign: "center",
+        }}
+      />
     </Stack.Navigator>
   );
 }
@@ -165,7 +172,7 @@ function AuthenticatedStack() {
       screenOptions={{
         headerStyle: { backgroundColor: GlobalColors.primaryColor },
         headerTintColor: "white",
-        contentStyle: { backgroundColor: GlobalColors.primaryBlack },
+        contentStyle: { backgroundColor: GlobalColors.primaryGrey },
         headerBackButtonDisplayMode: "minimal",
       }}
     >
@@ -183,6 +190,8 @@ function AuthenticatedStack() {
               />
             );
           },
+          headerTitle: "Please Fill The Form",
+          headerTitleAlign: "center",
         }}
       />
       <Stack.Screen

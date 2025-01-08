@@ -38,6 +38,6 @@ export default TaskScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: GlobalColors.primaryBlack,
+    backgroundColor: GlobalColors.primaryWhite,
   },
 });

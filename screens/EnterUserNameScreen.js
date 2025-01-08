@@ -1,8 +1,10 @@
-import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
 import { useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthContext } from "../store/auth-context";
 import { getUserData, updateProfile } from "../util/auth";
+import { GlobalColors } from "../constants/GlobalColors";
+import LongButton from "../components/ui/LongButton";
 
 function EnterUserNameScreen({ navigation }) {
   const [username, setUsername] = useState("");
@@ -68,7 +70,9 @@ function EnterUserNameScreen({ navigation }) {
         value={username}
         onChangeText={setUsername}
       />
-      <Button title="Save" onPress={saveUserToDatabase} />
+      <LongButton style={styles.button} onPress={saveUserToDatabase}>
+        Save
+      </LongButton>
     </View>
   );
 }
@@ -77,19 +81,36 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
+    alignItems: "center",
     padding: 20,
+    backgroundColor: GlobalColors.primaryWhite,
   },
   label: {
-    fontSize: 18,
-    marginBottom: 10,
+    fontSize: 24,
+    fontWeight: "600",
+    color: GlobalColors.thirdColor,
+    marginBottom: 12,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
+    width: "100%",
+    padding: 12,
     marginBottom: 20,
-    borderRadius: 5,
-    color: "white",
+    borderRadius: 10,
+    backgroundColor: GlobalColors.primaryWhite,
+    borderColor: GlobalColors.secondColor,
+    borderWidth: 1,
+    color: GlobalColors.primaryBlack, // Text color for input
+    fontSize: 18,
+    fontWeight: "500",
+  },
+  button: {
+    backgroundColor: GlobalColors.thirdColor, // Button color
+    paddingVertical: 10,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
   },
 });
 

@@ -3,7 +3,6 @@ import { View, Text, StyleSheet } from "react-native";
 import { AuthContext } from "../store/auth-context";
 import { getUserData } from "../util/auth";
 function HomeScreen() {
-  // const name = route.params
   const authCtx = useContext(AuthContext);
   const token = authCtx.token;
   const [username, setUsername] = useState("");

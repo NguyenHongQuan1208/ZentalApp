@@ -1,7 +1,9 @@
 export const GlobalColors = {
-  primaryColor: "#00BB8D",
-  secondColor: "#41ffd0",
-  thirdColor: "#106f57",
+  primaryColor: "#A2DF7F",
+  secondColor: "#B4F78D",
+  thirdColor: "#A4BE00",
+  primaryWhite: "#F5F5F5",
+  primaryGrey: "#dcdcdc",
   primaryBlack: "#000000",
   secondBlack: "#565656",
   inActivetabBarColor: "#767676",
