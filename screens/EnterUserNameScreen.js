@@ -9,7 +9,7 @@ import axios from "axios";
 const BACKEND_URL =
   "https://zentalapp-default-rtdb.asia-southeast1.firebasedatabase.app/";
 
-function EnterUserNameScreen() {
+function EnterUserNameScreen({ navigation }) {
   const [username, setUsername] = useState("");
   const authCtx = useContext(AuthContext);
 
@@ -26,7 +26,6 @@ function EnterUserNameScreen() {
     };
 
     await axios.put(`${BACKEND_URL}/users/${uid}.json`, userInfo);
-    console.log("sucess");
   }
   return (
     <View style={styles.container}>
