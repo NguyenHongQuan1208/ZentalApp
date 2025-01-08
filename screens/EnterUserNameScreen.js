@@ -6,8 +6,10 @@ import { getUserData, updateProfile } from "../util/auth";
 
 function EnterUserNameScreen({ navigation }) {
   const [username, setUsername] = useState("");
+  const [isChecking, setIsChecking] = useState(true); // Trạng thái kiểm tra
   const authCtx = useContext(AuthContext);
   const token = authCtx.token;
+
   useEffect(() => {
     async function checkIfUserNameSet() {
       try {
@@ -20,10 +22,21 @@ function EnterUserNameScreen({ navigation }) {
         }
       } catch (error) {
         console.error("Error checking username set:", error);
+      } finally {
+        setIsChecking(false); // Đánh dấu kiểm tra đã hoàn tất
       }
     }
     checkIfUserNameSet();
   }, [navigation, token]);
+
+  if (isChecking) {
+    // Hiển thị màn hình tải khi đang kiểm tra
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   async function saveUserToDatabase() {
     if (username.trim() === "") {
