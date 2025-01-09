@@ -19,7 +19,7 @@ function ProfileScreen({ navigation }) {
       const response = await getUserData(token);
       setPhotoUrl(response.photoUrl);
       setUserName(response.displayName);
-      console.log(response.localId);
+      // console.log(response);
     } catch (error) {
       console.error("Error fetching user data:", error);
     }

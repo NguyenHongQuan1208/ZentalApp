@@ -18,3 +18,37 @@ export async function storeUser(userId, userInfo) {
     throw new Error("Could not store user data.");
   }
 }
+
+export async function updateUser(userId, updatedInfo) {
+  try {
+    // Gửi yêu cầu PATCH tới Firebase Realtime Database, sử dụng userId làm ID
+    const response = await axios.patch(
+      `${BACKEND_URL}/userInfo/${userId}.json`, // userId sẽ làm khóa chính trong database
+      updatedInfo
+    );
+
+    // Trả về phản hồi từ Firebase
+    return response.data;
+  } catch (error) {
+    console.error("Error updating user data:", error);
+    throw new Error("Could not update user data.");
+  }
+}
+
+export async function getUser(userId) {
+  try {
+    // Gửi yêu cầu GET tới Firebase Realtime Database để lấy thông tin người dùng
+    const response = await axios.get(`${BACKEND_URL}/userInfo/${userId}.json`);
+
+    // Kiểm tra nếu không có dữ liệu, sẽ trả về null
+    if (!response.data) {
+      throw new Error("User not found.");
+    }
+
+    // Trả về thông tin người dùng
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    throw new Error("Could not fetch user data.");
+  }
+}

@@ -62,7 +62,6 @@ function EnterUserNameScreen({ navigation }) {
       };
 
       const newRespone = await storeUser(uid, userData);
-      console.log(newRespone);
 
       await AsyncStorage.setItem(`userNameSet_${uid}`, "true"); // Lưu trạng thái đã đặt tên
       navigation.replace("AppOverview"); // Chuyển hướng sau khi lưu
