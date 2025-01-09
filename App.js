@@ -22,6 +22,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import AppLoading from "expo-app-loading";
 import EnterUserNameScreen from "./screens/EnterUserNameScreen";
 import EditProfileScreen from "./screens/EditProfileScreen";
+import PersonalProfileScreen from "./screens/PersonalProfileScreen";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -174,11 +175,21 @@ function AuthStack() {
 
 function AuthenticatedStack() {
   const authCtx = useContext(AuthContext);
-  /***************** */
   function logoutHandler() {
-    authCtx.logout();
+    Alert.alert("Confirm", "Are you sure you want to logout?", [
+      {
+        text: "Cancel",
+        onPress: () => console.log("Modal cancelled"),
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        onPress: () => authCtx.logout(),
+        style: "destructive",
+      },
+    ]);
   }
-  /*************** */
+
   return (
     <Stack.Navigator
       screenOptions={{
@@ -236,6 +247,15 @@ function AuthenticatedStack() {
         component={EditProfileScreen}
         options={{
           headerTitle: "Edit Profile",
+          headerTitleAlign: "center",
+        }}
+      />
+
+      <Stack.Screen
+        name="PersonalProfile"
+        component={PersonalProfileScreen}
+        options={{
+          headerTitle: "Personal Profile",
           headerTitleAlign: "center",
         }}
       />

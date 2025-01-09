@@ -5,6 +5,7 @@ import { getUserData } from "../util/auth";
 import Avatar from "../components/Profile/Avatar";
 import { GlobalColors } from "../constants/GlobalColors";
 import { Ionicons } from "@expo/vector-icons";
+import MenuItem from "../components/Profile/MenuItem";
 
 function ProfileScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
@@ -18,7 +19,7 @@ function ProfileScreen({ navigation }) {
       const response = await getUserData(token);
       setPhotoUrl(response.photoUrl);
       setUserName(response.displayName);
-      console.log(response);
+      // console.log(response);
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
@@ -45,6 +46,17 @@ function ProfileScreen({ navigation }) {
         <Ionicons name="create" size={16} color={GlobalColors.thirdColor} />
         <Text style={styles.editText}>Edit profile</Text>
       </Pressable>
+
+      <View style={styles.menuContainer}>
+        <MenuItem
+          icon="person"
+          screen="PersonalProfile"
+          screenName="Personal Profile"
+        />
+        <MenuItem icon="home" screen="Home" screenName="Home" />
+        <MenuItem icon="sunny" screen="Task" screenName="Task" />
+        <MenuItem icon="paper-plane" screen="Posts" screenName="Posts" />
+      </View>
     </View>
   );
 }
@@ -77,5 +89,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: GlobalColors.thirdColor,
     fontWeight: "500",
+  },
+  menuContainer: {
+    marginTop: 20,
+    width: "90%",
+    borderTopWidth: 1,
+    borderTopColor: GlobalColors.primaryGrey,
   },
 });
