@@ -167,6 +167,7 @@ function AuthStack() {
         options={{
           headerTitle: "Sign up to feel Relief",
           headerTitleAlign: "center",
+          headerBackVisible: true,
         }}
       />
     </Stack.Navigator>

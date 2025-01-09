@@ -5,6 +5,7 @@ import { AuthContext } from "../store/auth-context";
 import { getUserData, updateProfile } from "../util/auth";
 import { GlobalColors } from "../constants/GlobalColors";
 import LongButton from "../components/ui/LongButton";
+import { storeUser } from "../util/user-info-http";
 
 function EnterUserNameScreen({ navigation }) {
   const [username, setUsername] = useState("");
@@ -48,7 +49,20 @@ function EnterUserNameScreen({ navigation }) {
 
     try {
       const response = await updateProfile(token, username); // Đảm bảo API trả về localId
+
       const uid = response.localId;
+      const email = response.email;
+
+      const userData = {
+        uid,
+        username,
+        email,
+        photoUrl: "", // Chưa có ảnh, sẽ thêm sau
+        bio: "", // Chưa có mô tả, sẽ thêm sau
+      };
+
+      const newRespone = await storeUser(uid, userData);
+      console.log(newRespone);
 
       await AsyncStorage.setItem(`userNameSet_${uid}`, "true"); // Lưu trạng thái đã đặt tên
       navigation.replace("AppOverview"); // Chuyển hướng sau khi lưu
