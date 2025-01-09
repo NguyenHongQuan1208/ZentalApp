@@ -25,11 +25,11 @@ export default SectionGridTile;
 const styles = StyleSheet.create({
   gridItem: {
     flex: 1,
-    alignItems: "center", // Căn giữa theo chiều ngang toàn bộ mục
+    alignItems: "center",
     margin: 10,
   },
   pressable: {
-    alignItems: "center", // Căn giữa nội dung bên trong Pressable
+    alignItems: "center",
   },
   buttonPressed: {
     opacity: 0.5,
@@ -37,9 +37,9 @@ const styles = StyleSheet.create({
   iconWrapper: {
     width: 75,
     height: 75,
-    justifyContent: "center", // Căn giữa theo chiều dọc
-    alignItems: "center", // Căn giữa theo chiều ngang
-    borderRadius: 25, // Tùy chỉnh góc bo tròn nếu cần
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 25,
   },
   title: {
     marginTop: 8,

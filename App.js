@@ -21,6 +21,7 @@ import TaskNoteScreen from "./screens/TaskNoteScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AppLoading from "expo-app-loading";
 import EnterUserNameScreen from "./screens/EnterUserNameScreen";
+import EditProfileScreen from "./screens/EditProfileScreen";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -226,6 +227,15 @@ function AuthenticatedStack() {
         component={TaskNoteScreen}
         options={{
           headerTitle: "Note Your Task",
+          headerTitleAlign: "center",
+        }}
+      />
+
+      <Stack.Screen
+        name="EditProfile"
+        component={EditProfileScreen}
+        options={{
+          headerTitle: "Edit Profile",
           headerTitleAlign: "center",
         }}
       />
