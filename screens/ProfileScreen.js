@@ -6,6 +6,7 @@ import Avatar from "../components/Profile/Avatar";
 import { GlobalColors } from "../constants/GlobalColors";
 import { Ionicons } from "@expo/vector-icons";
 import MenuItem from "../components/Profile/MenuItem";
+import { getUser } from "../util/user-info-http";
 
 function ProfileScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
@@ -16,9 +17,12 @@ function ProfileScreen({ navigation }) {
 
   async function fetchData() {
     try {
-      const response = await getUserData(token);
-      setPhotoUrl(response.photoUrl);
-      setUserName(response.displayName);
+      const authResponse = await getUserData(token);
+      const uid = authResponse.localId;
+
+      const userData = await getUser(uid);
+      setUserName(userData.username || "");
+      setPhotoUrl(userData.photoUrl || "");
       // console.log(response);
     } catch (error) {
       console.error("Error fetching user data:", error);

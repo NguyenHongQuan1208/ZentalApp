@@ -1,27 +1,35 @@
-import { StyleSheet, Text, View, Pressable, TextInput } from "react-native";
-import { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Pressable,
+  TextInput,
+  Alert,
+  Modal,
+} from "react-native";
 import Avatar from "../components/Profile/Avatar";
 import { AuthContext } from "../store/auth-context";
 import { GlobalColors } from "../constants/GlobalColors";
 import { getUserData } from "../util/auth";
 import { Ionicons } from "@expo/vector-icons";
-import { getUser } from "../util/user-info-http";
+import { getUser, updateUser } from "../util/user-info-http";
+import PhotoOptionsModal from "../components/Profile/PhotoOptionsModal";
 
 function EditProfileScreen() {
   const authCtx = useContext(AuthContext);
   const token = authCtx.token;
   const [userName, setUserName] = useState("");
-  const [photoUrl, setPhotoUrl] = useState(""); // Để lưu URL ảnh đại diện
+  const [photoUrl, setPhotoUrl] = useState("");
   const [bio, setBio] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   async function fetchData() {
     try {
       const authResponse = await getUserData(token);
       const uid = authResponse.localId;
 
-      // Lấy thông tin người dùng từ Firebase Realtime Database
       const userData = await getUser(uid);
-      // Cập nhật thông tin người dùng vào state
       setUserName(userData.username || "");
       setPhotoUrl(userData.photoUrl || "");
       setBio(userData.bio || "");
@@ -34,15 +42,55 @@ function EditProfileScreen() {
     fetchData();
   }, []);
 
+  function handleTakePhoto() {
+    console.log("Take Photo");
+    setIsModalVisible(false); // Đóng Modal
+  }
+
+  function handleSelectPhoto() {
+    console.log("Select Photo");
+    setIsModalVisible(false); // Đóng Modal
+  }
+
+  async function handleDeletePhoto() {
+    try {
+      // const authResponse = await getUserData(token);
+      // const uid = authResponse.localId;
+
+      // // Xóa ảnh trên Firebase Auth
+      // await updateProfile(token, null, ""); // Cập nhật ảnh đại diện trên Firebase
+      // await updateUser(uid, { photoUrl: "" });
+
+      setPhotoUrl(""); // Xóa ảnh trên giao diện
+      setIsModalVisible(false); // Đóng Modal
+      Alert.alert("Success", "Profile photo deleted successfully.");
+    } catch (error) {
+      console.error("Failed to delete photo:", error);
+      Alert.alert("Error", "Failed to delete profile photo.");
+    }
+  }
+
   return (
     <View style={styles.container}>
       {/* Avatar */}
       <View style={styles.avatarContainer}>
         <Avatar photoUrl={photoUrl} />
-        <Pressable style={styles.editIcon}>
+        <Pressable
+          style={styles.editIcon}
+          onPress={() => setIsModalVisible(true)} // Hiển thị Modal
+        >
           <Ionicons name="pencil" size={18} color={GlobalColors.primaryBlack} />
         </Pressable>
       </View>
+
+      {/* Modal */}
+      <PhotoOptionsModal
+        visible={isModalVisible}
+        onTakePhoto={handleTakePhoto}
+        onSelectPhoto={handleSelectPhoto}
+        onDeletePhoto={handleDeletePhoto}
+        onClose={() => setIsModalVisible(false)}
+      />
 
       {/* Tên người dùng */}
       <View style={styles.inputContainer}>
@@ -122,7 +170,7 @@ const styles = StyleSheet.create({
   },
   bioInput: {
     height: 100,
-    textAlignVertical: "top", // Đảm bảo text nằm ở trên khi nhập multiline
+    textAlignVertical: "top",
   },
   saveButton: {
     backgroundColor: GlobalColors.thirdColor,
@@ -138,7 +186,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
-
   pressed: {
     opacity: 0.5,
   },
