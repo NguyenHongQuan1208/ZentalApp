@@ -37,7 +37,7 @@ function PhotoOptionsModal({
                 size={24}
                 color={GlobalColors.thirdColor}
               />
-              <Text style={styles.buttonText}>Select Photo</Text>
+              <Text style={styles.buttonText}>Select</Text>
             </Pressable>
 
             {/* Delete Photo */}
@@ -47,7 +47,7 @@ function PhotoOptionsModal({
                 size={24}
                 color={GlobalColors.thirdColor}
               />
-              <Text style={styles.buttonText}>Delete Photo</Text>
+              <Text style={styles.buttonText}>Delete</Text>
             </Pressable>
 
             {/* Cancel */}
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: "white",
     padding: 20,
-    borderRadius: 10,
+    borderRadius: 15,
     width: "90%",
   },
   buttonRow: {
@@ -100,8 +100,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     marginTop: 8,
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 13,
+    fontWeight: "bold",
     color: GlobalColors.primaryBlack,
     textAlign: "center",
   },

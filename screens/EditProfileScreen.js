@@ -6,23 +6,51 @@ import {
   Pressable,
   TextInput,
   Alert,
-  Modal,
+  Button,
 } from "react-native";
 import Avatar from "../components/Profile/Avatar";
 import { AuthContext } from "../store/auth-context";
 import { GlobalColors } from "../constants/GlobalColors";
-import { getUserData } from "../util/auth";
+import { getUserData, updateProfile } from "../util/auth";
 import { Ionicons } from "@expo/vector-icons";
 import { getUser, updateUser } from "../util/user-info-http";
 import PhotoOptionsModal from "../components/Profile/PhotoOptionsModal";
 
-function EditProfileScreen() {
+import {
+  launchCameraAsync,
+  launchImageLibraryAsync,
+  useCameraPermissions,
+  PermissionStatus,
+} from "expo-image-picker";
+
+function EditProfileScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
   const token = authCtx.token;
   const [userName, setUserName] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [bio, setBio] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  // Camera permission
+  const [cameraPermissionInformation, requestPermission] =
+    useCameraPermissions();
+
+  async function verifyPermissions() {
+    if (cameraPermissionInformation.status === PermissionStatus.UNDETERMINED) {
+      const permissionResponse = await requestPermission();
+      return permissionResponse.granted;
+    }
+
+    if (cameraPermissionInformation.status === PermissionStatus.DENIED) {
+      Alert.alert(
+        "Insufficient Permissions!",
+        "You need to grant camera permissions to use this app."
+      );
+      return false;
+    }
+
+    return true;
+  }
 
   async function fetchData() {
     try {
@@ -42,27 +70,53 @@ function EditProfileScreen() {
     fetchData();
   }, []);
 
-  function handleTakePhoto() {
-    console.log("Take Photo");
-    setIsModalVisible(false); // Đóng Modal
-  }
+  // Handle taking photo
+  const handleTakePhoto = async () => {
+    const hasPermission = await verifyPermissions();
 
-  function handleSelectPhoto() {
-    console.log("Select Photo");
-    setIsModalVisible(false); // Đóng Modal
-  }
+    if (!hasPermission) {
+      return;
+    }
+
+    try {
+      const result = await launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5,
+      });
+
+      if (result) {
+        setPhotoUrl(result.assets[0].uri); // Set the photo URL after taking the picture
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to take photo.");
+    }
+
+    setIsModalVisible(false); // Close the modal after taking the photo
+  };
+
+  // Handle selecting photo from library
+  const handleSelectPhoto = async () => {
+    try {
+      const result = await launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5,
+      });
+
+      if (result) {
+        setPhotoUrl(result.assets[0].uri); // Set the selected image URL
+      }
+      setIsModalVisible(false); // Close the modal after selecting a photo
+    } catch (error) {
+      Alert.alert("Error", "Failed to select photo.");
+    }
+  };
 
   async function handleDeletePhoto() {
     try {
-      // const authResponse = await getUserData(token);
-      // const uid = authResponse.localId;
-
-      // // Xóa ảnh trên Firebase Auth
-      // await updateProfile(token, null, ""); // Cập nhật ảnh đại diện trên Firebase
-      // await updateUser(uid, { photoUrl: "" });
-
-      setPhotoUrl(""); // Xóa ảnh trên giao diện
-      setIsModalVisible(false); // Đóng Modal
+      setPhotoUrl(""); // Remove photo from the interface
+      setIsModalVisible(false); // Close the modal
       Alert.alert("Success", "Profile photo deleted successfully.");
     } catch (error) {
       console.error("Failed to delete photo:", error);
@@ -70,6 +124,32 @@ function EditProfileScreen() {
     }
   }
 
+  async function handleSave() {
+    if (!userName.trim()) {
+      Alert.alert("Validation Error", "Username cannot be empty.");
+      return;
+    }
+
+    try {
+      const authResponse = await getUserData(token);
+      const uid = authResponse.localId;
+
+      const updateUserData = {
+        username: userName,
+        bio: bio || null, // Set bio to null if it's empty
+        photoUrl: photoUrl || null, // Save photo URL if exists
+      };
+
+      const authRespone = await updateProfile(token, userName, photoUrl);
+      // console.log(authRespone);
+      await updateUser(uid, updateUserData);
+      Alert.alert("Success", "Your profile has been updated.");
+      navigation.navigate("AppOverview", { screen: "Profile" });
+    } catch (error) {
+      Alert.alert("Error", "Failed to save profile. Please try again later.");
+      console.error("Error saving profile:", error);
+    }
+  }
   return (
     <View style={styles.container}>
       {/* Avatar */}
@@ -77,7 +157,7 @@ function EditProfileScreen() {
         <Avatar photoUrl={photoUrl} />
         <Pressable
           style={styles.editIcon}
-          onPress={() => setIsModalVisible(true)} // Hiển thị Modal
+          onPress={() => setIsModalVisible(true)} // Show modal
         >
           <Ionicons name="pencil" size={18} color={GlobalColors.primaryBlack} />
         </Pressable>
@@ -92,7 +172,7 @@ function EditProfileScreen() {
         onClose={() => setIsModalVisible(false)}
       />
 
-      {/* Tên người dùng */}
+      {/* Username */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>User Name</Text>
         <TextInput
@@ -118,6 +198,7 @@ function EditProfileScreen() {
       {/* Save Button */}
       <Pressable
         style={({ pressed }) => [styles.saveButton, pressed && styles.pressed]}
+        onPress={handleSave}
       >
         <Text style={styles.saveButtonText}>Save</Text>
       </Pressable>
