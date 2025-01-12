@@ -52,3 +52,21 @@ export async function getUser(userId) {
     throw new Error("Could not fetch user data.");
   }
 }
+
+// Kiểm tra xem userId đã tồn tại trong Firebase Realtime Database chưa
+export async function checkUserIdExists(uid) {
+  try {
+    // Gửi yêu cầu GET tới Firebase Realtime Database để kiểm tra sự tồn tại của uid
+    const response = await axios.get(`${BACKEND_URL}/userInfo/${uid}.json`);
+
+    // Kiểm tra nếu có dữ liệu trả về, có nghĩa là uid đã tồn tại
+    if (response.data) {
+      return true; // Người dùng đã tồn tại
+    } else {
+      return false; // Người dùng chưa tồn tại
+    }
+  } catch (error) {
+    console.error("Error checking user existence:", error);
+    throw new Error("Could not check user existence.");
+  }
+}

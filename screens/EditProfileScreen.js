@@ -162,7 +162,7 @@ function EditProfileScreen({ navigation }) {
 
         // Gán giá trị publicUrl vào biến ngoài phạm vi try-catch
         publicUrl = publicData.publicUrl;
-        console.log(publicUrl); // Log URL trước khi sử dụng
+        // console.log(publicUrl); // Log URL trước khi sử dụng
       } catch (uploadError) {
         Alert.alert("Error", "Failed to upload profile photo.");
         console.error("Error uploading photo:", uploadError);

@@ -1,11 +1,10 @@
 import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
 import { useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthContext } from "../store/auth-context";
 import { getUserData, updateProfile } from "../util/auth";
 import { GlobalColors } from "../constants/GlobalColors";
 import LongButton from "../components/ui/LongButton";
-import { storeUser } from "../util/user-info-http";
+import { checkUserIdExists, storeUser } from "../util/user-info-http";
 
 function EnterUserNameScreen({ navigation }) {
   const [username, setUsername] = useState("");
@@ -19,9 +18,10 @@ function EnterUserNameScreen({ navigation }) {
         const response = await getUserData(token); // Đảm bảo sử dụng await
         const uid = response.localId;
 
-        const isUserNameSet = await AsyncStorage.getItem(`userNameSet_${uid}`);
-        if (isUserNameSet === "true") {
-          navigation.replace("AppOverview"); // Chuyển hướng nếu đã đặt tên
+        const userIdExists = await checkUserIdExists(uid);
+        // console.log(userIdExists ? "User exists!" : "User does not exist.");
+        if (userIdExists) {
+          navigation.replace("AppOverview"); // Chuyển hướng nếu đã có ID trên Firebase
         }
       } catch (error) {
         console.error("Error checking username set:", error);
@@ -57,13 +57,9 @@ function EnterUserNameScreen({ navigation }) {
         uid,
         username,
         email,
-        photoUrl: "", // Chưa có ảnh, sẽ thêm sau
-        bio: "", // Chưa có mô tả, sẽ thêm sau
       };
 
       const newRespone = await storeUser(uid, userData);
-
-      await AsyncStorage.setItem(`userNameSet_${uid}`, "true"); // Lưu trạng thái đã đặt tên
       navigation.replace("AppOverview"); // Chuyển hướng sau khi lưu
     } catch (error) {
       Alert.alert(
