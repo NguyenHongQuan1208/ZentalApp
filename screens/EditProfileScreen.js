@@ -139,9 +139,9 @@ function EditProfileScreen({ navigation }) {
         bio: bio || null, // Set bio to null if it's empty
         photoUrl: photoUrl || null, // Save photo URL if exists
       };
-
-      const authRespone = await updateProfile(token, userName, photoUrl);
-      // console.log(authRespone);
+      //Update into firebaseAuth
+      await updateProfile(token, userName, photoUrl);
+      //update into firebase realtime database
       await updateUser(uid, updateUserData);
       Alert.alert("Success", "Your profile has been updated.");
       navigation.navigate("AppOverview", { screen: "Profile" });
