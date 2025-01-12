@@ -15,7 +15,7 @@ import { getUserData, updateProfile } from "../util/auth";
 import { Ionicons } from "@expo/vector-icons";
 import { getUser, updateUser } from "../util/user-info-http";
 import PhotoOptionsModal from "../components/Profile/PhotoOptionsModal";
-
+import { supabase } from "../store/supabaseClient";
 import {
   launchCameraAsync,
   launchImageLibraryAsync,
@@ -30,7 +30,7 @@ function EditProfileScreen({ navigation }) {
   const [photoUrl, setPhotoUrl] = useState("");
   const [bio, setBio] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
-
+  const [file, setFile] = useState();
   // Camera permission
   const [cameraPermissionInformation, requestPermission] =
     useCameraPermissions();
@@ -86,6 +86,7 @@ function EditProfileScreen({ navigation }) {
       });
 
       if (result) {
+        setFile(result.assets[0]);
         setPhotoUrl(result.assets[0].uri); // Set the photo URL after taking the picture
       }
     } catch (error) {
@@ -105,6 +106,7 @@ function EditProfileScreen({ navigation }) {
       });
 
       if (result) {
+        setFile(result.assets[0]);
         setPhotoUrl(result.assets[0].uri); // Set the selected image URL
       }
       setIsModalVisible(false); // Close the modal after selecting a photo
@@ -125,6 +127,34 @@ function EditProfileScreen({ navigation }) {
   }
 
   async function handleSave() {
+    if (file) {
+      // console.log(file);
+      try {
+        // Upload photo to Supabase storage
+        const { data, error } = await supabase.storage
+          .from("ZentalApp")
+          .upload(`profile_photos/${Date.now()}.jpg`, file);
+        if (error) {
+          console.error("Upload error:", error);
+          Alert.alert("Error", "Failed to upload profile photo.");
+          return;
+        }
+
+        // Get the public URL of the uploaded photo
+        const { publicUrl } = supabase.storage
+          .from("ZentalApp")
+          .getPublicUrl(data.path);
+
+        setPhotoUrl(publicUrl); // Update the state
+        console.log("Public URL after upload:", publicUrl); // Log the correct URL
+      } catch (uploadError) {
+        Alert.alert("Error", "Failed to upload profile photo.");
+        console.error("Error uploading photo:", uploadError);
+        return;
+      }
+    }
+
+    // Ensure username is not empty
     if (!userName.trim()) {
       Alert.alert("Validation Error", "Username cannot be empty.");
       return;
@@ -134,15 +164,19 @@ function EditProfileScreen({ navigation }) {
       const authResponse = await getUserData(token);
       const uid = authResponse.localId;
 
+      // Prepare the user data
       const updateUserData = {
         username: userName,
         bio: bio || null, // Set bio to null if it's empty
-        photoUrl: photoUrl || null, // Save photo URL if exists
+        photoUrl: photoUrl || null, // Keep existing photo URL if no new photo
       };
-      //Update into firebaseAuth
+
+      // Update in Firebase Auth
       await updateProfile(token, userName, photoUrl);
-      //update into firebase realtime database
+
+      // Update in Firebase Realtime Database
       await updateUser(uid, updateUserData);
+
       Alert.alert("Success", "Your profile has been updated.");
       navigation.navigate("AppOverview", { screen: "Profile" });
     } catch (error) {
@@ -150,6 +184,7 @@ function EditProfileScreen({ navigation }) {
       console.error("Error saving profile:", error);
     }
   }
+
   return (
     <View style={styles.container}>
       {/* Avatar */}
