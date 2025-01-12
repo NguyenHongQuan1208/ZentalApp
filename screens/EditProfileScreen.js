@@ -127,26 +127,42 @@ function EditProfileScreen({ navigation }) {
   }
 
   async function handleSave() {
+    let publicUrl = null; // Khai báo biến publicUrl ở phạm vi lớn hơn
     if (file) {
-      // console.log(file);
       try {
-        // Upload photo to Supabase storage
+        // Upload ảnh lên Supabase
+        const filePath = `profile_photos/${Date.now()}.jpg`;
         const { data, error } = await supabase.storage
           .from("ZentalApp")
-          .upload(`profile_photos/${Date.now()}.jpg`, file);
+          .upload(filePath, {
+            uri: file.uri,
+            type: file.type,
+            name: filePath,
+          });
+
         if (error) {
-          console.error("Upload error:", error);
+          console.error("Upload error:", error.message);
           Alert.alert("Error", "Failed to upload profile photo.");
           return;
         }
 
-        // Get the public URL of the uploaded photo
-        const { publicUrl } = supabase.storage
+        // Lấy link công khai
+        const { data: publicData, error: publicError } = supabase.storage
           .from("ZentalApp")
-          .getPublicUrl(data.path);
+          .getPublicUrl(filePath);
 
-        setPhotoUrl(publicUrl); // Update the state
-        console.log("Public URL after upload:", publicUrl); // Log the correct URL
+        if (publicError) {
+          console.error("Public URL error:", publicError.message);
+          Alert.alert(
+            "Error",
+            "Failed to generate public URL for the profile photo."
+          );
+          return;
+        }
+
+        // Gán giá trị publicUrl vào biến ngoài phạm vi try-catch
+        publicUrl = publicData.publicUrl;
+        console.log(publicUrl); // Log URL trước khi sử dụng
       } catch (uploadError) {
         Alert.alert("Error", "Failed to upload profile photo.");
         console.error("Error uploading photo:", uploadError);
@@ -154,7 +170,7 @@ function EditProfileScreen({ navigation }) {
       }
     }
 
-    // Ensure username is not empty
+    // Đảm bảo userName không trống
     if (!userName.trim()) {
       Alert.alert("Validation Error", "Username cannot be empty.");
       return;
@@ -164,17 +180,17 @@ function EditProfileScreen({ navigation }) {
       const authResponse = await getUserData(token);
       const uid = authResponse.localId;
 
-      // Prepare the user data
+      // Chuẩn bị dữ liệu người dùng
       const updateUserData = {
         username: userName,
-        bio: bio || null, // Set bio to null if it's empty
-        photoUrl: photoUrl || null, // Keep existing photo URL if no new photo
+        bio: bio || null, // Set bio thành null nếu không có dữ liệu
+        photoUrl: publicUrl || null, // Sử dụng publicUrl nếu có, nếu không thì sử dụng photoUrl hiện tại
       };
 
-      // Update in Firebase Auth
-      await updateProfile(token, userName, photoUrl);
+      // Cập nhật thông tin trong Firebase Auth
+      await updateProfile(token, userName, publicUrl);
 
-      // Update in Firebase Realtime Database
+      // Cập nhật thông tin trong Firebase Realtime Database
       await updateUser(uid, updateUserData);
 
       Alert.alert("Success", "Your profile has been updated.");
