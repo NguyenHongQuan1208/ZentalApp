@@ -11,7 +11,7 @@ export const TASK_SECTIONS = [
       "Reduce Stress and depressive symptoms",
       "improve your ability to be mindful",
     ],
-    "Are you savoring an incredible meal, a hike through the woods, or a gorgeous sunset? Whatever it is, focus on the details, let yourself get totally immersed, and use all of your senses to intensify and prolong your positive experience. Upload a photo so you can savor the memory of it later! "
+    "Are you savoring an incredible meal, a hike through the woods, or a gorgeous sunset? Whatever it is, focus on the details, let yourself get totally immersed, and use all of your senses to intensify and prolong your positive experience.\nUpload a photo so you can savor the memory of it later! "
   ),
   new TaskSection("s2", "Thank", "#FE197B", "happy", [
     'Combat your innate "negative bias"',

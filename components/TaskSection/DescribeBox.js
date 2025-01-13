@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   description: {
-    fontSize: 14,
+    fontSize: 12,
     color: GlobalColors.secondBlack,
     textAlign: "left",
   },

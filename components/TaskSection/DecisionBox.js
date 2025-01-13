@@ -16,6 +16,7 @@ function DecisionBox({ color, id, description }) {
       id: id,
       color: color,
     });
+    setModalVisible(false);
   }
   return (
     <View>
