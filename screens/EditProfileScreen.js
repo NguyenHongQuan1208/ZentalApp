@@ -6,7 +6,6 @@ import {
   Pressable,
   TextInput,
   Alert,
-  Button,
 } from "react-native";
 import Avatar from "../components/Profile/Avatar";
 import { AuthContext } from "../store/auth-context";
@@ -105,7 +104,7 @@ function EditProfileScreen({ navigation }) {
         quality: 0.5,
       });
 
-      if (result) {
+      if (!result.canceled) {
         setFile(result.assets[0]);
         setPhotoUrl(result.assets[0].uri); // Set the selected image URL
       }
