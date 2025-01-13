@@ -127,13 +127,15 @@ function EditProfileScreen({ navigation }) {
   }
 
   async function handleSave() {
-    let publicUrl = null; // Khai báo biến publicUrl ở phạm vi lớn hơn
+    let publicUrl = photoUrl; // Giữ lại photoUrl cũ nếu không có ảnh mới
+
+    // Chỉ cập nhật ảnh khi có tệp ảnh mới
     if (file) {
       try {
         // Lấy userId từ Firebase Auth
         const authResponse = await getUserData(token);
         const uid = authResponse.localId;
-        // console.log(uid);
+
         // Tạo tên tệp với userId
         const filePath = `profile_photos/${uid}_${Date.now()}.jpg`;
         const { data, error } = await supabase.storage
@@ -164,9 +166,8 @@ function EditProfileScreen({ navigation }) {
           return;
         }
 
-        // Gán giá trị publicUrl vào biến ngoài phạm vi try-catch
+        // Gán giá trị publicUrl từ ảnh mới
         publicUrl = publicData.publicUrl;
-        // console.log(publicUrl); // Log URL trước khi sử dụng
       } catch (uploadError) {
         Alert.alert("Error", "Failed to upload profile photo.");
         console.error("Error uploading photo:", uploadError);
@@ -187,8 +188,8 @@ function EditProfileScreen({ navigation }) {
       // Chuẩn bị dữ liệu người dùng
       const updateUserData = {
         username: userName,
-        bio: bio || null, // Set bio thành null nếu không có dữ liệu
-        photoUrl: publicUrl || null, // Sử dụng publicUrl nếu có, nếu không thì sử dụng photoUrl hiện tại
+        bio: bio, // Set bio thành null nếu không có dữ liệu
+        photoUrl: publicUrl, // Sử dụng publicUrl mới hoặc photoUrl cũ nếu không thay đổi ảnh
       };
 
       // Cập nhật thông tin trong Firebase Auth
