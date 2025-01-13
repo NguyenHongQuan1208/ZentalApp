@@ -11,31 +11,62 @@ export const TASK_SECTIONS = [
       "Reduce Stress and depressive symptoms",
       "improve your ability to be mindful",
     ],
-    "Are you savoring an incredible meal, a hike through the woods, or a gorgeous sunset? Whatever it is, focus on the details, let yourself get totally immersed, and use all of your senses to intensify and prolong your positive experience.\nUpload a photo so you can savor the memory of it later! "
+    "Are you savoring an incredible meal, a hike through the woods, or a gorgeous sunset? Whatever it is, focus on the details, let yourself get totally immersed, and use all of your senses to intensify and prolong your positive experience.\n\nUpload a photo so you can savor the memory of it later! "
   ),
-  new TaskSection("s2", "Thank", "#FE197B", "happy", [
-    'Combat your innate "negative bias"',
-    "Reduce stress & Boost happiness",
-    "Feel more in control of your life",
-  ]),
-  new TaskSection("s3", "Aspire", "#BC6A0B", "flame", [
-    "Boost optimism",
-    "Prolong feeling of excitement",
-    "Build motivation",
-  ]),
-  new TaskSection("s4", "Give", "#FC8802", "flower", [
-    "Boost self-esteem",
-    "Practice compassion for others",
-    "Feel more connected to others",
-  ]),
-  new TaskSection("s5", "Empathize", "#FFb400", "heart-half", [
-    "Build compassion",
-    "Encourage open-mindedness",
-    "Deepen your sense of community",
-  ]),
-  new TaskSection("s6", "Revive", "#A4BE00", "medkit", [
-    "Feel more calm",
-    "Get ready for a restful night/'s sleep",
-    "Reduce feelings of anxiety and stress",
-  ]),
+  new TaskSection(
+    "s2",
+    "Thank",
+    "#FE197B",
+    "happy",
+    [
+      'Combat your innate "negative bias"',
+      "Reduce stress & Boost happiness",
+      "Feel more in control of your life",
+    ],
+    "Think of something, great or small, that you feel grateful for and describe it in a few words.\n\nAdd a photo, too!"
+  ),
+  new TaskSection(
+    "s3",
+    "Aspire",
+    "#BC6A0B",
+    "flame",
+    ["Boost optimism", "Prolong feeling of excitement", "Build motivation"],
+    "What upcoming events are you anticipating with joy and optimism instead of anxiety?\n\nThink of a future event, big or small, that you're really excited about. Imagine the details, including the sounds, smells, and tastes. Spend some time putting yourself right in the middle of it."
+  ),
+  new TaskSection(
+    "s4",
+    "Give",
+    "#FC8802",
+    "flower",
+    [
+      "Boost self-esteem",
+      "Practice compassion for others",
+      "Feel more connected to others",
+    ],
+    "What nice thing did you do (or are you planning to do) for someone today?\n\nWhether it's running an errand for a busy friend, helping out a family member with a chore, or mentoring a child, record it here.\n\nYou can repeat (and report!) this activity as often as you'd like."
+  ),
+  new TaskSection(
+    "s5",
+    "Empathize",
+    "#FFb400",
+    "heart-half",
+    [
+      "Build compassion",
+      "Encourage open-mindedness",
+      "Deepen your sense of community",
+    ],
+    "Pick a person and spend some time imagining what it'd be like to be them. What is life like for them? What must they be feeling and why?\n\nWrite down some thoughts about your experience."
+  ),
+  new TaskSection(
+    "s6",
+    "Revive",
+    "#A4BE00",
+    "medkit",
+    [
+      "Feel more calm",
+      "Get ready for a restful night/'s sleep",
+      "Reduce feelings of anxiety and stress",
+    ],
+    "Autogenic training is a relaxation technique that can help restore balance to mind and body. It offers a wide range of benefits, from reducing insomnia to improving sleep patterns. This guided practice is designed to support you to fall asleep faster and wake up feeling more energized."
+  ),
 ];

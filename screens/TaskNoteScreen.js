@@ -9,6 +9,7 @@ function TaskNoteScreen({ route }) {
       <View style={styles.headerContainer}>
         <Ionicons name="bulb" size={16} color={color} />
         <Text style={[styles.text, { color: color }]}>You decide How</Text>
+        <Text>{sectionId}</Text>
       </View>
     </View>
   );

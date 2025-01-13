@@ -7,6 +7,7 @@ import { GlobalColors } from "../constants/GlobalColors";
 import { Ionicons } from "@expo/vector-icons";
 import MenuItem from "../components/Profile/MenuItem";
 import { getUser } from "../util/user-info-http";
+import useRealtimeUser from "../hooks/useRealtimeUser";
 
 function ProfileScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
@@ -14,16 +15,16 @@ function ProfileScreen({ navigation }) {
 
   const [photoUrl, setPhotoUrl] = useState(null);
   const [userName, setUserName] = useState("User Name");
+  const [userId, setUserId] = useState("");
 
   async function fetchData() {
     try {
       const authResponse = await getUserData(token);
       const uid = authResponse.localId;
-
+      setUserId(uid); // Lưu UID vào state
       const userData = await getUser(uid);
       setUserName(userData.username || "");
       setPhotoUrl(userData.photoUrl || "");
-      // console.log(response);
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
@@ -31,11 +32,20 @@ function ProfileScreen({ navigation }) {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [token]); // Đảm bảo useEffect chỉ chạy khi token thay đổi
+
+  const handleUserDataChange = (userData) => {
+    setUserName(userData.username || "User Name");
+    setPhotoUrl(userData.photoUrl || null);
+  };
+
+  // Lắng nghe thay đổi dữ liệu người dùng realtime
+  useRealtimeUser(userId, handleUserDataChange);
 
   function pressHandler() {
     navigation.navigate("EditProfile");
   }
+
   return (
     <View style={styles.container}>
       <Avatar photoUrl={photoUrl} size={100} />
