@@ -5,11 +5,12 @@ import { GlobalColors } from "../../constants/GlobalColors";
 import { Ionicons } from "@expo/vector-icons";
 import LongButton from "../ui/LongButton";
 import { useNavigation } from "@react-navigation/native";
+import DescribeBox from "./DescribeBox";
 
-function DecisionBox({ color, id }) {
+function DecisionBox({ color, id, description }) {
   const [modalVisible, setModalVisible] = useState(false);
   const navigation = useNavigation();
-
+  // console.log(description);
   function startHandler() {
     navigation.navigate("TaskNote", {
       id: id,
@@ -41,6 +42,7 @@ function DecisionBox({ color, id }) {
                 This is your decision!
               </Text>
             </View>
+            <DescribeBox color={color} description={description} />
             <LongButton
               onPress={startHandler}
               style={{ backgroundColor: color, marginBottom: 8 }}
@@ -96,7 +98,6 @@ const styles = StyleSheet.create({
   iconTextContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
     paddingBottom: 8,
     borderBottomWidth: 2,
   },

@@ -2,13 +2,13 @@ import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { GlobalColors } from "../constants/GlobalColors";
 import TaskBenefits from "../components/TaskSection/TaskBenefits";
-import DecisionBox from "../components/TaskSection/Decision";
+import DecisionBox from "../components/TaskSection/DecisionBox";
 
 function TaskDetailScreen({ route }) {
   const id = route.params.id;
   const frameColor = route.params.color;
   const benefits = route.params.benefits;
-
+  const description = route.params.description;
   return (
     <View style={styles.rootContainer}>
       <View style={[styles.boxContainer, { borderColor: frameColor }]}>
@@ -19,7 +19,7 @@ function TaskDetailScreen({ route }) {
           </Text>
         </View>
         <TaskBenefits benefits={benefits} color={frameColor} />
-        <DecisionBox color={frameColor} id={id} />
+        <DecisionBox color={frameColor} id={id} description={description} />
       </View>
     </View>
   );

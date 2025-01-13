@@ -130,8 +130,12 @@ function EditProfileScreen({ navigation }) {
     let publicUrl = null; // Khai báo biến publicUrl ở phạm vi lớn hơn
     if (file) {
       try {
-        // Upload ảnh lên Supabase
-        const filePath = `profile_photos/${Date.now()}.jpg`;
+        // Lấy userId từ Firebase Auth
+        const authResponse = await getUserData(token);
+        const uid = authResponse.localId;
+        // console.log(uid);
+        // Tạo tên tệp với userId
+        const filePath = `profile_photos/${uid}_${Date.now()}.jpg`;
         const { data, error } = await supabase.storage
           .from("ZentalApp")
           .upload(filePath, {

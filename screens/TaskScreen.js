@@ -9,6 +9,7 @@ function TaskScreen({ navigation }) {
         id: sectionData.item.id,
         color: sectionData.item.color,
         benefits: sectionData.item.benefits,
+        description: sectionData.item.description,
       });
     }
     return (
