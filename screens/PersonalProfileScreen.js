@@ -5,6 +5,7 @@ import { AuthContext } from "../store/auth-context";
 import { getUserData } from "../util/auth";
 import { getUser } from "../util/user-info-http";
 import { GlobalColors } from "../constants/GlobalColors";
+import useRealtimeUser from "../hooks/useRealtimeUser";
 
 function PersonalProfileScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
@@ -12,12 +13,13 @@ function PersonalProfileScreen({ navigation }) {
   const [userName, setUserName] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [bio, setBio] = useState("");
+  const [userId, setUserId] = useState("");
 
   async function fetchData() {
     try {
       const authResponse = await getUserData(token);
       const uid = authResponse.localId;
-
+      setUserId(uid); // Lưu UID vào state
       const userData = await getUser(uid);
       setUserName(userData.username || "No name available");
       setPhotoUrl(userData.photoUrl || "");
@@ -29,7 +31,15 @@ function PersonalProfileScreen({ navigation }) {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [token]);
+
+  const handleUserDataChange = (userData) => {
+    setUserName(userData.username || "User Name");
+    setPhotoUrl(userData.photoUrl || null);
+  };
+
+  // Lắng nghe thay đổi dữ liệu người dùng realtime
+  useRealtimeUser(userId, handleUserDataChange);
 
   return (
     <View style={styles.container}>
