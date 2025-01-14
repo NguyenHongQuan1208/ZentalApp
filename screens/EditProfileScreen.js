@@ -21,6 +21,7 @@ import {
   useCameraPermissions,
   PermissionStatus,
 } from "expo-image-picker";
+import AppLoading from "expo-app-loading";
 
 function EditProfileScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
@@ -30,6 +31,9 @@ function EditProfileScreen({ navigation }) {
   const [bio, setBio] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [file, setFile] = useState();
+  // Thêm trạng thái loading
+  const [isLoading, setIsLoading] = useState(false);
+
   // Camera permission
   const [cameraPermissionInformation, requestPermission] =
     useCameraPermissions();
@@ -52,6 +56,7 @@ function EditProfileScreen({ navigation }) {
   }
 
   async function fetchData() {
+    setIsLoading(true); // Hiển thị trạng thái đang tải
     try {
       const authResponse = await getUserData(token);
       const uid = authResponse.localId;
@@ -62,6 +67,8 @@ function EditProfileScreen({ navigation }) {
       setBio(userData.bio || "");
     } catch (error) {
       console.error("Error fetching user data:", error);
+    } finally {
+      setIsLoading(false); // Tắt trạng thái tải
     }
   }
 
@@ -126,6 +133,8 @@ function EditProfileScreen({ navigation }) {
   }
 
   async function handleSave() {
+    setIsLoading(true); // Bắt đầu trạng thái tải
+
     let publicUrl = photoUrl; // Giữ lại photoUrl cũ nếu không có ảnh mới
 
     // Chỉ cập nhật ảnh khi có tệp ảnh mới
@@ -202,7 +211,18 @@ function EditProfileScreen({ navigation }) {
     } catch (error) {
       Alert.alert("Error", "Failed to save profile. Please try again later.");
       console.error("Error saving profile:", error);
+    } finally {
+      setIsLoading(false); // Tắt trạng thái tải
     }
+  }
+
+  // Hiển thị trạng thái tải
+  if (isLoading) {
+    return <AppLoading />;
+
+    //   <View style={styles.loadingContainer}>
+    //   <Text>Loading...</Text>
+    // </View>
   }
 
   return (

@@ -2,48 +2,91 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TextInput, Button, Image } from "react-native";
 import PhotoOptionsModal from "../components/Profile/PhotoOptionsModal";
 import { Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker"; // Thêm thư viện ImagePicker
+import {
+  launchCameraAsync,
+  launchImageLibraryAsync,
+  useCameraPermissions,
+  PermissionStatus,
+} from "expo-image-picker";
 
 function TaskNoteScreen({ route }) {
   const sectionId = route.params.id;
   const color = route.params.color;
 
   const [textInputValue, setTextInputValue] = useState("");
+  const [file, setFile] = useState();
   const [imageUri, setImageUri] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false); // Quản lý trạng thái của modal
 
+  // Camera permission
+  const [cameraPermissionInformation, requestPermission] =
+    useCameraPermissions();
+
+  async function verifyPermissions() {
+    if (cameraPermissionInformation.status === PermissionStatus.UNDETERMINED) {
+      const permissionResponse = await requestPermission();
+      return permissionResponse.granted;
+    }
+
+    if (cameraPermissionInformation.status === PermissionStatus.DENIED) {
+      Alert.alert(
+        "Insufficient Permissions!",
+        "You need to grant camera permissions to use this app."
+      );
+      return false;
+    }
+
+    return true;
+  }
+
   // Hàm chọn ảnh từ thư viện
   const handleSelectPhoto = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    const hasPermission = await verifyPermissions();
 
-    if (!result.canceled) {
-      setImageUri(result.assets[0].uri); // Lưu uri của ảnh
-      setIsModalVisible(false); // Đóng modal khi chọn ảnh
+    if (!hasPermission) {
+      return;
     }
+
+    try {
+      const result = await launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5,
+      });
+
+      if (result) {
+        setFile(result.assets[0]);
+        setImageUri(result.assets[0].uri); // Set the photo URL after taking the picture
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to take photo.");
+    }
+
+    setIsModalVisible(false); // Close the modal after taking the photo
   };
 
   // Hàm chụp ảnh mới
   const handleTakePhoto = async () => {
-    let result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    try {
+      const result = await launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5,
+      });
 
-    if (!result.canceled) {
-      setImageUri(result.assets[0].uri); // Lưu uri của ảnh
-      setIsModalVisible(false); // Đóng modal khi chụp ảnh
+      if (!result.canceled) {
+        setFile(result.assets[0]);
+        setImageUri(result.assets[0].uri); // Set the selected image URL
+      }
+      setIsModalVisible(false); // Close the modal after selecting a photo
+    } catch (error) {
+      Alert.alert("Error", "Failed to select photo.");
     }
   };
 
   // Hàm xóa ảnh đã chọn
   const handleDeletePhoto = () => {
-    setImageUri(null); // Xóa ảnh đã chọn
+    setImageUri(""); // Xóa ảnh đã chọn
     setIsModalVisible(false); // Đóng modal
   };
 

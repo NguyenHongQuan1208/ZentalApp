@@ -36,6 +36,7 @@ function PersonalProfileScreen({ navigation }) {
   const handleUserDataChange = (userData) => {
     setUserName(userData.username || "User Name");
     setPhotoUrl(userData.photoUrl || null);
+    setBio(userData.bio || null);
   };
 
   // Lắng nghe thay đổi dữ liệu người dùng realtime
