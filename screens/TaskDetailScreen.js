@@ -3,14 +3,19 @@ import { Ionicons } from "@expo/vector-icons";
 import { GlobalColors } from "../constants/GlobalColors";
 import TaskBenefits from "../components/TaskSection/TaskBenefits";
 import DecisionBox from "../components/TaskSection/DecisionBox";
+import Target from "../components/TaskSection/Target";
 
 function TaskDetailScreen({ route }) {
   const id = route.params.id;
   const frameColor = route.params.color;
+  const icon = route.params.icon;
   const benefits = route.params.benefits;
   const description = route.params.description;
+  const target = route.params.target;
   return (
     <View style={styles.rootContainer}>
+      <Target icon={icon} color={frameColor} target={target} />
+
       <View style={[styles.boxContainer, { borderColor: frameColor }]}>
         <View style={[styles.header, { borderBottomColor: frameColor }]}>
           <Ionicons name="flask" size={24} color={frameColor} />
@@ -19,7 +24,13 @@ function TaskDetailScreen({ route }) {
           </Text>
         </View>
         <TaskBenefits benefits={benefits} color={frameColor} />
-        <DecisionBox color={frameColor} id={id} description={description} />
+        <DecisionBox
+          id={id}
+          color={frameColor}
+          icon={icon}
+          target={target}
+          description={description}
+        />
       </View>
     </View>
   );
@@ -32,8 +43,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     padding: 32,
-    backgroundColor: GlobalColors.primaryGrey, // Thêm màu nền nếu cần
+    backgroundColor: GlobalColors.primaryGrey,
   },
+
   boxContainer: {
     width: "100%",
     padding: 16,

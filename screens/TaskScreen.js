@@ -8,8 +8,10 @@ function TaskScreen({ navigation }) {
       navigation.navigate("TaskDetail", {
         id: sectionData.item.id,
         color: sectionData.item.color,
+        icon: sectionData.item.icon,
         benefits: sectionData.item.benefits,
         description: sectionData.item.description,
+        target: sectionData.item.target,
       });
     }
     return (
