@@ -325,7 +325,6 @@ export default function App() {
     </>
   );
 }
-
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
