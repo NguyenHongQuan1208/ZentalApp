@@ -21,7 +21,6 @@ import {
   useCameraPermissions,
   PermissionStatus,
 } from "expo-image-picker";
-import AppLoading from "expo-app-loading";
 
 function EditProfileScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
@@ -218,11 +217,11 @@ function EditProfileScreen({ navigation }) {
 
   // Hiển thị trạng thái tải
   if (isLoading) {
-    return <AppLoading />;
-
-    //   <View style={styles.loadingContainer}>
-    //   <Text>Loading...</Text>
-    // </View>
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
   }
 
   return (
@@ -344,5 +343,14 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.5,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: GlobalColors.primaryWhite,
+  },
+  loadingText: {
+    color: GlobalColors.primaryColor,
   },
 });

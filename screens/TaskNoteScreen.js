@@ -97,41 +97,48 @@ function TaskNoteScreen({ route }) {
 
   return (
     <View style={styles.container}>
-      <Target icon={icon} target={target} />
+      <View style={styles.targetContainer}>
+        <Target
+          icon={icon}
+          target={target}
+          color={GlobalColors.secondBlack}
+          size={13}
+        />
+      </View>
       <View style={styles.headerContainer}>
         <Ionicons name="bulb" size={16} color={color} />
         <Text style={[styles.textTitle, { color: color }]}>You decide How</Text>
       </View>
 
-      {/* TextInput */}
-      <TextInput
-        style={styles.textInput}
-        placeholder="Enter your decision here"
-        value={textInputValue}
-        onChangeText={setTextInputValue}
-        multiline={true}
-        numberOfLines={4}
-        textAlignVertical="top"
-      />
+      {/* Nội dung chính */}
+      <View style={styles.content}>
+        <TextInput
+          style={styles.textInput}
+          placeholder="Enter your decision here"
+          value={textInputValue}
+          onChangeText={setTextInputValue}
+          multiline={true}
+          numberOfLines={4}
+          textAlignVertical="top"
+        />
 
-      {/* Image Preview */}
-      <View style={styles.imagePreviewContainer}>
-        {imageUri ? (
-          <Image source={{ uri: imageUri }} style={styles.imagePreview} />
-        ) : (
-          <Image
-            source={require("../assets/image-preview.jpg")} // Đảm bảo bạn có ảnh mặc định trong assets
-            style={styles.imagePreview}
-          />
-        )}
+        <View style={styles.imagePreviewContainer}>
+          {imageUri ? (
+            <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+          ) : (
+            <Image
+              source={require("../assets/image-preview.jpg")}
+              style={styles.imagePreview}
+            />
+          )}
 
-        {/* Button nằm trên ảnh */}
-        <Pressable
-          style={styles.overlayButton}
-          onPress={() => setIsModalVisible(true)}
-        >
-          <Text style={styles.overlayButtonText}>Take or Choose Photo</Text>
-        </Pressable>
+          <Pressable
+            style={styles.overlayButton}
+            onPress={() => setIsModalVisible(true)}
+          >
+            <Text style={styles.overlayButtonText}>Take or Choose Photo</Text>
+          </Pressable>
+        </View>
       </View>
 
       {/* Modal */}
@@ -143,9 +150,17 @@ function TaskNoteScreen({ route }) {
         onClose={() => setIsModalVisible(false)}
       />
 
-      <View>
-        <LongButton>PLEDGE TO DO IT</LongButton>
-        <LongButton>I'VE DONE IT, POST</LongButton>
+      {/* Nút nằm ở cuối màn hình */}
+      <View style={styles.footer}>
+        <LongButton
+          style={[
+            styles.longButton,
+            { backgroundColor: GlobalColors.inActivetabBarColor },
+          ]}
+        >
+          PLEDGE TO DO IT
+        </LongButton>
+        <LongButton style={styles.longButton}>I'VE DONE IT, POST</LongButton>
       </View>
     </View>
   );
@@ -159,15 +174,21 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#f9f9f9",
   },
+  targetContainer: {
+    alignItems: "center",
+  },
   headerContainer: {
     flexDirection: "row",
-    marginVertical: 15,
+    marginBottom: 15,
     alignItems: "center",
     justifyContent: "center",
   },
   textTitle: {
     fontSize: 18,
     textAlign: "center",
+  },
+  content: {
+    flex: 1, // Chiếm toàn bộ không gian còn lại
   },
   textInput: {
     width: "100%",
@@ -207,5 +228,15 @@ const styles = StyleSheet.create({
     color: GlobalColors.primaryWhite,
     fontSize: 16,
     fontWeight: "bold",
+  },
+  footer: {
+    marginTop: 16, // Khoảng cách giữa nội dung và footer
+    marginBottom: 28,
+    justifyContent: "flex-end", // Đẩy nút xuống cuối màn hình
+  },
+  longButton: {
+    width: "100%",
+    marginTop: 8,
+    paddingVertical: 12,
   },
 });

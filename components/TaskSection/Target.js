@@ -1,11 +1,13 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-function Target({ icon, color, target }) {
+function Target({ icon, color, target, size }) {
   return (
     <View style={styles.targetContainer}>
-      <Ionicons name={icon} size={16} color={color} />
-      <Text style={[styles.targetText, { color: color }]}>{target}</Text>
+      <Ionicons name={icon} size={size || 16} color={color} />
+      <Text style={[styles.targetText, { color: color, fontSize: size || 16 }]}>
+        {target}
+      </Text>
     </View>
   );
 }
@@ -20,7 +22,6 @@ const styles = StyleSheet.create({
   },
   targetText: {
     marginLeft: 5,
-    fontSize: 16,
     fontWeight: "bold",
   },
 });

@@ -7,7 +7,7 @@ import SignupScreen from "./screens/SignupScreen";
 import TaskDetailScreen from "./screens/TaskDetailScreen";
 import { GlobalColors } from "./constants/GlobalColors";
 import AuthContextProvider, { AuthContext } from "./store/auth-context";
-import { View, Text, Alert } from "react-native";
+import { View, Text, Alert, StyleSheet } from "react-native";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeScreen from "./screens/HomeScreen";
@@ -19,7 +19,6 @@ import ChatScreen from "./screens/ChatScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import TaskNoteScreen from "./screens/TaskNoteScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import AppLoading from "expo-app-loading";
 import EnterUserNameScreen from "./screens/EnterUserNameScreen";
 import EditProfileScreen from "./screens/EditProfileScreen";
 import PersonalProfileScreen from "./screens/PersonalProfileScreen";
@@ -306,7 +305,11 @@ function Root() {
   }, []);
 
   if (isTryingLogin) {
-    return <AppLoading />;
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
   }
 
   return <Navigation />;
@@ -322,3 +325,15 @@ export default function App() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: GlobalColors.primaryWhite,
+  },
+  loadingText: {
+    color: GlobalColors.primaryColor,
+  },
+});
