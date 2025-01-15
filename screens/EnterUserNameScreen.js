@@ -14,6 +14,12 @@ function EnterUserNameScreen({ navigation }) {
 
   useEffect(() => {
     async function checkIfUserNameSet() {
+      if (!token) {
+        console.error("Token is not available.");
+        authCtx.logout();
+        return;
+      }
+
       try {
         const response = await getUserData(token); // Đảm bảo sử dụng await
         const uid = response.localId;

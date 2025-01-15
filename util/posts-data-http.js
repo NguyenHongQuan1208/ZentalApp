@@ -7,10 +7,7 @@ const BACKEND_URL =
 export async function addPost(postData) {
   try {
     // Gửi yêu cầu POST để thêm bài đăng mới
-    const response = await axios.post(
-      `${BACKEND_URL}/postsData/posts.json`,
-      postData
-    );
+    const response = await axios.put(`${BACKEND_URL}/posts.json`, postData);
 
     // Trả về ID bài đăng mới
     return response.data.name; // Firebase trả về `name` là ID bài đăng
@@ -24,7 +21,7 @@ export async function addPost(postData) {
 export async function getAllPosts() {
   try {
     // Gửi yêu cầu GET để lấy tất cả bài đăng
-    const response = await axios.get(`${BACKEND_URL}/postsData/posts.json`);
+    const response = await axios.get(`${BACKEND_URL}/posts.json`);
 
     // Kiểm tra nếu không có bài đăng
     if (!response.data) {
@@ -47,9 +44,7 @@ export async function getAllPosts() {
 // Lấy bài đăng cụ thể theo ID
 export async function getPostById(postId) {
   try {
-    const response = await axios.get(
-      `${BACKEND_URL}/postsData/posts/${postId}.json`
-    );
+    const response = await axios.get(`${BACKEND_URL}/posts/${postId}.json`);
 
     if (!response.data) {
       throw new Error("Post not found.");
@@ -66,7 +61,7 @@ export async function getPostById(postId) {
 export async function updatePost(postId, updatedData) {
   try {
     const response = await axios.patch(
-      `${BACKEND_URL}/postsData/posts/${postId}.json`,
+      `${BACKEND_URL}/posts/${postId}.json`,
       updatedData
     );
 
@@ -80,7 +75,7 @@ export async function updatePost(postId, updatedData) {
 // Xóa bài đăng
 export async function deletePost(postId) {
   try {
-    await axios.delete(`${BACKEND_URL}/postsData/posts/${postId}.json`);
+    await axios.delete(`${BACKEND_URL}/posts/${postId}.json`);
   } catch (error) {
     console.error("Error deleting post:", error);
     throw new Error("Could not delete post.");

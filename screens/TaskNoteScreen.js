@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -19,8 +19,11 @@ import {
 } from "expo-image-picker";
 import { GlobalColors } from "../constants/GlobalColors";
 import Target from "../components/TaskSection/Target";
+import { addPost } from "../util/posts-data-http";
+import { getUserData } from "../util/auth";
+import { AuthContext } from "../store/auth-context";
 
-function TaskNoteScreen({ route }) {
+function TaskNoteScreen({ route, navigation }) {
   const sectionId = route.params.id;
   const color = route.params.color;
   const icon = route.params.icon;
@@ -29,7 +32,20 @@ function TaskNoteScreen({ route }) {
   const [textInputValue, setTextInputValue] = useState("");
   const [file, setFile] = useState();
   const [imageUri, setImageUri] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false); // Quản lý trạng thái của modal
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const authCtx = useContext(AuthContext);
+  const [uid, setUid] = useState(null); // Store UID here
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const token = authCtx.token;
+      const authResponse = await getUserData(token);
+      setUid(authResponse.localId); // Fetch and set UID
+    };
+
+    fetchUserData();
+  }, [authCtx.token]); // Dependency on token to refetch user data when token changes
 
   const [cameraPermissionInformation, requestPermission] =
     useCameraPermissions();
@@ -95,6 +111,36 @@ function TaskNoteScreen({ route }) {
     setIsModalVisible(false);
   };
 
+  // Hàm lưu bài đăng lên Firebase khi nhấn "PLEDGE TO DO IT" với status là 0
+  const handlePledgeToDoIt = async () => {
+    if (!textInputValue || !uid) {
+      Alert.alert(
+        "Error",
+        "Please enter your decision and ensure you're logged in."
+      );
+      return;
+    }
+
+    const postData = {
+      uid: uid,
+      sectionId: sectionId,
+      title: target,
+      content: textInputValue,
+      imageUri,
+      status: 0, // Mark as incomplete
+    };
+
+    try {
+      const postId = await addPost(postData);
+      // navigation.navigate("AppOverview", { screen: "Tasks" });
+      Alert.alert("Success", "Your note has been saved.");
+    } catch (error) {
+      Alert.alert("Error", "Failed to save post.");
+    }
+  };
+
+  const handlePost = async () => {};
+
   return (
     <View style={styles.container}>
       <View style={styles.targetContainer}>
@@ -157,10 +203,13 @@ function TaskNoteScreen({ route }) {
             styles.longButton,
             { backgroundColor: GlobalColors.inActivetabBarColor },
           ]}
+          onPress={handlePledgeToDoIt}
         >
           PLEDGE TO DO IT
         </LongButton>
-        <LongButton style={styles.longButton}>I'VE DONE IT, POST</LongButton>
+        <LongButton style={styles.longButton} onPress={handlePost}>
+          I'VE DONE IT, POST
+        </LongButton>
       </View>
     </View>
   );
