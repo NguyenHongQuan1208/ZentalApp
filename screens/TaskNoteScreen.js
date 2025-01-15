@@ -7,6 +7,8 @@ import {
   Pressable,
   Image,
   Alert,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import PhotoOptionsModal from "../components/Profile/PhotoOptionsModal";
 import LongButton from "../components/ui/LongButton";
@@ -19,7 +21,7 @@ import {
 } from "expo-image-picker";
 import { GlobalColors } from "../constants/GlobalColors";
 import Target from "../components/TaskSection/Target";
-import { addPost } from "../util/posts-data-http";
+import { addPost, getAllPosts } from "../util/posts-data-http";
 import { getUserData } from "../util/auth";
 import { AuthContext } from "../store/auth-context";
 
@@ -46,6 +48,28 @@ function TaskNoteScreen({ route, navigation }) {
 
     fetchUserData();
   }, [authCtx.token]); // Dependency on token to refetch user data when token changes
+
+  useEffect(() => {
+    const fetchPostData = async () => {
+      try {
+        const posts = await getAllPosts();
+        const filteredPost = posts.find(
+          (post) =>
+            post.status === 0 &&
+            post.sectionId === sectionId &&
+            post.uid === uid
+        );
+        if (filteredPost) {
+          setTextInputValue(filteredPost.content);
+          setImageUri(filteredPost.imageUri);
+        }
+      } catch (error) {
+        console.error("Error fetching post data", error);
+      }
+    };
+
+    fetchPostData();
+  }, [sectionId, uid]); // Dependency vào sectionId và uid
 
   const [cameraPermissionInformation, requestPermission] =
     useCameraPermissions();
@@ -114,10 +138,7 @@ function TaskNoteScreen({ route, navigation }) {
   // Hàm lưu bài đăng lên Firebase khi nhấn "PLEDGE TO DO IT" với status là 0
   const handlePledgeToDoIt = async () => {
     if (!textInputValue || !uid) {
-      Alert.alert(
-        "Error",
-        "Please enter your decision and ensure you're logged in."
-      );
+      Alert.alert("Error", "Please enter your note.");
       return;
     }
 
@@ -132,7 +153,8 @@ function TaskNoteScreen({ route, navigation }) {
 
     try {
       const postId = await addPost(postData);
-      // navigation.navigate("AppOverview", { screen: "Tasks" });
+      // console.log(postId);
+      navigation.navigate("AppOverview", { screen: "Tasks" });
       Alert.alert("Success", "Your note has been saved.");
     } catch (error) {
       Alert.alert("Error", "Failed to save post.");
@@ -142,76 +164,80 @@ function TaskNoteScreen({ route, navigation }) {
   const handlePost = async () => {};
 
   return (
-    <View style={styles.container}>
-      <View style={styles.targetContainer}>
-        <Target
-          icon={icon}
-          target={target}
-          color={GlobalColors.secondBlack}
-          size={13}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <View style={styles.targetContainer}>
+          <Target
+            icon={icon}
+            target={target}
+            color={GlobalColors.secondBlack}
+            size={13}
+          />
+        </View>
+        <View style={styles.headerContainer}>
+          <Ionicons name="bulb" size={16} color={color} />
+          <Text style={[styles.textTitle, { color: color }]}>
+            You decide How
+          </Text>
+        </View>
+
+        {/* Nội dung chính */}
+        <View style={styles.content}>
+          <TextInput
+            style={styles.textInput}
+            placeholder="Enter your decision here"
+            value={textInputValue}
+            onChangeText={setTextInputValue}
+            multiline={true}
+            numberOfLines={4}
+            textAlignVertical="top"
+          />
+
+          <View style={styles.imagePreviewContainer}>
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+            ) : (
+              <Image
+                source={require("../assets/image-preview.jpg")}
+                style={styles.imagePreview}
+              />
+            )}
+
+            <Pressable
+              style={styles.overlayButton}
+              onPress={() => setIsModalVisible(true)}
+            >
+              <Text style={styles.overlayButtonText}>Take or Choose Photo</Text>
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Modal */}
+        <PhotoOptionsModal
+          visible={isModalVisible}
+          onTakePhoto={handleTakePhoto}
+          onSelectPhoto={handleSelectPhoto}
+          onDeletePhoto={handleDeletePhoto}
+          onClose={() => setIsModalVisible(false)}
         />
-      </View>
-      <View style={styles.headerContainer}>
-        <Ionicons name="bulb" size={16} color={color} />
-        <Text style={[styles.textTitle, { color: color }]}>You decide How</Text>
-      </View>
 
-      {/* Nội dung chính */}
-      <View style={styles.content}>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Enter your decision here"
-          value={textInputValue}
-          onChangeText={setTextInputValue}
-          multiline={true}
-          numberOfLines={4}
-          textAlignVertical="top"
-        />
-
-        <View style={styles.imagePreviewContainer}>
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={styles.imagePreview} />
-          ) : (
-            <Image
-              source={require("../assets/image-preview.jpg")}
-              style={styles.imagePreview}
-            />
-          )}
-
-          <Pressable
-            style={styles.overlayButton}
-            onPress={() => setIsModalVisible(true)}
+        {/* Nút nằm ở cuối màn hình */}
+        <View style={styles.footer}>
+          <LongButton
+            style={[
+              styles.longButton,
+              { backgroundColor: GlobalColors.inActivetabBarColor },
+            ]}
+            onPress={handlePledgeToDoIt}
           >
-            <Text style={styles.overlayButtonText}>Take or Choose Photo</Text>
-          </Pressable>
+            PLEDGE TO DO IT
+          </LongButton>
+          <LongButton style={styles.longButton} onPress={handlePost}>
+            I'VE DONE IT, POST
+          </LongButton>
         </View>
       </View>
-
-      {/* Modal */}
-      <PhotoOptionsModal
-        visible={isModalVisible}
-        onTakePhoto={handleTakePhoto}
-        onSelectPhoto={handleSelectPhoto}
-        onDeletePhoto={handleDeletePhoto}
-        onClose={() => setIsModalVisible(false)}
-      />
-
-      {/* Nút nằm ở cuối màn hình */}
-      <View style={styles.footer}>
-        <LongButton
-          style={[
-            styles.longButton,
-            { backgroundColor: GlobalColors.inActivetabBarColor },
-          ]}
-          onPress={handlePledgeToDoIt}
-        >
-          PLEDGE TO DO IT
-        </LongButton>
-        <LongButton style={styles.longButton} onPress={handlePost}>
-          I'VE DONE IT, POST
-        </LongButton>
-      </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 

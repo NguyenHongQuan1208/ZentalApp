@@ -30,7 +30,8 @@ function EnterUserNameScreen({ navigation }) {
           navigation.replace("AppOverview"); // Chuyển hướng nếu đã có ID trên Firebase
         }
       } catch (error) {
-        console.error("Error checking username set:", error);
+        // console.error("Error checking username set:", error);
+        authCtx.logout();
       } finally {
         setIsChecking(false); // Đánh dấu kiểm tra đã hoàn tất
       }

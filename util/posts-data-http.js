@@ -7,10 +7,11 @@ const BACKEND_URL =
 export async function addPost(postData) {
   try {
     // Gửi yêu cầu POST để thêm bài đăng mới
-    const response = await axios.put(`${BACKEND_URL}/posts.json`, postData);
+    const response = await axios.post(`${BACKEND_URL}/posts.json`, postData);
 
+    const id = response.data.name;
     // Trả về ID bài đăng mới
-    return response.data.name; // Firebase trả về `name` là ID bài đăng
+    return id; // Firebase trả về `name` là ID bài đăng
   } catch (error) {
     console.error("Error adding post:", error);
     throw new Error("Could not add post.");
