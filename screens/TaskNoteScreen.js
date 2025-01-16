@@ -21,7 +21,7 @@ import {
 } from "expo-image-picker";
 import { GlobalColors } from "../constants/GlobalColors";
 import Target from "../components/TaskSection/Target";
-import { addPost, getAllPosts } from "../util/posts-data-http";
+import { addPost, getAllPosts, updatePost } from "../util/posts-data-http";
 import { getUserData } from "../util/auth";
 import { AuthContext } from "../store/auth-context";
 
@@ -152,12 +152,28 @@ function TaskNoteScreen({ route, navigation }) {
     };
 
     try {
-      const postId = await addPost(postData);
-      // console.log(postId);
+      // Lấy tất cả các bài đăng để kiểm tra bài viết đã tồn tại
+      const posts = await getAllPosts();
+      const existingPost = posts.find(
+        (post) =>
+          post.status === 0 && post.sectionId === sectionId && post.uid === uid
+      );
+
+      if (existingPost) {
+        // Cập nhật bài viết nếu đã tồn tại
+        await updatePost(existingPost.id, postData);
+        Alert.alert("Success", "Your note has been updated.");
+      } else {
+        // Thêm bài viết mới nếu chưa tồn tại
+        const newPostId = await addPost(postData);
+        Alert.alert("Success", "Your note has been saved.");
+      }
+
+      // Chuyển hướng về màn hình tổng quan nhiệm vụ
       navigation.navigate("AppOverview", { screen: "Tasks" });
-      Alert.alert("Success", "Your note has been saved.");
     } catch (error) {
-      Alert.alert("Error", "Failed to save post.");
+      Alert.alert("Error", "Failed to save or update post.");
+      console.error(error);
     }
   };
 
