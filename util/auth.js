@@ -1,5 +1,4 @@
 import axios from "axios";
-import { getAuth, getIdToken } from "firebase/auth"; // Import thêm Firebase Authentication
 
 const API_KEY = "AIzaSyB8PVnvThQNPDDggiK1qTXqncZtAq98Y1Y";
 
@@ -32,39 +31,11 @@ export async function login(email, password) {
 export async function getUserData(token) {
   const url = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${API_KEY}`;
   try {
-    // Làm mới token nếu cần
-    const user = getAuth().currentUser;
-    if (user) {
-      // Nếu có user đăng nhập, làm mới token
-      token = await getIdToken(user, true); // true để làm mới token
-    }
-
     const response = await axios.post(url, {
       idToken: token,
     });
     return response.data.users[0]; // Trả về thông tin người dùng
   } catch (error) {
-    if (
-      error.response &&
-      error.response.data.error.message === "INVALID_ID_TOKEN"
-    ) {
-      // Làm mới token nếu gặp lỗi INVALID_ID_TOKEN
-      console.log("Invalid ID Token, refreshing token...");
-      const user = getAuth().currentUser;
-      if (user) {
-        try {
-          const freshToken = await getIdToken(user, true); // Làm mới token
-          // Gọi lại API với token mới
-          const response = await axios.post(url, {
-            idToken: freshToken,
-          });
-          return response.data.users[0]; // Trả về thông tin người dùng
-        } catch (refreshError) {
-          console.error("Error refreshing token:", refreshError);
-          throw refreshError;
-        }
-      }
-    }
     console.error(
       "Fetching user data failed:",
       error.response?.data || error.message
@@ -90,13 +61,6 @@ export async function updateProfile(
   };
 
   try {
-    // Làm mới token nếu cần
-    const user = getAuth().currentUser;
-    if (user) {
-      // Nếu có user đăng nhập, làm mới token
-      token = await getIdToken(user, true); // true để làm mới token
-    }
-
     const response = await axios.post(url, payload);
     return response.data; // Trả về thông tin đã cập nhật
   } catch (error) {
