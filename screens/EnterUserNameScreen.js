@@ -5,6 +5,8 @@ import { getUserData, updateProfile } from "../util/auth";
 import { GlobalColors } from "../constants/GlobalColors";
 import LongButton from "../components/ui/LongButton";
 import { checkUserIdExists, storeUser } from "../util/user-info-http";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Import thêm AsyncStorage
+import { getAuth, getIdToken } from "firebase/auth"; // Import Firebase Authentication
 
 function EnterUserNameScreen({ navigation }) {
   const [username, setUsername] = useState("");
@@ -14,12 +16,6 @@ function EnterUserNameScreen({ navigation }) {
 
   useEffect(() => {
     async function checkIfUserNameSet() {
-      if (!token) {
-        console.error("Token is not available.");
-        authCtx.logout();
-        return;
-      }
-
       try {
         const response = await getUserData(token); // Đảm bảo sử dụng await
         const uid = response.localId;
@@ -36,8 +32,29 @@ function EnterUserNameScreen({ navigation }) {
         setIsChecking(false); // Đánh dấu kiểm tra đã hoàn tất
       }
     }
+
+    // Gọi hàm loadToken để làm mới token nếu cần
+    async function loadToken() {
+      const storedToken = await AsyncStorage.getItem("token");
+      if (storedToken) {
+        // Làm mới token nếu có
+        const user = getAuth().currentUser;
+        if (user) {
+          try {
+            const freshToken = await getIdToken(user, true); // true để làm mới token
+            authCtx.authenticate(freshToken); // Cập nhật token trong AuthContext
+            AsyncStorage.setItem("token", freshToken); // Lưu lại token mới
+          } catch (error) {
+            console.error("Error refreshing token:", error);
+            authCtx.logout(); // Đăng xuất nếu không thể làm mới token
+          }
+        }
+      }
+    }
+
+    loadToken();
     checkIfUserNameSet();
-  }, [navigation, token]);
+  }, [navigation, token, authCtx]);
 
   if (isChecking) {
     // Hiển thị màn hình tải khi đang kiểm tra
