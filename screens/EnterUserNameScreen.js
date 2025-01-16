@@ -22,6 +22,10 @@ function EnterUserNameScreen({ navigation }) {
 
       try {
         const response = await getUserData(token); // Đảm bảo sử dụng await
+        if (!response?.localId) {
+          authCtx.logout();
+        }
+
         const uid = response.localId;
 
         const userIdExists = await checkUserIdExists(uid);
