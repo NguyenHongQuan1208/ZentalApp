@@ -5,16 +5,20 @@ import LoadingOverlay from "../components/ui/LoadingOverlay";
 import { Alert, Image, View, StyleSheet, Text } from "react-native";
 import { AuthContext } from "../store/auth-context";
 import { GlobalColors } from "../constants/GlobalColors";
+import { RefreshTokenContext } from "../store/RefreshTokenContext";
 
 function LoginScreen() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const authCtx = useContext(AuthContext);
+  const refreshCtx = useContext(RefreshTokenContext);
 
-  async function loginpHandler({ email, password }) {
+  async function loginHandler({ email, password }) {
     setIsAuthenticating(true);
     try {
-      const token = await login(email, password);
-      authCtx.authenticate(token);
+      const { idToken, refreshToken } = await login(email, password);
+      // console.log({ idToken, refreshToken });
+      authCtx.authenticate(idToken); // Sử dụng idToken cho việc xác thực
+      refreshCtx.setRefreshToken(refreshToken);
     } catch (error) {
       Alert.alert(
         "Authentication Failed",
@@ -36,7 +40,7 @@ function LoginScreen() {
       <AuthContent
         style={styles.authContent}
         isLogin
-        onAuthenticate={loginpHandler}
+        onAuthenticate={loginHandler}
       />
     </View>
   );

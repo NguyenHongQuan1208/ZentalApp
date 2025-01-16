@@ -10,7 +10,10 @@ async function authenticate(mode, email, password) {
       password: password,
       returnSecureToken: true,
     });
-    return response.data.idToken; // Trả về token
+    return {
+      idToken: response.data.idToken, // ID token
+      refreshToken: response.data.refreshToken, // Refresh token
+    };
   } catch (error) {
     console.error(
       "Authentication failed:",
@@ -66,6 +69,28 @@ export async function updateProfile(
   } catch (error) {
     console.error(
       "Profile update failed:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+}
+
+// Hàm refresh token
+export async function refreshTokenFn(refreshToken) {
+  const url = `https://securetoken.googleapis.com/v1/token?key=${API_KEY}`;
+  try {
+    const response = await axios.post(url, {
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+    });
+    return {
+      idToken: response.data.id_token, // ID token mới
+      refreshToken: response.data.refresh_token, // Refresh token mới
+      expiresIn: response.data.expires_in, // Thời gian hết hạn của ID token
+    };
+  } catch (error) {
+    console.error(
+      "Token refresh failed:",
       error.response?.data || error.message
     );
     throw error;

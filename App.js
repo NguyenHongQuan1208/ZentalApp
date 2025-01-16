@@ -22,6 +22,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import EnterUserNameScreen from "./screens/EnterUserNameScreen";
 import EditProfileScreen from "./screens/EditProfileScreen";
 import PersonalProfileScreen from "./screens/PersonalProfileScreen";
+import RefreshTokenContextProvider from "./store/RefreshTokenContext";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -320,7 +321,9 @@ export default function App() {
     <>
       <StatusBar style="light" />
       <AuthContextProvider>
-        <Root />
+        <RefreshTokenContextProvider>
+          <Root />
+        </RefreshTokenContextProvider>
       </AuthContextProvider>
     </>
   );

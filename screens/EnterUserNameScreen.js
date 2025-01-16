@@ -5,6 +5,8 @@ import { getUserData, updateProfile } from "../util/auth";
 import { GlobalColors } from "../constants/GlobalColors";
 import LongButton from "../components/ui/LongButton";
 import { checkUserIdExists, storeUser } from "../util/user-info-http";
+import { refreshTokenFn } from "../util/auth";
+import { RefreshTokenContext } from "../store/RefreshTokenContext";
 
 function EnterUserNameScreen({ navigation }) {
   const [username, setUsername] = useState("");
@@ -12,16 +14,55 @@ function EnterUserNameScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
   const token = authCtx.token;
 
+  const refreshCtx = useContext(RefreshTokenContext);
+  const refreshToken = refreshCtx.refreshToken;
+  async function getUserDataWithRetry(token, refreshToken, refreshTokenFn) {
+    try {
+      const response = await getUserData(token);
+      return response;
+    } catch (error) {
+      // Kiểm tra lỗi INVALID_ID_TOKEN và làm mới token
+      if (error.response?.data?.error?.message === "INVALID_ID_TOKEN") {
+        console.log("Token is invalid or expired. Refreshing token...");
+
+        // Kiểm tra refreshToken
+        if (!refreshToken) {
+          console.error("Refresh token is missing.");
+          throw new Error("Refresh token is missing");
+        }
+
+        try {
+          const newTokens = await refreshTokenFn(refreshToken); // Làm mới token
+          authCtx.authenticate(newTokens.idToken); // Cập nhật token mới trong AuthContext
+
+          // Gọi lại API với token mới
+          const newResponse = await getUserData(newTokens.idToken);
+          return newResponse;
+        } catch (refreshError) {
+          console.error("Failed to refresh token:", refreshError);
+          throw refreshError;
+        }
+      }
+      throw error; // Ném lỗi khác nếu không phải INVALID_ID_TOKEN
+    }
+  }
+
   useEffect(() => {
     async function checkIfUserNameSet() {
-      if (!token) {
-        console.error("Token is not available.");
-        authCtx.logout();
-        return;
-      }
-
       try {
-        const response = await getUserData(token); // Đảm bảo sử dụng await
+        if (!refreshToken) {
+          console.error("No refresh token available.");
+          authCtx.logout();
+          return;
+        }
+
+        // Gọi hàm để kiểm tra user data và thử lại nếu token hết hạn
+        let response = await getUserDataWithRetry(
+          token,
+          refreshToken,
+          refreshTokenFn
+        );
+
         if (!response?.localId) {
           authCtx.logout();
         }
@@ -29,19 +70,18 @@ function EnterUserNameScreen({ navigation }) {
         const uid = response.localId;
 
         const userIdExists = await checkUserIdExists(uid);
-        // console.log(userIdExists ? "User exists!" : "User does not exist.");
         if (userIdExists) {
-          navigation.replace("AppOverview"); // Chuyển hướng nếu đã có ID trên Firebase
+          navigation.replace("AppOverview");
         }
       } catch (error) {
-        // console.error("Error checking username set:", error);
+        console.error("Error checking username set:", error);
         authCtx.logout();
       } finally {
         setIsChecking(false); // Đánh dấu kiểm tra đã hoàn tất
       }
     }
     checkIfUserNameSet();
-  }, [navigation, token]);
+  }, [navigation, token, authCtx, refreshToken]);
 
   if (isChecking) {
     // Hiển thị màn hình tải khi đang kiểm tra
