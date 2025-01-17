@@ -14,16 +14,19 @@ function RefreshTokenContextProvider({ children }) {
   // Lấy refreshToken từ AsyncStorage khi ứng dụng khởi động
   useEffect(() => {
     const fetchStoredRefreshToken = async () => {
-      const storedToken = await AsyncStorage.getItem("refreshToken");
-      if (storedToken) {
-        setRefreshToken(storedToken);
+      try {
+        const storedToken = await AsyncStorage.getItem("refreshToken");
+        if (storedToken) {
+          setRefreshToken(storedToken);
+        }
+      } catch (error) {
+        console.log("Error fetching refresh token:", error);
       }
     };
-
     fetchStoredRefreshToken();
   }, []);
 
-  // Lưu refreshToken vào AsyncStorage khi có sự thay đổi
+  // Save refreshToken to AsyncStorage when it changes
   useEffect(() => {
     if (refreshToken) {
       AsyncStorage.setItem("refreshToken", refreshToken);

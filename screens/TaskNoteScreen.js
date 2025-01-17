@@ -217,7 +217,16 @@ function TaskNoteScreen({ route, navigation }) {
   };
 
   const handlePost = async () => {
-    navigation.navigate("ConfirmPost");
+    if (!textInputValue.trim()) {
+      Alert.alert("Error", "Please enter your note.");
+      return;
+    }
+
+    navigation.navigate("ConfirmPost", {
+      icon: icon,
+      color: color,
+      target: target,
+    });
   };
 
   return (

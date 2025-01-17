@@ -16,6 +16,7 @@ function EnterUserNameScreen({ navigation }) {
 
   const refreshCtx = useContext(RefreshTokenContext);
   const refreshToken = refreshCtx.refreshToken;
+
   async function getUserDataWithRetry(token, refreshToken, refreshTokenFn) {
     const response = await getUserData(token); // Gọi hàm getUserData
 
@@ -58,54 +59,46 @@ function EnterUserNameScreen({ navigation }) {
     return response; // Trả về dữ liệu người dùng nếu không có lỗi
   }
 
-  useEffect(() => {
-    async function checkIfUserNameSet() {
-      try {
-        if (!refreshToken) {
-          console.error("No refresh token available.");
+  async function checkIfUserNameSet() {
+    try {
+      if (!refreshToken) {
+        console.error("No refresh token available.");
+        authCtx.logout();
+        return;
+      }
+      const response = await getUserDataWithRetry(
+        token,
+        refreshToken,
+        refreshTokenFn
+      );
+      if (response?.error) {
+        console.error("Error fetching user data:", response.error);
+        if (
+          response.error === "Refresh token is missing" ||
+          response.error === "Failed to refresh token"
+        ) {
           authCtx.logout();
           return;
         }
-
-        // Gọi hàm để kiểm tra user data và thử lại nếu token hết hạn
-        let response = await getUserDataWithRetry(
-          token,
-          refreshToken,
-          refreshTokenFn
-        );
-
-        if (response?.error) {
-          // Nếu có lỗi (ví dụ: token hết hạn, không có refresh token), xử lý như logout hoặc làm mới token
-          console.error("Error fetching user data:", response.error);
-          if (
-            response.error === "Refresh token is missing" ||
-            response.error === "Failed to refresh token"
-          ) {
-            authCtx.logout(); // Nếu lỗi liên quan đến refresh token, logout
-            return;
-          }
-          // Nếu lỗi không phải là liên quan đến refresh token, bạn có thể tiếp tục các hành động khác (ví dụ: hiển thị cảnh báo, v.v.)
-        }
-
-        if (!response?.localId) {
-          authCtx.logout(); // Nếu không có localId, logout
-          return;
-        }
-
-        const uid = response.localId;
-
-        const userIdExists = await checkUserIdExists(uid);
-        if (userIdExists) {
-          navigation.replace("AppOverview");
-        }
-      } catch (error) {
-        console.error("Error checking username set:", error);
-        authCtx.logout();
-      } finally {
-        setIsChecking(false); // Đánh dấu kiểm tra đã hoàn tất
       }
+      if (!response?.localId) {
+        authCtx.logout();
+        return;
+      }
+      const uid = response.localId;
+      const userIdExists = await checkUserIdExists(uid);
+      if (userIdExists) {
+        navigation.replace("AppOverview");
+      }
+    } catch (error) {
+      console.error("Error checking username set:", error);
+      authCtx.logout();
+    } finally {
+      setIsChecking(false);
     }
+  }
 
+  useEffect(() => {
     checkIfUserNameSet();
   }, [navigation, token, authCtx, refreshToken]);
 
