@@ -17,12 +17,11 @@ function EnterUserNameScreen({ navigation }) {
   const refreshCtx = useContext(RefreshTokenContext);
   const refreshToken = refreshCtx.refreshToken;
   async function getUserDataWithRetry(token, refreshToken, refreshTokenFn) {
-    try {
-      const response = await getUserData(token);
-      return response;
-    } catch (error) {
-      // Kiểm tra lỗi INVALID_ID_TOKEN và làm mới token
-      if (error.response?.data?.error?.message === "INVALID_ID_TOKEN") {
+    const response = await getUserData(token); // Gọi hàm getUserData
+
+    // Kiểm tra xem phản hồi có chứa lỗi không
+    if (response.error) {
+      if (response.message === "INVALID_ID_TOKEN") {
         console.log("Token is invalid or expired. Refreshing token...");
 
         // Kiểm tra refreshToken
@@ -41,7 +40,7 @@ function EnterUserNameScreen({ navigation }) {
             console.log("Refresh Token Success");
 
             // Điều hướng lại trang sau khi refresh token thành công
-            navigation.replace("AppOverview"); // Hoặc màn hình bạn muốn
+            // navigation.replace("AppOverview");
           }
           return newResponse;
         } catch (refreshError) {
@@ -49,8 +48,12 @@ function EnterUserNameScreen({ navigation }) {
           throw refreshError; // Nếu refresh thất bại, ném lỗi
         }
       }
-      throw error; // Ném lỗi khác nếu không phải INVALID_ID_TOKEN
+      // Nếu lỗi không phải là INVALID_ID_TOKEN, trả về lỗi khác
+      console.log({ error: response.message || "Unknown error" });
+      return { error: response.message || "Unknown error" };
     }
+
+    return response; // Trả về dữ liệu người dùng nếu không có lỗi
   }
 
   useEffect(() => {
@@ -69,8 +72,22 @@ function EnterUserNameScreen({ navigation }) {
           refreshTokenFn
         );
 
+        if (response?.error) {
+          // Nếu có lỗi (ví dụ: token hết hạn, không có refresh token), xử lý như logout hoặc làm mới token
+          console.error("Error fetching user data:", response.error);
+          if (
+            response.error === "Refresh token is missing" ||
+            response.error === "Failed to refresh token"
+          ) {
+            authCtx.logout(); // Nếu lỗi liên quan đến refresh token, logout
+            return;
+          }
+          // Nếu lỗi không phải là liên quan đến refresh token, bạn có thể tiếp tục các hành động khác (ví dụ: hiển thị cảnh báo, v.v.)
+        }
+
         if (!response?.localId) {
-          authCtx.logout();
+          authCtx.logout(); // Nếu không có localId, logout
+          return;
         }
 
         const uid = response.localId;
@@ -86,6 +103,7 @@ function EnterUserNameScreen({ navigation }) {
         setIsChecking(false); // Đánh dấu kiểm tra đã hoàn tất
       }
     }
+
     checkIfUserNameSet();
   }, [navigation, token, authCtx, refreshToken]);
 

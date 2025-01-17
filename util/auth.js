@@ -39,11 +39,15 @@ export async function getUserData(token) {
     });
     return response.data.users[0]; // Trả về thông tin người dùng
   } catch (error) {
-    console.error(
+    console.log(
       "Fetching user data failed:",
       error.response?.data || error.message
     );
-    throw error;
+    // Trả về thông tin lỗi để xử lý tiếp ở nơi gọi hàm
+    return {
+      error: true,
+      message: error.response?.data?.error?.message || error.message,
+    };
   }
 }
 
