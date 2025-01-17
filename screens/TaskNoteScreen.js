@@ -208,7 +208,7 @@ function TaskNoteScreen({ route, navigation }) {
       }
 
       // Chuyển hướng về màn hình tổng quan nhiệm vụ
-      navigation.navigate("AppOverview", { screen: "Tasks" });
+      navigation.navigate("AppOverview", { screen: "Task" });
     } catch (error) {
       Alert.alert("Error", "Failed to save or update post.");
       console.error(error);

@@ -37,10 +37,16 @@ function EnterUserNameScreen({ navigation }) {
 
           // Gọi lại API với token mới
           const newResponse = await getUserData(newTokens.idToken);
+          if (newResponse) {
+            console.log("Refresh Token Success");
+
+            // Điều hướng lại trang sau khi refresh token thành công
+            navigation.replace("AppOverview"); // Hoặc màn hình bạn muốn
+          }
           return newResponse;
         } catch (refreshError) {
           console.error("Failed to refresh token:", refreshError);
-          throw refreshError;
+          throw refreshError; // Nếu refresh thất bại, ném lỗi
         }
       }
       throw error; // Ném lỗi khác nếu không phải INVALID_ID_TOKEN
