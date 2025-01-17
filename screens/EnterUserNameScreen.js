@@ -33,9 +33,11 @@ function EnterUserNameScreen({ navigation }) {
         try {
           const newTokens = await refreshTokenFn(refreshToken); // Làm mới token
           authCtx.authenticate(newTokens.idToken); // Cập nhật token mới trong AuthContext
+          refreshCtx.setRefreshToken(newTokens.refreshToken);
 
           // Gọi lại API với token mới
           const newResponse = await getUserData(newTokens.idToken);
+
           if (newResponse) {
             console.log("Refresh Token Success");
 
