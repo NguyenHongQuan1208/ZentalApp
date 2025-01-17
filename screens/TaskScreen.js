@@ -12,6 +12,7 @@ function TaskScreen({ navigation }) {
         benefits: sectionData.item.benefits,
         description: sectionData.item.description,
         target: sectionData.item.target,
+        placeholderQuestion: sectionData.item.placeholderQuestion,
       });
     }
     return (

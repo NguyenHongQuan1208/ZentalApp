@@ -30,6 +30,7 @@ function TaskNoteScreen({ route, navigation }) {
   const color = route.params.color;
   const icon = route.params.icon;
   const target = route.params.target;
+  const placeholderQuestion = route.params.placeholderQuestion;
 
   const [textInputValue, setTextInputValue] = useState("");
   const [file, setFile] = useState();
@@ -241,7 +242,7 @@ function TaskNoteScreen({ route, navigation }) {
         <View style={styles.content}>
           <TextInput
             style={styles.textInput}
-            placeholder="Enter your decision here"
+            placeholder={placeholderQuestion}
             value={textInputValue}
             onChangeText={setTextInputValue}
             multiline={true}

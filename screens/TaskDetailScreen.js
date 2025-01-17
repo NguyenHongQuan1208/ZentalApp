@@ -12,6 +12,7 @@ function TaskDetailScreen({ route }) {
   const benefits = route.params.benefits;
   const description = route.params.description;
   const target = route.params.target;
+  const placeholderQuestion = route.params.placeholderQuestion;
   return (
     <View style={styles.rootContainer}>
       <Target icon={icon} color={frameColor} target={target} />
@@ -30,6 +31,7 @@ function TaskDetailScreen({ route }) {
           icon={icon}
           target={target}
           description={description}
+          placeholderQuestion={placeholderQuestion}
         />
       </View>
     </View>

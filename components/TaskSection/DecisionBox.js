@@ -7,7 +7,14 @@ import LongButton from "../ui/LongButton";
 import { useNavigation } from "@react-navigation/native";
 import DescribeBox from "./DescribeBox";
 
-function DecisionBox({ id, color, icon, description, target }) {
+function DecisionBox({
+  id,
+  color,
+  icon,
+  description,
+  target,
+  placeholderQuestion,
+}) {
   const [modalVisible, setModalVisible] = useState(false);
   const navigation = useNavigation();
   // console.log(description);
@@ -17,6 +24,7 @@ function DecisionBox({ id, color, icon, description, target }) {
       color: color,
       icon: icon,
       target: target,
+      placeholderQuestion: placeholderQuestion,
     });
     setModalVisible(false);
   }
