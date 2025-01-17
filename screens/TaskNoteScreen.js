@@ -215,7 +215,9 @@ function TaskNoteScreen({ route, navigation }) {
     }
   };
 
-  const handlePost = async () => {};
+  const handlePost = async () => {
+    navigation.navigate("ConfirmPost");
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

@@ -23,6 +23,7 @@ import EnterUserNameScreen from "./screens/EnterUserNameScreen";
 import EditProfileScreen from "./screens/EditProfileScreen";
 import PersonalProfileScreen from "./screens/PersonalProfileScreen";
 import RefreshTokenContextProvider from "./store/RefreshTokenContext";
+import ConfirmPostScreen from "./screens/ConfirmPostScreen";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -239,6 +240,15 @@ function AuthenticatedStack() {
         component={TaskNoteScreen}
         options={{
           headerTitle: "Note Your Task",
+          headerTitleAlign: "center",
+        }}
+      />
+
+      <Stack.Screen
+        name="ConfirmPost"
+        component={ConfirmPostScreen}
+        options={{
+          headerTitle: "Post Your Task",
           headerTitleAlign: "center",
         }}
       />
