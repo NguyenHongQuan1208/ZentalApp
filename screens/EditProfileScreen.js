@@ -27,6 +27,7 @@ function EditProfileScreen({ navigation }) {
   const token = authCtx.token;
   const [userName, setUserName] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [bio, setBio] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [file, setFile] = useState();
@@ -61,6 +62,7 @@ function EditProfileScreen({ navigation }) {
       const uid = authResponse.localId;
 
       const userData = await getUser(uid);
+      setUserEmail(userData.email || "");
       setUserName(userData.username || "");
       setPhotoUrl(userData.photoUrl || "");
       setBio(userData.bio || "");
@@ -236,6 +238,7 @@ function EditProfileScreen({ navigation }) {
           <Ionicons name="pencil" size={18} color={GlobalColors.primaryBlack} />
         </Pressable>
       </View>
+      <Text style={styles.userEmail}>{userEmail}</Text>
 
       {/* Modal */}
       <PhotoOptionsModal
@@ -293,6 +296,12 @@ const styles = StyleSheet.create({
     position: "relative",
     marginBottom: 20,
   },
+  userEmail: {
+    marginTop: -5,
+    fontSize: 13,
+    color: GlobalColors.inActivetabBarColor,
+  },
+
   editIcon: {
     position: "absolute",
     bottom: -5,
