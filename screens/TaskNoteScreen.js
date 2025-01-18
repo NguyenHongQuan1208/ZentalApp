@@ -223,6 +223,8 @@ function TaskNoteScreen({ route, navigation }) {
     }
 
     navigation.navigate("ConfirmPost", {
+      sectionId: sectionId,
+      uid: uid,
       icon: icon,
       color: color,
       target: target,
@@ -314,6 +316,7 @@ const styles = StyleSheet.create({
   textTitle: {
     fontSize: 18,
     textAlign: "center",
+    fontWeight: "500",
   },
   content: {
     flex: 1, // Chiếm toàn bộ không gian còn lại
