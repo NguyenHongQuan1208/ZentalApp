@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const BACKEND_URL =
-  "https://zentalapp-default-rtdb.asia-southeast1.firebasedatabase.app/";
+  "https://zentalapp-default-rtdb.asia-southeast1.firebasedatabase.app";
 
 export async function storeUser(userId, userInfo) {
   try {

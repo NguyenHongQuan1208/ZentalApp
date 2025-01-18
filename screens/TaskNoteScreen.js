@@ -263,6 +263,7 @@ function TaskNoteScreen({ route, navigation }) {
 
           <NoteImagePreview
             imageUri={imageUri}
+            sectionId={sectionId}
             onPress={() => setIsModalVisible(true)}
           />
         </View>

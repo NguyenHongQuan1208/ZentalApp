@@ -1,10 +1,30 @@
+import React, { useState, useEffect } from "react";
 import { View, Image, Pressable, Text, StyleSheet } from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
-function NoteImagePreview({ imageUri, onPress }) {
+import { fetchImageBySectionId } from "../../util/section-default-image-http";
+
+function NoteImagePreview({ imageUri, onPress, sectionId }) {
+  const [defaultImageUri, setDefaultImageUri] = useState(null);
+
+  useEffect(() => {
+    // Nếu không có imageUri, mới gọi Firebase để lấy ảnh
+    if (!imageUri) {
+      const getImage = async () => {
+        const uri = await fetchImageBySectionId(sectionId);
+        setDefaultImageUri(uri);
+      };
+
+      getImage();
+    }
+  }, [sectionId, imageUri]); // Re-fetch khi `sectionId` thay đổi hoặc `imageUri` thay đổi
+
+  // Sử dụng imageUri nếu có, ngược lại dùng ảnh mặc định từ Firebase
+  const finalImageUri = imageUri || defaultImageUri;
+
   return (
     <View style={styles.imagePreviewContainer}>
-      {imageUri ? (
-        <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+      {finalImageUri ? (
+        <Image source={{ uri: finalImageUri }} style={styles.imagePreview} />
       ) : (
         <Image
           source={require("../../assets/image-preview.jpg")}

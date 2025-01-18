@@ -79,6 +79,6 @@ export const TASK_SECTIONS = [
     ],
     "Autogenic training is a relaxation technique that can help restore balance to mind and body. It offers a wide range of benefits, from reducing insomnia to improving sleep patterns. This guided practice is designed to support you to fall asleep faster and wake up feeling more energized.",
     "Relax Your Mind and Body",
-    "How are you feeling right now? What would you like to release or focus on during this relaxation session?"
+    "How are you feeling right now?\nWhat would you like to release or focus on during this relaxation session?"
   ),
 ];
