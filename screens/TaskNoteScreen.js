@@ -21,9 +21,10 @@ import {
 import { GlobalColors } from "../constants/GlobalColors";
 import Target from "../components/TaskSection/Target";
 import { addPost, getAllPosts, updatePost } from "../util/posts-data-http";
-import { getUserData } from "../util/auth";
 import { AuthContext } from "../store/auth-context";
 import { supabase } from "../store/supabaseClient";
+import { RefreshTokenContext } from "../store/RefreshTokenContext";
+import { getUserDataWithRetry } from "../util/refresh-auth-token";
 
 function TaskNoteScreen({ route, navigation }) {
   const sectionId = route.params.id;
@@ -38,17 +39,25 @@ function TaskNoteScreen({ route, navigation }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const authCtx = useContext(AuthContext);
+  const refreshCtx = useContext(RefreshTokenContext);
+  const token = authCtx.token;
+  const refreshToken = refreshCtx.refreshToken;
+
   const [uid, setUid] = useState(null); // Store UID here
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const token = authCtx.token;
-      const authResponse = await getUserData(token);
+      const authResponse = await getUserDataWithRetry(
+        token,
+        refreshToken,
+        authCtx,
+        refreshCtx
+      );
       setUid(authResponse.localId); // Fetch and set UID
     };
 
     fetchUserData();
-  }, [authCtx.token]); // Dependency on token to refetch user data when token changes
+  }, [token, refreshToken]); // Dependency on token to refetch user data when token changes
 
   useEffect(() => {
     const fetchPostData = async () => {

@@ -2,14 +2,18 @@ import { Text, View, StyleSheet, Pressable } from "react-native";
 import Avatar from "../components/Profile/Avatar";
 import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../store/auth-context";
-import { getUserData } from "../util/auth";
 import { getUser } from "../util/user-info-http";
 import { GlobalColors } from "../constants/GlobalColors";
 import useRealtimeUser from "../hooks/useRealtimeUser";
+import { RefreshTokenContext } from "../store/RefreshTokenContext";
+import { getUserDataWithRetry } from "../util/refresh-auth-token";
 
 function PersonalProfileScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
+  const refreshCtx = useContext(RefreshTokenContext);
   const token = authCtx.token;
+  const refreshToken = refreshCtx.refreshToken;
+
   const [userName, setUserName] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [bio, setBio] = useState("");
@@ -17,7 +21,12 @@ function PersonalProfileScreen({ navigation }) {
 
   async function fetchData() {
     try {
-      const authResponse = await getUserData(token);
+      const authResponse = await getUserDataWithRetry(
+        token,
+        refreshToken,
+        authCtx,
+        refreshCtx
+      );
       const uid = authResponse.localId;
       setUserId(uid); // Lưu UID vào state
       const userData = await getUser(uid);
@@ -31,7 +40,7 @@ function PersonalProfileScreen({ navigation }) {
 
   useEffect(() => {
     fetchData();
-  }, [token]);
+  }, [token, refreshToken]);
 
   const handleUserDataChange = (userData) => {
     setUserName(userData.username || "User Name");

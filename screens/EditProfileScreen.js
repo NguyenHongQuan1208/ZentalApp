@@ -10,7 +10,7 @@ import {
 import Avatar from "../components/Profile/Avatar";
 import { AuthContext } from "../store/auth-context";
 import { GlobalColors } from "../constants/GlobalColors";
-import { getUserData, updateProfile } from "../util/auth";
+import { updateProfile } from "../util/auth";
 import { Ionicons } from "@expo/vector-icons";
 import { getUser, updateUser } from "../util/user-info-http";
 import PhotoOptionsModal from "../components/Profile/PhotoOptionsModal";
@@ -21,16 +21,22 @@ import {
   useCameraPermissions,
   PermissionStatus,
 } from "expo-image-picker";
+import { RefreshTokenContext } from "../store/RefreshTokenContext";
+import { getUserDataWithRetry } from "../util/refresh-auth-token";
 
 function EditProfileScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
+  const refreshCtx = useContext(RefreshTokenContext);
   const token = authCtx.token;
+  const refreshToken = refreshCtx.refreshToken;
+
   const [userName, setUserName] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [bio, setBio] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [file, setFile] = useState();
+
   // Thêm trạng thái loading
   const [isLoading, setIsLoading] = useState(false);
 
@@ -58,9 +64,14 @@ function EditProfileScreen({ navigation }) {
   async function fetchData() {
     setIsLoading(true); // Hiển thị trạng thái đang tải
     try {
-      const authResponse = await getUserData(token);
-      const uid = authResponse.localId;
+      const authResponse = await getUserDataWithRetry(
+        token,
+        refreshToken,
+        authCtx,
+        refreshCtx
+      );
 
+      const uid = authResponse.localId;
       const userData = await getUser(uid);
       setUserEmail(userData.email || "");
       setUserName(userData.username || "");
@@ -75,7 +86,7 @@ function EditProfileScreen({ navigation }) {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [token, refreshToken]);
 
   // Handle taking photo
   const handleTakePhoto = async () => {
@@ -142,7 +153,13 @@ function EditProfileScreen({ navigation }) {
     if (file) {
       try {
         // Lấy userId từ Firebase Auth
-        const authResponse = await getUserData(token);
+        const authResponse = await getUserDataWithRetry(
+          token,
+          refreshToken,
+          authCtx,
+          refreshCtx
+        );
+
         const uid = authResponse.localId;
 
         // Tạo tên tệp với userId
@@ -191,7 +208,12 @@ function EditProfileScreen({ navigation }) {
     }
 
     try {
-      const authResponse = await getUserData(token);
+      const authResponse = await getUserDataWithRetry(
+        token,
+        refreshToken,
+        authCtx,
+        refreshCtx
+      );
       const uid = authResponse.localId;
 
       // Chuẩn bị dữ liệu người dùng

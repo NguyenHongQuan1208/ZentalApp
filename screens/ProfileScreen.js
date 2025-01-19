@@ -1,17 +1,20 @@
 import { useContext, useEffect, useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { AuthContext } from "../store/auth-context";
-import { getUserData } from "../util/auth";
 import Avatar from "../components/Profile/Avatar";
 import { GlobalColors } from "../constants/GlobalColors";
 import { Ionicons } from "@expo/vector-icons";
 import MenuItem from "../components/Profile/MenuItem";
 import { getUser } from "../util/user-info-http";
 import useRealtimeUser from "../hooks/useRealtimeUser";
+import { RefreshTokenContext } from "../store/RefreshTokenContext";
+import { getUserDataWithRetry } from "../util/refresh-auth-token";
 
 function ProfileScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
+  const refreshCtx = useContext(RefreshTokenContext);
   const token = authCtx.token;
+  const refreshToken = refreshCtx.refreshToken;
 
   const [photoUrl, setPhotoUrl] = useState(null);
   const [userName, setUserName] = useState("User Name");
@@ -19,9 +22,17 @@ function ProfileScreen({ navigation }) {
 
   async function fetchData() {
     try {
-      const authResponse = await getUserData(token);
+      // Sử dụng getUserDataWithRetry để đảm bảo xử lý token hết hạn
+      const authResponse = await getUserDataWithRetry(
+        token,
+        refreshToken,
+        authCtx,
+        refreshCtx
+      );
+
       const uid = authResponse.localId;
       setUserId(uid); // Lưu UID vào state
+
       const userData = await getUser(uid);
       setUserName(userData.username || "");
       setPhotoUrl(userData.photoUrl || "");
@@ -32,7 +43,7 @@ function ProfileScreen({ navigation }) {
 
   useEffect(() => {
     fetchData();
-  }, [token]); // Đảm bảo useEffect chỉ chạy khi token thay đổi
+  }, [token, refreshToken]); // Đảm bảo useEffect chỉ chạy khi token thay đổi
 
   const handleUserDataChange = (userData) => {
     setUserName(userData.username || "User Name");
