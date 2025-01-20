@@ -254,15 +254,56 @@ function TaskNoteScreen({ route, navigation }) {
       return;
     }
 
-    navigation.navigate("ConfirmPost", {
-      content: textInputValue,
-      imageUri: imageUri,
-      sectionId: sectionId,
-      title: target,
-      uid: uid,
-      icon: icon,
-      color: color,
-    });
+    let publicUrl = imageUri;
+
+    try {
+      if (file) {
+        // Tạo tên tệp duy nhất
+        const filePath = `task_notes/${uid}_${sectionId}_${Date.now()}.jpg`;
+
+        // Upload ảnh lên Supabase
+        const { data, error } = await supabase.storage
+          .from("ZentalApp")
+          .upload(filePath, {
+            uri: file.uri,
+            type: file.type,
+            name: filePath,
+          });
+
+        if (error) {
+          console.error("Upload error:", error.message);
+          Alert.alert("Error", "Failed to upload image.");
+          return;
+        }
+
+        // Lấy URL công khai cho ảnh vừa tải lên
+        const { data: publicData, error: publicError } = supabase.storage
+          .from("ZentalApp")
+          .getPublicUrl(filePath);
+
+        if (publicError) {
+          console.error("Public URL error:", publicError.message);
+          Alert.alert("Error", "Failed to generate public URL for the image.");
+          return;
+        }
+
+        publicUrl = publicData.publicUrl;
+      }
+
+      // Điều hướng sang màn hình ConfirmPost
+      navigation.navigate("ConfirmPost", {
+        content: textInputValue,
+        imageUri: publicUrl, // Đảm bảo gửi publicUrl
+        sectionId: sectionId,
+        title: target,
+        uid: uid,
+        icon: icon,
+        color: color,
+      });
+    } catch (error) {
+      Alert.alert("Error", "Failed to process your post.");
+      console.error(error);
+    }
   };
 
   return (
