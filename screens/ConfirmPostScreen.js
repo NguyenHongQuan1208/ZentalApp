@@ -13,6 +13,7 @@ import CustomSwitch from "../components/ui/CustomSwitch";
 import EmotionButton from "../components/TaskSection/EmotionButton";
 import LongButton from "../components/ui/LongButton";
 import { getAllPosts, updatePost } from "../util/posts-data-http";
+import { addPost } from "../util/posts-data-http";
 
 function ConfirmPostScreen({ navigation, route }) {
   const content = route.params.content;
