@@ -1,17 +1,27 @@
-import { Text, View, StyleSheet, ScrollView, Dimensions } from "react-native";
+import {
+  Text,
+  View,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+  Alert,
+} from "react-native";
 import { useState } from "react";
 import Target from "../components/TaskSection/Target";
 import { GlobalColors } from "../constants/GlobalColors";
 import CustomSwitch from "../components/ui/CustomSwitch";
 import EmotionButton from "../components/TaskSection/EmotionButton";
 import LongButton from "../components/ui/LongButton";
+import { getAllPosts, updatePost } from "../util/posts-data-http";
 
-function ConfirmPostScreen({ route }) {
+function ConfirmPostScreen({ navigation, route }) {
+  const content = route.params.content;
+  const imageUri = route.params.imageUri;
   const sectionId = route.params.sectionId;
+  const title = route.params.title;
   const uid = route.params.uid;
   const icon = route.params.icon;
   const color = route.params.color;
-  const target = route.params.target;
 
   const [selectedEmotion, setSelectedEmotion] = useState(null);
   const [isCommunityVisible, setIsCommunityVisible] = useState(false); // Trạng thái của nút gạt
@@ -31,11 +41,62 @@ function ConfirmPostScreen({ route }) {
     setIsCommunityVisible((prevState) => !prevState); // Đổi trạng thái khi gạt nút
   }
 
+  async function handlePost() {
+    const selectedEmotionObj = emotions[selectedEmotion];
+    const publicStatus = isCommunityVisible ? 1 : 0;
+    const pleasurePoint = selectedEmotionObj
+      ? selectedEmotionObj.pleasurePoint
+      : 1;
+
+    try {
+      // Lấy tất cả bài đăng từ Firebase
+      const posts = await getAllPosts();
+
+      // Kiểm tra xem đã có bài đăng với sectionId và uid chưa
+      const existingPost = posts.find(
+        (post) => post.sectionId === sectionId && post.uid === uid
+      );
+
+      if (existingPost) {
+        // Nếu bài đăng đã tồn tại, cập nhật bài đăng
+        await updatePost(existingPost.id, {
+          status: 1,
+          publicStatus: publicStatus,
+          pleasurePoint: pleasurePoint,
+          createAt: new Date(),
+        });
+        Alert.alert("Success", "Post Created");
+      } else {
+        // Nếu chưa có bài đăng, tạo bài đăng mới
+        const newPost = {
+          content,
+          imageUri,
+          sectionId,
+          status: 1,
+          title,
+          uid,
+          publicStatus: publicStatus,
+          pleasurePoint: pleasurePoint,
+          createdAt: new Date(),
+        };
+        const newPostId = await addPost(newPost);
+        Alert.alert(
+          "Success",
+          `Post is successfully created with postId: ${newPostId}`
+        );
+      }
+
+      navigation.navigate("AppOverview", { screen: "Task" });
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Có lỗi xảy ra khi xử lý yêu cầu.");
+    }
+  }
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.headerContainer}>
-          <Target icon={icon} target={target} color={color} size={13} />
+          <Target icon={icon} target={title} color={color} size={13} />
           <Text style={[styles.textTitle, { color: color }]}>
             You decide How
           </Text>
@@ -69,7 +130,9 @@ function ConfirmPostScreen({ route }) {
 
       {/* Nút LongButton */}
       <View style={styles.footer}>
-        <LongButton style={styles.longButton}>POST IT!</LongButton>
+        <LongButton style={styles.longButton} onPress={handlePost}>
+          POST IT!
+        </LongButton>
       </View>
     </View>
   );

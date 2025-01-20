@@ -25,6 +25,7 @@ import { AuthContext } from "../store/auth-context";
 import { supabase } from "../store/supabaseClient";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
+import { fetchImageBySectionId } from "../util/section-default-image-http";
 
 function TaskNoteScreen({ route, navigation }) {
   const sectionId = route.params.id;
@@ -82,6 +83,23 @@ function TaskNoteScreen({ route, navigation }) {
 
     fetchPostData();
   }, [sectionId, uid]); // Dependency vào sectionId và uid
+
+  useEffect(() => {
+    const fetchDefaultImage = async () => {
+      if (!sectionId) return; // Đảm bảo sectionId hợp lệ
+
+      try {
+        const defaultImageUri = await fetchImageBySectionId(sectionId);
+        if (defaultImageUri) {
+          setImageUri((prevUri) => prevUri || defaultImageUri); // Chỉ set ảnh mặc định nếu người dùng chưa chọn ảnh
+        }
+      } catch (error) {
+        console.error("Error fetching default image:", error);
+      }
+    };
+
+    fetchDefaultImage();
+  }, [sectionId]);
 
   const [cameraPermissionInformation, requestPermission] =
     useCameraPermissions();
@@ -157,6 +175,11 @@ function TaskNoteScreen({ route, navigation }) {
     let publicUrl = imageUri;
 
     try {
+      if (!imageUri) {
+        // Nếu chưa có ảnh, lấy ảnh mặc định từ cơ sở dữ liệu
+        publicUrl = await fetchImageBySectionId(sectionId);
+      }
+
       if (file) {
         // Tạo tên tệp duy nhất
         const filePath = `task_notes/${uid}_${sectionId}_${Date.now()}.jpg`;
@@ -192,12 +215,12 @@ function TaskNoteScreen({ route, navigation }) {
 
       // Chuẩn bị dữ liệu để gửi lên
       const postData = {
-        uid: uid,
-        sectionId: sectionId,
-        title: target,
         content: textInputValue,
         imageUri: publicUrl, // Sử dụng publicUrl nếu có ảnh
+        sectionId: sectionId,
         status: 0, // Mark as incomplete
+        title: target,
+        uid: uid,
       };
 
       // Lấy tất cả các bài đăng để kiểm tra bài viết đã tồn tại
@@ -232,11 +255,13 @@ function TaskNoteScreen({ route, navigation }) {
     }
 
     navigation.navigate("ConfirmPost", {
+      content: textInputValue,
+      imageUri: imageUri,
       sectionId: sectionId,
+      title: target,
       uid: uid,
       icon: icon,
       color: color,
-      target: target,
     });
   };
 
