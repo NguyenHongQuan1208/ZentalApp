@@ -165,7 +165,71 @@ function TaskNoteScreen({ route, navigation }) {
     setIsModalVisible(false);
   };
 
-  // Hàm lưu bài đăng lên Firebase khi nhấn "PLEDGE TO DO IT" với status là 0
+  // Hàm dùng chung để upload ảnh lên Supabase và trả về public URL
+  const uploadImageToSupabase = async (file, uid, sectionId) => {
+    try {
+      const filePath = `task_notes/${uid}_${sectionId}_${Date.now()}.jpg`;
+
+      // Upload ảnh lên Supabase
+      const { data, error } = await supabase.storage
+        .from("ZentalApp")
+        .upload(filePath, {
+          uri: file.uri,
+          type: file.type,
+          name: filePath,
+        });
+
+      if (error) {
+        console.error("Upload error:", error.message);
+        Alert.alert("Error", "Failed to upload image.");
+        return null;
+      }
+
+      // Lấy URL công khai
+      const { data: publicData, error: publicError } = supabase.storage
+        .from("ZentalApp")
+        .getPublicUrl(filePath);
+
+      if (publicError) {
+        console.error("Public URL error:", publicError.message);
+        Alert.alert("Error", "Failed to generate public URL for the image.");
+        return null;
+      }
+
+      return publicData.publicUrl;
+    } catch (err) {
+      console.error("Unexpected error during image upload:", err);
+      Alert.alert(
+        "Error",
+        "An unexpected error occurred while uploading the image."
+      );
+      return null;
+    }
+  };
+
+  // Hàm lưu bài đăng lên cơ sở dữ liệu
+  const saveOrUpdatePost = async (postData, sectionId, uid) => {
+    try {
+      const posts = await getAllPosts();
+      const existingPost = posts.find(
+        (post) =>
+          post.status === 0 && post.sectionId === sectionId && post.uid === uid
+      );
+
+      if (existingPost) {
+        await updatePost(existingPost.id, postData);
+        Alert.alert("Success", "Your note has been updated.");
+      } else {
+        await addPost(postData);
+        Alert.alert("Success", "Your note has been saved.");
+      }
+    } catch (error) {
+      console.error("Error saving or updating post:", error);
+      Alert.alert("Error", "Failed to save or update post.");
+    }
+  };
+
+  // Tối ưu hàm handlePledgeToDoIt
   const handlePledgeToDoIt = async () => {
     if (!textInputValue || !uid) {
       Alert.alert("Error", "Please enter your note.");
@@ -175,79 +239,38 @@ function TaskNoteScreen({ route, navigation }) {
     let publicUrl = imageUri;
 
     try {
-      if (!imageUri) {
-        // Nếu chưa có ảnh, lấy ảnh mặc định từ cơ sở dữ liệu
+      // Upload ảnh nếu có file
+      if (file) {
+        const uploadedUrl = await uploadImageToSupabase(file, uid, sectionId);
+        if (uploadedUrl) {
+          publicUrl = uploadedUrl;
+        }
+      } else if (!imageUri) {
+        // Nếu chưa có ảnh, lấy ảnh mặc định
         publicUrl = await fetchImageBySectionId(sectionId);
       }
 
-      if (file) {
-        // Tạo tên tệp duy nhất
-        const filePath = `task_notes/${uid}_${sectionId}_${Date.now()}.jpg`;
-
-        // Upload ảnh lên Supabase
-        const { data, error } = await supabase.storage
-          .from("ZentalApp")
-          .upload(filePath, {
-            uri: file.uri,
-            type: file.type,
-            name: filePath,
-          });
-
-        if (error) {
-          console.error("Upload error:", error.message);
-          Alert.alert("Error", "Failed to upload image.");
-          return;
-        }
-
-        // Lấy URL công khai cho ảnh vừa tải lên
-        const { data: publicData, error: publicError } = supabase.storage
-          .from("ZentalApp")
-          .getPublicUrl(filePath);
-
-        if (publicError) {
-          console.error("Public URL error:", publicError.message);
-          Alert.alert("Error", "Failed to generate public URL for the image.");
-          return;
-        }
-
-        publicUrl = publicData.publicUrl;
-      }
-
-      // Chuẩn bị dữ liệu để gửi lên
+      // Chuẩn bị dữ liệu để lưu
       const postData = {
         content: textInputValue,
-        imageUri: publicUrl, // Sử dụng publicUrl nếu có ảnh
+        imageUri: publicUrl,
         sectionId: sectionId,
         status: 0, // Mark as incomplete
         title: target,
         uid: uid,
       };
 
-      // Lấy tất cả các bài đăng để kiểm tra bài viết đã tồn tại
-      const posts = await getAllPosts();
-      const existingPost = posts.find(
-        (post) =>
-          post.status === 0 && post.sectionId === sectionId && post.uid === uid
-      );
-
-      if (existingPost) {
-        // Cập nhật bài viết nếu đã tồn tại
-        await updatePost(existingPost.id, postData);
-        Alert.alert("Success", "Your note has been updated.");
-      } else {
-        // Thêm bài viết mới nếu chưa tồn tại
-        await addPost(postData);
-        Alert.alert("Success", "Your note has been saved.");
-      }
+      await saveOrUpdatePost(postData, sectionId, uid);
 
       // Chuyển hướng về màn hình tổng quan nhiệm vụ
       navigation.navigate("AppOverview", { screen: "Task" });
     } catch (error) {
-      Alert.alert("Error", "Failed to save or update post.");
-      console.error(error);
+      console.error("Error in handlePledgeToDoIt:", error);
+      Alert.alert("Error", "Failed to process your note.");
     }
   };
 
+  // Tối ưu hàm handlePost
   const handlePost = async () => {
     if (!textInputValue.trim()) {
       Alert.alert("Error", "Please enter your note.");
@@ -257,43 +280,18 @@ function TaskNoteScreen({ route, navigation }) {
     let publicUrl = imageUri;
 
     try {
+      // Upload ảnh nếu có file
       if (file) {
-        // Tạo tên tệp duy nhất
-        const filePath = `task_notes/${uid}_${sectionId}_${Date.now()}.jpg`;
-
-        // Upload ảnh lên Supabase
-        const { data, error } = await supabase.storage
-          .from("ZentalApp")
-          .upload(filePath, {
-            uri: file.uri,
-            type: file.type,
-            name: filePath,
-          });
-
-        if (error) {
-          console.error("Upload error:", error.message);
-          Alert.alert("Error", "Failed to upload image.");
-          return;
+        const uploadedUrl = await uploadImageToSupabase(file, uid, sectionId);
+        if (uploadedUrl) {
+          publicUrl = uploadedUrl;
         }
-
-        // Lấy URL công khai cho ảnh vừa tải lên
-        const { data: publicData, error: publicError } = supabase.storage
-          .from("ZentalApp")
-          .getPublicUrl(filePath);
-
-        if (publicError) {
-          console.error("Public URL error:", publicError.message);
-          Alert.alert("Error", "Failed to generate public URL for the image.");
-          return;
-        }
-
-        publicUrl = publicData.publicUrl;
       }
 
       // Điều hướng sang màn hình ConfirmPost
       navigation.navigate("ConfirmPost", {
         content: textInputValue,
-        imageUri: publicUrl, // Đảm bảo gửi publicUrl
+        imageUri: publicUrl,
         sectionId: sectionId,
         title: target,
         uid: uid,
@@ -301,8 +299,8 @@ function TaskNoteScreen({ route, navigation }) {
         color: color,
       });
     } catch (error) {
+      console.error("Error in handlePost:", error);
       Alert.alert("Error", "Failed to process your post.");
-      console.error(error);
     }
   };
 
