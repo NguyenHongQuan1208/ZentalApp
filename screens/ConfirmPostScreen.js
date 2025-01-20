@@ -44,9 +44,27 @@ function ConfirmPostScreen({ navigation, route }) {
   async function handlePost() {
     const selectedEmotionObj = emotions[selectedEmotion];
     const publicStatus = isCommunityVisible ? 1 : 0;
-    const pleasurePoint = selectedEmotionObj
-      ? selectedEmotionObj.pleasurePoint
-      : 1;
+
+    // Cập nhật pleasurePoint dựa trên lựa chọn cảm xúc
+    let pleasurePoint = 1; // Default value if no emotion is selected
+    if (selectedEmotionObj) {
+      switch (selectedEmotionObj.label) {
+        case "Tons!":
+          pleasurePoint = 4;
+          break;
+        case "A Lot":
+          pleasurePoint = 3;
+          break;
+        case "So so":
+          pleasurePoint = 2;
+          break;
+        case "Nah":
+          pleasurePoint = 1;
+          break;
+        default:
+          pleasurePoint = 1; // Default value in case of invalid emotion
+      }
+    }
 
     try {
       // Lấy tất cả bài đăng từ Firebase
