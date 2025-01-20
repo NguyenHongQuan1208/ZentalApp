@@ -71,14 +71,17 @@ function ConfirmPostScreen({ navigation, route }) {
       // Lấy tất cả bài đăng từ Firebase
       const posts = await getAllPosts();
 
-      // Kiểm tra xem đã có bài đăng với sectionId và uid chưa
+      // Kiểm tra xem đã có bài đăng với sectionId và uid và status = 0 chưa
       const existingPost = posts.find(
-        (post) => post.sectionId === sectionId && post.uid === uid
+        (post) =>
+          post.sectionId === sectionId && post.uid === uid && post.status === 0
       );
 
       if (existingPost) {
         // Nếu bài đăng đã tồn tại, cập nhật bài đăng
         await updatePost(existingPost.id, {
+          content: content,
+          imageUri: imageUri,
           status: 1,
           publicStatus: publicStatus,
           pleasurePoint: pleasurePoint,
