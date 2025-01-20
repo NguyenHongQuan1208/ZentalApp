@@ -60,29 +60,42 @@ function TaskScreen({ navigation }) {
     fetchDrafts();
   }, [userId]); // Run on component mount
 
-  function renderSectionItem(sectionData) {
-    function pressHandler() {
+  const renderSectionItem = ({ item }) => {
+    const {
+      id,
+      title,
+      color,
+      icon,
+      benefits,
+      description,
+      target,
+      placeholderQuestion,
+      hasDraft,
+    } = item;
+
+    const pressHandler = () => {
       navigation.navigate("TaskDetail", {
-        id: sectionData.item.id,
-        color: sectionData.item.color,
-        icon: sectionData.item.icon,
-        benefits: sectionData.item.benefits,
-        description: sectionData.item.description,
-        target: sectionData.item.target,
-        placeholderQuestion: sectionData.item.placeholderQuestion,
+        id,
+        color,
+        icon,
+        benefits,
+        description,
+        target,
+        placeholderQuestion,
       });
-    }
+    };
+
     return (
       <SectionGridTile
-        title={sectionData.item.title}
-        color={sectionData.item.color}
-        icon={sectionData.item.icon}
+        title={title}
+        color={color}
+        icon={icon}
+        hasDraft={hasDraft}
         onPress={pressHandler}
-        hasDraft={sectionData.item.hasDraft} // Truyền thêm thuộc tính hasDraft
       />
     );
-  }
-  // console.log(TASK_SECTIONS);
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
