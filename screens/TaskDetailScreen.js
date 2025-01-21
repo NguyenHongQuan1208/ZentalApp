@@ -7,7 +7,7 @@ import Target from "../components/TaskSection/Target";
 
 function TaskDetailScreen({ route }) {
   const id = route.params.id;
-  const frameColor = route.params.color;
+  const color = route.params.color;
   const icon = route.params.icon;
   const benefits = route.params.benefits;
   const description = route.params.description;
@@ -15,19 +15,17 @@ function TaskDetailScreen({ route }) {
   const placeholderQuestion = route.params.placeholderQuestion;
   return (
     <View style={styles.rootContainer}>
-      <Target icon={icon} color={frameColor} target={target} />
+      <Target icon={icon} color={color} target={target} />
 
-      <View style={[styles.boxContainer, { borderColor: frameColor }]}>
-        <View style={[styles.header, { borderBottomColor: frameColor }]}>
-          <Ionicons name="flask" size={24} color={frameColor} />
-          <Text style={[styles.headerText, { color: frameColor }]}>
-            Benefits
-          </Text>
+      <View style={[styles.boxContainer, { borderColor: color }]}>
+        <View style={[styles.header, { borderBottomColor: color }]}>
+          <Ionicons name="flask" size={24} color={color} />
+          <Text style={[styles.headerText, { color: color }]}>Benefits</Text>
         </View>
-        <TaskBenefits benefits={benefits} color={frameColor} />
+        <TaskBenefits benefits={benefits} color={color} />
         <DecisionBox
           id={id}
-          color={frameColor}
+          color={color}
           icon={icon}
           target={target}
           description={description}
