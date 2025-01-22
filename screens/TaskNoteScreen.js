@@ -130,7 +130,7 @@ function TaskNoteScreen({ route, navigation }) {
     try {
       const result = await launchCameraAsync({
         allowsEditing: true,
-        aspect: [4, 3],
+        aspect: [16, 9],
         quality: 0.5,
       });
 
@@ -148,7 +148,7 @@ function TaskNoteScreen({ route, navigation }) {
     try {
       const result = await launchImageLibraryAsync({
         allowsEditing: true,
-        aspect: [4, 3],
+        aspect: [16, 9],
         quality: 0.5,
       });
 

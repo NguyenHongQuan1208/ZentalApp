@@ -43,7 +43,7 @@ export default NoteImagePreview;
 const styles = StyleSheet.create({
   imagePreviewContainer: {
     width: "100%",
-    height: 200,
+    aspectRatio: 16 / 9,
     borderRadius: 8,
     overflow: "hidden",
     marginBottom: 20,
@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
   imagePreview: {
     width: "100%",
     height: "100%",
+    resizeMode: "cover",
   },
   overlayButton: {
     position: "absolute",
