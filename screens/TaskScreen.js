@@ -74,15 +74,27 @@ function TaskScreen({ navigation }) {
     } = item;
 
     const pressHandler = () => {
-      navigation.navigate("TaskDetail", {
-        id,
-        color,
-        icon,
-        benefits,
-        description,
-        target,
-        placeholderQuestion,
-      });
+      if (hasDraft) {
+        // Nếu có draft, điều hướng trực tiếp tới TaskNote
+        navigation.navigate("TaskNote", {
+          id,
+          color,
+          icon,
+          target,
+          placeholderQuestion,
+        });
+      } else {
+        // Nếu không có draft, điều hướng tới TaskDetail
+        navigation.navigate("TaskDetail", {
+          id,
+          color,
+          icon,
+          benefits,
+          description,
+          target,
+          placeholderQuestion,
+        });
+      }
     };
 
     return (

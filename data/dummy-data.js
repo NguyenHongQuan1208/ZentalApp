@@ -37,7 +37,7 @@ export const TASK_SECTIONS = [
     ["Boost optimism", "Prolong feeling of excitement", "Build motivation"],
     "What upcoming events are you anticipating with joy and optimism instead of anxiety?\n\nThink of a future event, big or small, that you're really excited about. Imagine the details, including the sounds, smells, and tastes. Spend some time putting yourself right in the middle of it.",
     "I'm Looking Forward To...",
-    "What are you looking foward to?"
+    "What are you looking forward to ?"
   ),
   new TaskSection(
     "s4",
@@ -79,6 +79,6 @@ export const TASK_SECTIONS = [
     ],
     "Autogenic training is a relaxation technique that can help restore balance to mind and body. It offers a wide range of benefits, from reducing insomnia to improving sleep patterns. This guided practice is designed to support you to fall asleep faster and wake up feeling more energized.",
     "Relax Your Mind and Body",
-    "How are you feeling right now?\nWhat would you like to release or focus on during this relaxation session?"
+    "What are you planning to do to heal yourself?"
   ),
 ];

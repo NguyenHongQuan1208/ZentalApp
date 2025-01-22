@@ -35,6 +35,7 @@ function TaskNoteScreen({ route, navigation }) {
   const placeholderQuestion = route.params.placeholderQuestion;
 
   const [textInputValue, setTextInputValue] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const [file, setFile] = useState();
   const [imageUri, setImageUri] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -75,6 +76,7 @@ function TaskNoteScreen({ route, navigation }) {
         if (filteredPost) {
           setTextInputValue(filteredPost.content);
           setImageUri(filteredPost.imageUri);
+          setIsFocused(true);
         }
       } catch (error) {
         console.error("Error fetching post data", error);
@@ -324,14 +326,22 @@ function TaskNoteScreen({ route, navigation }) {
 
         {/* Nội dung chính */}
         <View style={styles.content}>
+          {/* Hiển thị placeholderQuestion khi TextInput được focus */}
+          {isFocused && (
+            <Text style={[styles.placeholderText, { color: color }]}>
+              {placeholderQuestion}
+            </Text>
+          )}
           <TextInput
-            style={styles.textInput}
-            placeholder={placeholderQuestion}
+            style={[styles.textInput, isFocused && { borderColor: color }]}
+            placeholder={placeholderQuestion} // Chỉ hiển thị placeholder trong TextInput khi không focus
             value={textInputValue}
             onChangeText={setTextInputValue}
             multiline={true}
             numberOfLines={4}
             textAlignVertical="top"
+            onFocus={() => setIsFocused(true)} // Đặt focus là true khi TextInput được focus
+            onBlur={() => setIsFocused(false)} // Đặt focus là false khi TextInput mất focus
           />
 
           <NoteImagePreview
@@ -394,6 +404,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1, // Chiếm toàn bộ không gian còn lại
+  },
+  placeholderText: {
+    fontSize: 14,
+    marginLeft: 10,
+    marginBottom: 2, // Khoảng cách giữa Text và TextInput
   },
   textInput: {
     width: "100%",
