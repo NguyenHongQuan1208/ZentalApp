@@ -334,7 +334,7 @@ function TaskNoteScreen({ route, navigation }) {
           )}
           <TextInput
             style={[styles.textInput, isFocused && { borderColor: color }]}
-            placeholder={placeholderQuestion} // Chỉ hiển thị placeholder trong TextInput khi không focus
+            placeholder={placeholderQuestion}
             value={textInputValue}
             onChangeText={setTextInputValue}
             multiline={true}

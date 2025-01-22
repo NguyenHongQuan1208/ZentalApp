@@ -2,11 +2,11 @@ import { FlatList, StyleSheet, View } from "react-native";
 import { TASK_SECTIONS } from "../data/dummy-data";
 import SectionGridTile from "../components/TaskSection/SectionGridTile";
 import { GlobalColors } from "../constants/GlobalColors";
-import { useEffect, useState, useContext } from "react";
-import { getAllPosts } from "../util/posts-data-http";
+import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
+import useRealtimePosts from "../hooks/useRealtimePosts"; // Import custom hook
 
 function TaskScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
@@ -15,8 +15,11 @@ function TaskScreen({ navigation }) {
   const refreshToken = refreshCtx.refreshToken;
 
   const [userId, setUserId] = useState("");
-  const [taskSections, setTaskSections] = useState(TASK_SECTIONS);
 
+  // Sử dụng hook `useRealtimePosts` để quản lý trạng thái các section
+  const taskSections = useRealtimePosts(userId, TASK_SECTIONS);
+
+  // Lấy userId sau khi đăng nhập
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -27,7 +30,7 @@ function TaskScreen({ navigation }) {
           refreshCtx
         );
         const uid = authResponse.localId;
-        setUserId(uid); // Lưu UID vào state
+        setUserId(uid);
       } catch (error) {
         console.error("Error fetching user data:", error);
         authCtx.logout();
@@ -35,30 +38,6 @@ function TaskScreen({ navigation }) {
     }
     fetchUserData();
   }, [token, refreshToken, authCtx, refreshCtx]);
-
-  useEffect(() => {
-    if (!userId) return; // Chỉ fetch dữ liệu khi đã có userId
-
-    const fetchDrafts = async () => {
-      try {
-        const posts = await getAllPosts();
-        const updatedSections = TASK_SECTIONS.map((section) => {
-          const hasDraft = posts.some(
-            (post) =>
-              post.status === 0 &&
-              post.sectionId === section.id &&
-              post.uid === userId
-          );
-          return { ...section, hasDraft };
-        });
-        setTaskSections(updatedSections);
-      } catch (error) {
-        console.error("Error fetching drafts:", error);
-      }
-    };
-
-    fetchDrafts();
-  }, [userId]); // Run on component mount
 
   const renderSectionItem = ({ item }) => {
     const {
@@ -75,7 +54,6 @@ function TaskScreen({ navigation }) {
 
     const pressHandler = () => {
       if (hasDraft) {
-        // Nếu có draft, điều hướng trực tiếp tới TaskNote
         navigation.navigate("TaskNote", {
           id,
           color,
@@ -84,7 +62,6 @@ function TaskScreen({ navigation }) {
           placeholderQuestion,
         });
       } else {
-        // Nếu không có draft, điều hướng tới TaskDetail
         navigation.navigate("TaskDetail", {
           id,
           color,
