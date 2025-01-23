@@ -3,7 +3,7 @@ import {
   View,
   StyleSheet,
   ScrollView,
-  Dimensions,
+  Platform,
   Alert,
 } from "react-native";
 import { useState } from "react";
@@ -108,7 +108,7 @@ function ConfirmPostScreen({ navigation, route }) {
         );
       }
 
-      navigation.navigate("AppOverview", { screen: "Task" });
+      navigation.navigate("AppOverview", { screen: "Posts" });
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Có lỗi xảy ra khi xử lý yêu cầu.");
@@ -161,8 +161,6 @@ function ConfirmPostScreen({ navigation, route }) {
 }
 
 export default ConfirmPostScreen;
-
-const { height } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
@@ -217,7 +215,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 16,
-    marginBottom: height < 700 ? 14 : 28, // Tùy chỉnh marginBottom cho các thiết bị khác nhau
+    paddingBottom: Platform.OS === "ios" ? 32 : 16, // Tùy chỉnh marginBottom cho các thiết bị khác nhau
     justifyContent: "flex-end", // Đẩy nút xuống cuối màn hình
   },
   longButton: {

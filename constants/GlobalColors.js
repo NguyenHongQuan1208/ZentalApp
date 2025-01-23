@@ -3,6 +3,7 @@ export const GlobalColors = {
   secondColor: "#B4F78D",
   thirdColor: "#A4BE00",
   primaryWhite: "#F5F5F5",
+  pureWhite: "#ffffff",
   primaryGrey: "#dcdcdc",
   primaryBlack: "#000000",
   secondBlack: "#565656",

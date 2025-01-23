@@ -43,8 +43,8 @@ export default NoteImagePreview;
 const styles = StyleSheet.create({
   imagePreviewContainer: {
     width: "100%",
-    aspectRatio: 16 / 9,
-    borderRadius: 8,
+    aspectRatio: 1 / 1,
+    borderRadius: "10%",
     overflow: "hidden",
     marginBottom: 20,
     position: "relative",
@@ -56,9 +56,9 @@ const styles = StyleSheet.create({
   },
   overlayButton: {
     position: "absolute",
-    top: "40%",
+    top: "44%",
     left: "20%",
-    bottom: "40%",
+    bottom: "44%",
     right: "20%",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",

@@ -5,8 +5,8 @@ import {
   StyleSheet,
   TextInput,
   Alert,
-  TouchableWithoutFeedback,
-  Keyboard,
+  ScrollView,
+  Platform,
 } from "react-native";
 import PhotoOptionsModal from "../components/Profile/PhotoOptionsModal";
 import LongButton from "../components/ui/LongButton";
@@ -130,7 +130,7 @@ function TaskNoteScreen({ route, navigation }) {
     try {
       const result = await launchCameraAsync({
         allowsEditing: true,
-        aspect: [16, 9],
+        aspect: [1, 1],
         quality: 0.5,
       });
 
@@ -148,7 +148,7 @@ function TaskNoteScreen({ route, navigation }) {
     try {
       const result = await launchImageLibraryAsync({
         allowsEditing: true,
-        aspect: [16, 9],
+        aspect: [1, 1],
         quality: 0.5,
       });
 
@@ -307,8 +307,9 @@ function TaskNoteScreen({ route, navigation }) {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
+    <View style={styles.container}>
+      {/* Main Scrollable Area */}
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.targetContainer}>
           <Target
             icon={icon}
@@ -324,9 +325,8 @@ function TaskNoteScreen({ route, navigation }) {
           </Text>
         </View>
 
-        {/* Nội dung chính */}
+        {/* Main Content */}
         <View style={styles.content}>
-          {/* Hiển thị placeholderQuestion khi TextInput được focus */}
           {isFocused && (
             <Text style={[styles.placeholderText, { color: color }]}>
               {placeholderQuestion}
@@ -340,8 +340,8 @@ function TaskNoteScreen({ route, navigation }) {
             multiline={true}
             numberOfLines={4}
             textAlignVertical="top"
-            onFocus={() => setIsFocused(true)} // Đặt focus là true khi TextInput được focus
-            onBlur={() => setIsFocused(false)} // Đặt focus là false khi TextInput mất focus
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
           />
 
           <NoteImagePreview
@@ -359,9 +359,11 @@ function TaskNoteScreen({ route, navigation }) {
           onDeletePhoto={handleDeletePhoto}
           onClose={() => setIsModalVisible(false)}
         />
+      </ScrollView>
 
-        {/* Nút nằm ở cuối màn hình */}
-        <View style={styles.footer}>
+      {/* Footer (Fixed at bottom) */}
+      <View style={styles.footer}>
+        <View style={styles.footerOverlay}>
           <LongButton
             style={[
               styles.longButton,
@@ -376,7 +378,7 @@ function TaskNoteScreen({ route, navigation }) {
           </LongButton>
         </View>
       </View>
-    </TouchableWithoutFeedback>
+    </View>
   );
 }
 
@@ -385,8 +387,12 @@ export default TaskNoteScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: GlobalColors.primaryWhite,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
     padding: 16,
-    backgroundColor: "#f9f9f9",
+    minHeight: 800,
   },
   targetContainer: {
     alignItems: "center",
@@ -403,12 +409,14 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   content: {
-    flex: 1, // Chiếm toàn bộ không gian còn lại
+    flex: 1,
+    alignItems: "center",
   },
   placeholderText: {
     fontSize: 14,
     marginLeft: 10,
-    marginBottom: 2, // Khoảng cách giữa Text và TextInput
+    alignSelf: "flex-start",
+    marginBottom: 2,
   },
   textInput: {
     width: "100%",
@@ -419,12 +427,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingTop: 10,
     marginBottom: 20,
-    backgroundColor: "#fff",
+    backgroundColor: GlobalColors.pureWhite,
   },
   footer: {
-    marginTop: 16, // Khoảng cách giữa nội dung và footer
-    marginBottom: 28,
-    justifyContent: "flex-end", // Đẩy nút xuống cuối màn hình
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    alignItems: "center",
+    backgroundColor: "transparent",
+  },
+  footerOverlay: {
+    padding: 16,
+    paddingBottom: Platform.OS === "ios" ? 32 : 16,
+    width: "100%",
+    alignItems: "center",
   },
   longButton: {
     width: "100%",

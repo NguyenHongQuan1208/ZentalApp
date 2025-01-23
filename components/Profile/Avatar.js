@@ -24,7 +24,7 @@ function Avatar({ photoUrl, size = 100 }) {
     </View>
   );
 }
-
+export default Avatar;
 const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
@@ -35,5 +35,3 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
 });
-
-export default Avatar;
