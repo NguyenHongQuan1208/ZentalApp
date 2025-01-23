@@ -160,6 +160,7 @@ function AuthStack() {
             </View>
           ),
           headerTitleAlign: "center", // Căn giữa tiêu đề
+          headerBackVisible: false,
         }}
       />
       <Stack.Screen
@@ -169,6 +170,7 @@ function AuthStack() {
           headerTitle: "Sign up to feel Relief",
           headerTitleAlign: "center",
           headerBackVisible: true,
+          headerBackButtonDisplayMode: "minimal",
         }}
       />
     </Stack.Navigator>
