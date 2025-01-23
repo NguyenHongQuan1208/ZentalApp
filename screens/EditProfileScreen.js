@@ -99,7 +99,7 @@ function EditProfileScreen({ navigation }) {
     try {
       const result = await launchCameraAsync({
         allowsEditing: true,
-        aspect: [4, 3],
+        aspect: [1, 1],
         quality: 0.5,
       });
 
@@ -119,7 +119,7 @@ function EditProfileScreen({ navigation }) {
     try {
       const result = await launchImageLibraryAsync({
         allowsEditing: true,
-        aspect: [4, 3],
+        aspect: [1, 1],
         quality: 0.5,
       });
 
