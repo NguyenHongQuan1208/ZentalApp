@@ -85,7 +85,7 @@ function ConfirmPostScreen({ navigation, route }) {
           status: 1,
           publicStatus: publicStatus,
           pleasurePoint: pleasurePoint,
-          createAt: new Date(),
+          createdAt: new Date(),
         });
         Alert.alert("Success", "Post Created");
       } else {
