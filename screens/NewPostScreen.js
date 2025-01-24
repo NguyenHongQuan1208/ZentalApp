@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -9,9 +9,37 @@ import {
 } from "react-native";
 import { getAllPosts } from "../util/posts-data-http";
 import { GlobalColors } from "../constants/GlobalColors";
+import { AuthContext } from "../store/auth-context";
+import { RefreshTokenContext } from "../store/RefreshTokenContext";
+import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import Post from "../components/Posts/Post";
 
 function NewPosts() {
+  const authCtx = useContext(AuthContext);
+  const refreshCtx = useContext(RefreshTokenContext);
+  const token = authCtx.token;
+  const refreshToken = refreshCtx.refreshToken;
+
+  const [currentUserId, setCurrentUserId] = useState("");
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const authResponse = await getUserDataWithRetry(
+          token,
+          refreshToken,
+          authCtx,
+          refreshCtx
+        );
+        const uid = authResponse.localId;
+        setCurrentUserId(uid);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        authCtx.logout();
+      }
+    }
+    fetchUserData();
+  }, [token, refreshToken, authCtx, refreshCtx]);
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -55,7 +83,7 @@ function NewPosts() {
   };
 
   function renderPost({ item }) {
-    return <Post item={item} />;
+    return <Post item={item} currentUserId={currentUserId} />;
   }
 
   if (loading) {

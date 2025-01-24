@@ -6,13 +6,34 @@ import { GlobalColors } from "../../constants/GlobalColors";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TASK_SECTIONS } from "../../data/dummy-data";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
+import { likePost, unlikePost, checkIfLiked } from "../../util/posts-data-http";
 
-function Post({ item }) {
+function Post({ item, currentUserId }) {
   const [user, setUser] = useState(null);
   const [isLiked, setIsLiked] = useState(false); // Trạng thái "Like"
+  const postId = item?.id;
   const userId = item?.uid || "";
   const imageUri = item?.imageUri || "";
   const sectionId = item?.sectionId || "";
+
+  useEffect(() => {
+    // Kiểm tra trạng thái like khi component được tải
+    const checkLikeStatus = async () => {
+      const liked = await checkIfLiked(postId, currentUserId);
+      setIsLiked(liked);
+    };
+
+    checkLikeStatus();
+  }, [postId, currentUserId]);
+
+  const handleLike = async () => {
+    if (isLiked) {
+      await unlikePost(postId, currentUserId);
+    } else {
+      await likePost(postId, currentUserId);
+    }
+    setIsLiked(!isLiked); // Cập nhật trạng thái like
+  };
 
   // Tìm màu sắc dựa trên sectionId
   const sectionColor =
@@ -37,11 +58,6 @@ function Post({ item }) {
 
     fetchUser();
   }, [userId]);
-
-  // Xử lý khi nhấn "Like"
-  function likeHandler() {
-    setIsLiked((prevState) => !prevState); // Chuyển đổi trạng thái Like
-  }
 
   return (
     <View style={styles.postContainer}>
@@ -75,7 +91,7 @@ function Post({ item }) {
             styles.iconButton,
             pressed && styles.pressedButton,
           ]}
-          onPress={likeHandler}
+          onPress={handleLike}
         >
           <Ionicons
             name={isLiked ? "heart" : "heart-outline"}

@@ -82,3 +82,80 @@ export async function deletePost(postId) {
     throw new Error("Could not delete post.");
   }
 }
+
+export async function likePost(postId, userId) {
+  try {
+    const response = await fetch(
+      `${BACKEND_URL}/posts/${postId}/likes/${userId}.json`,
+      {
+        method: "PUT", // Hoặc "PATCH"
+        body: JSON.stringify(true), // Thêm user ID vào danh sách likes
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to like post.");
+    }
+  } catch (error) {
+    console.error("Error liking post:", error);
+    throw new Error("Could not like post.");
+  }
+}
+
+export async function unlikePost(postId, userId) {
+  try {
+    const response = await fetch(
+      `${BACKEND_URL}/posts/${postId}/likes/${userId}.json`,
+      {
+        method: "DELETE", // Xóa user ID khỏi danh sách likes
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to unlike post.");
+    }
+  } catch (error) {
+    console.error("Error unliking post:", error);
+    throw new Error("Could not unlike post.");
+  }
+}
+
+export async function checkIfLiked(postId, userId) {
+  try {
+    const response = await fetch(
+      `${BACKEND_URL}/posts/${postId}/likes/${userId}.json`
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to check like status.");
+    }
+
+    const data = await response.json();
+    return data !== null; // Trả về true nếu user đã like, ngược lại trả về false
+  } catch (error) {
+    console.error("Error checking like status:", error);
+    throw new Error("Could not check like status.");
+  }
+}
+export async function getLikesForPost(postId) {
+  try {
+    const response = await fetch(`${BACKEND_URL}/posts/${postId}/likes.json`);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch likes.");
+    }
+
+    const data = await response.json();
+
+    if (!data) {
+      return []; // Trả về mảng rỗng nếu không có lượt like nào
+    }
+
+    // Chuyển đổi danh sách likes thành mảng các user ID
+    const likes = Object.keys(data);
+    return likes;
+  } catch (error) {
+    console.error("Error fetching likes:", error);
+    throw new Error("Could not fetch likes.");
+  }
+}
