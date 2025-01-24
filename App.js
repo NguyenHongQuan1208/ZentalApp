@@ -29,21 +29,6 @@ const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
 
 function AppOverview() {
-  const authCtx = useContext(AuthContext);
-  function logoutHandler() {
-    Alert.alert("Confirm", "Are you sure you want to logout?", [
-      {
-        text: "Cancel",
-        onPress: () => console.log("Modal cancelled"),
-        style: "cancel",
-      },
-      {
-        text: "Logout",
-        onPress: () => authCtx.logout(),
-        style: "destructive",
-      },
-    ]);
-  }
   return (
     <BottomTabs.Navigator
       screenOptions={() => ({
@@ -112,12 +97,7 @@ function AppOverview() {
           ),
           headerRight: ({ tintColor }) => {
             return (
-              <IconButton
-                icon="exit"
-                size={24}
-                color={tintColor}
-                onPress={logoutHandler}
-              />
+              <IconButton icon="notifications" size={24} color={tintColor} />
             );
           },
         }}

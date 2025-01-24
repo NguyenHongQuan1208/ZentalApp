@@ -10,4 +10,5 @@ export const GlobalColors = {
   inActivetabBarColor: "#767676",
   error100: "#fcdcbf",
   error500: "#f37c13",
+  errorRed: "#ff0000",
 };

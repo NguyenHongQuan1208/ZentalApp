@@ -15,12 +15,11 @@ function NewPosts() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [refreshing, setRefreshing] = useState(false); // Thêm trạng thái "refreshing"
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchPosts = async () => {
     try {
-      setError(null); // Reset error state before fetching
-      // Lấy tất cả bài đăng
+      setError(null);
       const allPosts = await getAllPosts();
 
       // Lọc các bài đăng có status = 1 và publicStatus = 1
@@ -28,14 +27,21 @@ function NewPosts() {
         (post) => post.status === 1 && post.publicStatus === 1
       );
 
-      // Cập nhật state với bài đăng đã lọc
-      setPosts(filteredPosts);
+      // Sắp xếp bài đăng từ mới nhất đến cũ nhất
+      const sortedPosts = filteredPosts.sort((a, b) => {
+        const dateA = new Date(a.createdAt);
+        const dateB = new Date(b.createdAt);
+        return dateB - dateA; // Mới nhất lên đầu
+      });
+
+      // Cập nhật state với bài đăng đã lọc và sắp xếp
+      setPosts(sortedPosts);
     } catch (err) {
       console.error("Error fetching posts:", err);
       setError("Unable to fetch posts. Please try again later.");
     } finally {
       setLoading(false);
-      setRefreshing(false); // Đảm bảo tắt trạng thái tải lại
+      setRefreshing(false);
     }
   };
 
@@ -44,8 +50,8 @@ function NewPosts() {
   }, []);
 
   const onRefresh = async () => {
-    setRefreshing(true); // Bật trạng thái tải lại
-    await fetchPosts(); // Lấy lại bài đăng
+    setRefreshing(true);
+    await fetchPosts();
   };
 
   function renderPost({ item }) {
@@ -81,15 +87,15 @@ function NewPosts() {
     <View style={styles.container}>
       <Text style={styles.title}>New Posts</Text>
       <FlatList
-        data={posts}
+        data={posts} // posts đã được sắp xếp
         keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
         renderItem={renderPost}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={[GlobalColors.primaryColor]} // Màu của spinner
-            tintColor={GlobalColors.primaryColor} // Màu của spinner (iOS)
+            colors={[GlobalColors.primaryColor]}
+            tintColor={GlobalColors.primaryColor}
           />
         }
       />

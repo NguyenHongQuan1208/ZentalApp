@@ -81,6 +81,7 @@ function ProfileScreen({ navigation }) {
         <MenuItem icon="home" screen="Home" screenName="Home" />
         <MenuItem icon="sunny" screen="Task" screenName="Task" />
         <MenuItem icon="paper-plane" screen="Posts" screenName="Posts" />
+        <MenuItem icon="exit" screen="logout" screenName="Log out" />
       </View>
     </View>
   );

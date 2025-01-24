@@ -1,20 +1,34 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View, Image, Pressable } from "react-native";
 import { getUser } from "../../util/user-info-http";
 import Avatar from "../Profile/Avatar";
 import { GlobalColors } from "../../constants/GlobalColors";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { TASK_SECTIONS } from "../../data/dummy-data";
+import { formatDistanceToNowStrict, parseISO } from "date-fns";
 
 function Post({ item }) {
   const [user, setUser] = useState(null);
-  const userId = item.uid;
-  const imageUri = item.imageUri;
+  const [isLiked, setIsLiked] = useState(false); // Trạng thái "Like"
+  const userId = item?.uid || "";
+  const imageUri = item?.imageUri || "";
+  const sectionId = item?.sectionId || "";
+
+  // Tìm màu sắc dựa trên sectionId
+  const sectionColor =
+    TASK_SECTIONS.find((section) => section.id === sectionId)?.color ||
+    GlobalColors.primaryBlack;
+
+  // Hiển thị thời gian đăng bài
+  const timeAgo = item?.createdAt
+    ? formatDistanceToNowStrict(parseISO(item.createdAt), { addSuffix: false })
+    : "Unknown time";
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await getUser(userId);
-        setUser(userData);
+        setUser(userData || { username: "Unknown", photoUrl: null });
       } catch (error) {
         console.error("Error fetching user data:", error);
         setUser(null); // Reset user state on error
@@ -24,18 +38,32 @@ function Post({ item }) {
     fetchUser();
   }, [userId]);
 
+  // Xử lý khi nhấn "Like"
+  function likeHandler() {
+    setIsLiked((prevState) => !prevState); // Chuyển đổi trạng thái Like
+  }
+
   return (
     <View style={styles.postContainer}>
       {/* Header */}
       <View style={styles.header}>
         <Avatar photoUrl={user?.photoUrl} size={40} />
-        <Text style={styles.username}>
-          {user ? user.username : "Loading..."}
-        </Text>
+        <View style={styles.userInfo}>
+          <Text style={styles.username}>{user?.username || "Loading..."}</Text>
+          <Text style={styles.timeAgo}>{timeAgo}</Text>
+        </View>
       </View>
 
+      {/* Title */}
+      <Text style={[styles.title, { color: sectionColor }]}>
+        {item?.title || "No title"}
+      </Text>
+
+      {/* Content */}
+      <Text style={styles.content}>{item?.content || "No content"}</Text>
+
       {/* Image */}
-      {imageUri && (
+      {typeof imageUri === "string" && imageUri.trim() !== "" && (
         <Image source={{ uri: imageUri }} style={styles.postImage} />
       )}
 
@@ -47,14 +75,14 @@ function Post({ item }) {
             styles.iconButton,
             pressed && styles.pressedButton,
           ]}
-          onPress={() => console.log("Liked!")}
+          onPress={likeHandler}
         >
           <Ionicons
-            name="heart-outline"
+            name={isLiked ? "heart" : "heart-outline"}
             size={24}
-            color={GlobalColors.primaryColor}
+            color={isLiked ? "red" : GlobalColors.primaryColor}
           />
-          <Text style={styles.iconText}>Like</Text>
+          <Text style={styles.iconText}>{isLiked ? "Liked" : "Like"}</Text>
         </Pressable>
 
         {/* Comment Button */}
@@ -94,15 +122,34 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 6,
+  },
+  userInfo: {
+    marginLeft: 10,
+    justifyContent: "center",
   },
   username: {
-    marginLeft: 10,
     fontWeight: "bold",
+    fontSize: 16,
+  },
+  timeAgo: {
+    fontSize: 12,
+    color: GlobalColors.inActivetabBarColor,
+    marginTop: 2,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  content: {
+    fontSize: 14,
+    color: GlobalColors.primaryBlack,
+    lineHeight: 20,
+    marginBottom: 6,
   },
   postImage: {
     width: "100%",
-    aspectRatio: 1, // Đảm bảo ảnh vuông
+    aspectRatio: 1,
     borderRadius: 10,
     marginBottom: 10,
   },
@@ -114,7 +161,7 @@ const styles = StyleSheet.create({
   iconButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 8,
+    marginRight: 16,
   },
   pressedButton: {
     opacity: 0.7,
