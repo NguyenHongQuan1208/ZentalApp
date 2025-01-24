@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ function NewPosts() {
   const refreshToken = refreshCtx.refreshToken;
 
   const [currentUserId, setCurrentUserId] = useState("");
+
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -82,9 +83,12 @@ function NewPosts() {
     await fetchPosts();
   };
 
-  function renderPost({ item }) {
-    return <Post item={item} currentUserId={currentUserId} />;
-  }
+  const renderPost = useCallback(
+    ({ item }) => {
+      return <Post item={item} currentUserId={currentUserId} />;
+    },
+    [currentUserId]
+  );
 
   if (loading) {
     return (
@@ -115,9 +119,12 @@ function NewPosts() {
     <View style={styles.container}>
       <Text style={styles.title}>New Posts</Text>
       <FlatList
-        data={posts} // posts đã được sắp xếp
-        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+        data={posts}
+        keyExtractor={(item) => item.id?.toString()}
         renderItem={renderPost}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={21}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

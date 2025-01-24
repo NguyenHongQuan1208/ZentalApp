@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, View, Image, Pressable } from "react-native";
 import { getUser } from "../../util/user-info-http";
 import Avatar from "../Profile/Avatar";
@@ -6,18 +6,24 @@ import { GlobalColors } from "../../constants/GlobalColors";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TASK_SECTIONS } from "../../data/dummy-data";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
-import { likePost, unlikePost, checkIfLiked } from "../../util/posts-data-http";
+import {
+  likePost,
+  unlikePost,
+  checkIfLiked,
+  getLikesForPost,
+} from "../../util/posts-data-http";
 
-function Post({ item, currentUserId }) {
+const Post = memo(({ item, currentUserId }) => {
   const [user, setUser] = useState(null);
-  const [isLiked, setIsLiked] = useState(false); // Trạng thái "Like"
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [showFullContent, setShowFullContent] = useState(false);
   const postId = item?.id;
   const userId = item?.uid || "";
   const imageUri = item?.imageUri || "";
   const sectionId = item?.sectionId || "";
 
   useEffect(() => {
-    // Kiểm tra trạng thái like khi component được tải
     const checkLikeStatus = async () => {
       const liked = await checkIfLiked(postId, currentUserId);
       setIsLiked(liked);
@@ -26,21 +32,34 @@ function Post({ item, currentUserId }) {
     checkLikeStatus();
   }, [postId, currentUserId]);
 
-  const handleLike = async () => {
+  useEffect(() => {
+    const fetchLikeCount = async () => {
+      try {
+        const likes = await getLikesForPost(postId);
+        setLikeCount(likes.length);
+      } catch (error) {
+        console.error("Error fetching like count:", error);
+      }
+    };
+
+    fetchLikeCount();
+  }, [postId]);
+
+  const handleLike = useCallback(async () => {
     if (isLiked) {
       await unlikePost(postId, currentUserId);
+      setLikeCount((prevCount) => prevCount - 1);
     } else {
       await likePost(postId, currentUserId);
+      setLikeCount((prevCount) => prevCount + 1);
     }
-    setIsLiked(!isLiked); // Cập nhật trạng thái like
-  };
+    setIsLiked(!isLiked);
+  }, [isLiked, postId, currentUserId]);
 
-  // Tìm màu sắc dựa trên sectionId
   const sectionColor =
     TASK_SECTIONS.find((section) => section.id === sectionId)?.color ||
     GlobalColors.primaryBlack;
 
-  // Hiển thị thời gian đăng bài
   const timeAgo = item?.createdAt
     ? formatDistanceToNowStrict(parseISO(item.createdAt), { addSuffix: false })
     : "Unknown time";
@@ -52,7 +71,7 @@ function Post({ item, currentUserId }) {
         setUser(userData || { username: "Unknown", photoUrl: null });
       } catch (error) {
         console.error("Error fetching user data:", error);
-        setUser(null); // Reset user state on error
+        setUser(null);
       }
     };
 
@@ -76,7 +95,21 @@ function Post({ item, currentUserId }) {
       </Text>
 
       {/* Content */}
-      <Text style={styles.content}>{item?.content || "No content"}</Text>
+      <Text style={styles.content}>
+        {showFullContent
+          ? item?.content || "No content"
+          : item?.content?.length > 100
+          ? `${item.content.substring(0, 100)}... `
+          : item?.content || "No content"}
+        {item?.content && item.content.length > 100 && (
+          <Text
+            style={styles.showMoreText}
+            onPress={() => setShowFullContent(!showFullContent)}
+          >
+            {showFullContent ? " Show less" : "Show more"}
+          </Text>
+        )}
+      </Text>
 
       {/* Image */}
       {typeof imageUri === "string" && imageUri.trim() !== "" && (
@@ -96,9 +129,16 @@ function Post({ item, currentUserId }) {
           <Ionicons
             name={isLiked ? "heart" : "heart-outline"}
             size={24}
-            color={isLiked ? "red" : GlobalColors.primaryColor}
+            color={isLiked ? "red" : GlobalColors.inActivetabBarColor}
           />
-          <Text style={styles.iconText}>{isLiked ? "Liked" : "Like"}</Text>
+          <Text
+            style={[
+              styles.iconText,
+              { color: GlobalColors.inActivetabBarColor },
+            ]}
+          >
+            {likeCount}
+          </Text>
         </Pressable>
 
         {/* Comment Button */}
@@ -112,16 +152,21 @@ function Post({ item, currentUserId }) {
           <Ionicons
             name="chatbubble-outline"
             size={24}
-            color={GlobalColors.primaryColor}
+            color={GlobalColors.inActivetabBarColor}
           />
-          <Text style={styles.iconText}>Comment</Text>
+          <Text
+            style={[
+              styles.iconText,
+              { color: GlobalColors.inActivetabBarColor },
+            ]}
+          >
+            0
+          </Text>
         </Pressable>
       </View>
     </View>
   );
-}
-
-export default Post;
+});
 
 const styles = StyleSheet.create({
   postContainer: {
@@ -156,12 +201,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: "bold",
+    marginBottom: 6,
   },
   content: {
     fontSize: 14,
     color: GlobalColors.primaryBlack,
     lineHeight: 20,
     marginBottom: 6,
+    textAlign: "auto",
+  },
+  showMoreText: {
+    color: GlobalColors.primaryColor,
+    fontSize: 14,
   },
   postImage: {
     width: "100%",
@@ -185,6 +236,8 @@ const styles = StyleSheet.create({
   iconText: {
     marginLeft: 5,
     fontSize: 14,
-    color: GlobalColors.primaryColor,
+    color: GlobalColors.inActivetabBarColor,
   },
 });
+
+export default Post;

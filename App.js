@@ -24,6 +24,7 @@ import EditProfileScreen from "./screens/EditProfileScreen";
 import PersonalProfileScreen from "./screens/PersonalProfileScreen";
 import RefreshTokenContextProvider from "./store/RefreshTokenContext";
 import ConfirmPostScreen from "./screens/ConfirmPostScreen";
+import PostDetailScreen from "./screens/PostDetailScreen";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -234,6 +235,8 @@ function AuthenticatedStack() {
           headerTitleAlign: "center",
         }}
       />
+
+      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
 
       <Stack.Screen
         name="EditProfile"
