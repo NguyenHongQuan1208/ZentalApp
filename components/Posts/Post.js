@@ -1,59 +1,41 @@
-import React, { memo, useCallback, useEffect, useState } from "react";
+import React, { memo, useCallback } from "react";
 import { StyleSheet, Text, View, Image, Pressable } from "react-native";
-import { getUser } from "../../util/user-info-http";
-import Avatar from "../Profile/Avatar";
 import { GlobalColors } from "../../constants/GlobalColors";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TASK_SECTIONS } from "../../data/dummy-data";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
-import {
-  likePost,
-  unlikePost,
-  checkIfLiked,
-  getLikesForPost,
-} from "../../util/posts-data-http";
+import { useNavigation } from "@react-navigation/native";
+import PostHeader from "../../components/Posts/PostHeader";
+import PostContent from "../../components/Posts/PostContent";
+import useRealtimeLikes from "../../hooks/useRealtimeLikes";
+import { ref, update } from "firebase/database";
+import { database } from "../../util/firebase-config";
+import useUser from "../../hooks/useUser"; // Import hook useUser
 
 const Post = memo(({ item, currentUserId }) => {
-  const [user, setUser] = useState(null);
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
-  const [showFullContent, setShowFullContent] = useState(false);
+  const navigation = useNavigation();
   const postId = item?.id;
   const userId = item?.uid || "";
   const imageUri = item?.imageUri || "";
   const sectionId = item?.sectionId || "";
 
-  useEffect(() => {
-    const checkLikeStatus = async () => {
-      const liked = await checkIfLiked(postId, currentUserId);
-      setIsLiked(liked);
-    };
+  // Sử dụng hook useUser để fetch thông tin người dùng
+  const { user, isLoading, error } = useUser(userId);
 
-    checkLikeStatus();
-  }, [postId, currentUserId]);
-
-  useEffect(() => {
-    const fetchLikeCount = async () => {
-      try {
-        const likes = await getLikesForPost(postId);
-        setLikeCount(likes.length);
-      } catch (error) {
-        console.error("Error fetching like count:", error);
-      }
-    };
-
-    fetchLikeCount();
-  }, [postId]);
+  // Sử dụng custom hook để quản lý like
+  const { isLiked, likeCount } = useRealtimeLikes(postId, currentUserId);
 
   const handleLike = useCallback(async () => {
+    // Tham chiếu tới node `likes` của bài viết trong Firebase
+    const likesRef = ref(database, `posts/${postId}/likes`);
+
     if (isLiked) {
-      await unlikePost(postId, currentUserId);
-      setLikeCount((prevCount) => prevCount - 1);
+      // Unlike: Xóa currentUserId khỏi danh sách like
+      await update(likesRef, { [currentUserId]: null });
     } else {
-      await likePost(postId, currentUserId);
-      setLikeCount((prevCount) => prevCount + 1);
+      // Like: Thêm currentUserId vào danh sách like
+      await update(likesRef, { [currentUserId]: true });
     }
-    setIsLiked(!isLiked);
   }, [isLiked, postId, currentUserId]);
 
   const sectionColor =
@@ -64,107 +46,103 @@ const Post = memo(({ item, currentUserId }) => {
     ? formatDistanceToNowStrict(parseISO(item.createdAt), { addSuffix: false })
     : "Unknown time";
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData = await getUser(userId);
-        setUser(userData || { username: "Unknown", photoUrl: null });
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        setUser(null);
-      }
-    };
+  function navigateHandler() {
+    navigation.navigate("PostDetail", {
+      postId: postId,
+      userId: userId,
+      imageUri: imageUri,
+      sectionId: sectionId,
+      sectionColor: sectionColor,
+      timeAgo: timeAgo,
+    });
+  }
 
-    fetchUser();
-  }, [userId]);
+  // Hiển thị loading hoặc error nếu cần
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading post data...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text>Error fetching user data.</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.postContainer}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Avatar photoUrl={user?.photoUrl} size={40} />
-        <View style={styles.userInfo}>
-          <Text style={styles.username}>{user?.username || "Loading..."}</Text>
-          <Text style={styles.timeAgo}>{timeAgo}</Text>
+    <Pressable onPress={navigateHandler}>
+      <View style={styles.postContainer}>
+        {/* Header */}
+        <PostHeader user={user} timeAgo={timeAgo} />
+
+        {/* Title */}
+        <Text style={[styles.title, { color: sectionColor }]}>
+          {item?.title || "No title"}
+        </Text>
+
+        {/* Content */}
+        <PostContent content={item?.content} />
+
+        {/* Image */}
+        {typeof imageUri === "string" && imageUri.trim() !== "" && (
+          <Image source={{ uri: imageUri }} style={styles.postImage} />
+        )}
+
+        {/* Action Buttons */}
+        <View style={styles.actionRow}>
+          {/* Like Button */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.iconButton,
+              pressed && styles.pressedButton,
+            ]}
+            onPress={handleLike}
+          >
+            <Ionicons
+              name={isLiked ? "heart" : "heart-outline"}
+              size={24}
+              color={isLiked ? "red" : GlobalColors.inActivetabBarColor}
+            />
+            <Text
+              style={[
+                styles.iconText,
+                { color: GlobalColors.inActivetabBarColor },
+              ]}
+            >
+              {likeCount}
+            </Text>
+          </Pressable>
+
+          {/* Comment Button */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.iconButton,
+              pressed && styles.pressedButton,
+            ]}
+            onPress={() => console.log("Comment clicked!")}
+          >
+            <Ionicons
+              name="chatbubble-outline"
+              size={24}
+              color={GlobalColors.inActivetabBarColor}
+            />
+            <Text
+              style={[
+                styles.iconText,
+                { color: GlobalColors.inActivetabBarColor },
+              ]}
+            >
+              0
+            </Text>
+          </Pressable>
         </View>
       </View>
-
-      {/* Title */}
-      <Text style={[styles.title, { color: sectionColor }]}>
-        {item?.title || "No title"}
-      </Text>
-
-      {/* Content */}
-      <Text style={styles.content}>
-        {showFullContent
-          ? item?.content || "No content"
-          : item?.content?.length > 100
-          ? `${item.content.substring(0, 100)}... `
-          : item?.content || "No content"}
-        {item?.content && item.content.length > 100 && (
-          <Text
-            style={styles.showMoreText}
-            onPress={() => setShowFullContent(!showFullContent)}
-          >
-            {showFullContent ? " Show less" : "Show more"}
-          </Text>
-        )}
-      </Text>
-
-      {/* Image */}
-      {typeof imageUri === "string" && imageUri.trim() !== "" && (
-        <Image source={{ uri: imageUri }} style={styles.postImage} />
-      )}
-
-      {/* Action Buttons */}
-      <View style={styles.actionRow}>
-        {/* Like Button */}
-        <Pressable
-          style={({ pressed }) => [
-            styles.iconButton,
-            pressed && styles.pressedButton,
-          ]}
-          onPress={handleLike}
-        >
-          <Ionicons
-            name={isLiked ? "heart" : "heart-outline"}
-            size={24}
-            color={isLiked ? "red" : GlobalColors.inActivetabBarColor}
-          />
-          <Text
-            style={[
-              styles.iconText,
-              { color: GlobalColors.inActivetabBarColor },
-            ]}
-          >
-            {likeCount}
-          </Text>
-        </Pressable>
-
-        {/* Comment Button */}
-        <Pressable
-          style={({ pressed }) => [
-            styles.iconButton,
-            pressed && styles.pressedButton,
-          ]}
-          onPress={() => console.log("Comment clicked!")}
-        >
-          <Ionicons
-            name="chatbubble-outline"
-            size={24}
-            color={GlobalColors.inActivetabBarColor}
-          />
-          <Text
-            style={[
-              styles.iconText,
-              { color: GlobalColors.inActivetabBarColor },
-            ]}
-          >
-            0
-          </Text>
-        </Pressable>
-      </View>
-    </View>
+    </Pressable>
   );
 });
 
@@ -180,39 +158,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 6,
-  },
-  userInfo: {
-    marginLeft: 10,
-    justifyContent: "center",
-  },
-  username: {
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  timeAgo: {
-    fontSize: 12,
-    color: GlobalColors.inActivetabBarColor,
-    marginTop: 2,
-  },
   title: {
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 6,
-  },
-  content: {
-    fontSize: 14,
-    color: GlobalColors.primaryBlack,
-    lineHeight: 20,
-    marginBottom: 6,
-    textAlign: "auto",
-  },
-  showMoreText: {
-    color: GlobalColors.primaryColor,
-    fontSize: 14,
   },
   postImage: {
     width: "100%",
@@ -237,6 +186,16 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontSize: 14,
     color: GlobalColors.inActivetabBarColor,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 
