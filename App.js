@@ -236,7 +236,15 @@ function AuthenticatedStack() {
         }}
       />
 
-      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
+      <Stack.Screen
+        name="PostDetail"
+        component={PostDetailScreen}
+        options={{
+          contentStyle: {
+            backgroundColor: GlobalColors.pureWhite,
+          },
+        }}
+      />
 
       <Stack.Screen
         name="EditProfile"

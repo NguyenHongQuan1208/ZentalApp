@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, Image } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  ScrollView,
+} from "react-native";
 import PostHeader from "../components/Posts/PostHeader"; // Import PostHeader
 import { GlobalColors } from "../constants/GlobalColors";
 import useUser from "../hooks/useUser"; // Import hook useUser
 import { getPostById } from "../util/posts-data-http"; // Hàm fetch bài viết theo ID
+import PostImage from "../components/Posts/PostImage"; // Import component PostImage
 
 function PostDetailScreen({ route }) {
   // Lấy các tham số từ route.params
@@ -63,29 +70,32 @@ function PostDetailScreen({ route }) {
 
   // Hiển thị nội dung bài viết
   return (
-    <View style={styles.container}>
-      {/* Phần PostHeader */}
-      <PostHeader user={user} timeAgo={timeAgo} />
+    <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+      <View style={styles.container}>
+        {/* Phần PostHeader */}
+        <PostHeader user={user} timeAgo={timeAgo} />
 
-      {/* Tiêu đề bài viết */}
-      <Text style={[styles.title, { color: sectionColor }]}>
-        {post?.title || "No title"}
-      </Text>
+        {/* Tiêu đề bài viết */}
+        <Text style={[styles.title, { color: sectionColor }]}>
+          {post?.title || "No title"}
+        </Text>
 
-      {/* Nội dung bài viết */}
-      <Text style={styles.content}>{post?.content || "No content"}</Text>
+        {/* Nội dung bài viết */}
+        <Text style={styles.content}>{post?.content || "No content"}</Text>
 
-      {/* Hình ảnh bài viết (nếu có) */}
-      {imageUri && (
-        <Image source={{ uri: imageUri }} style={styles.postImage} />
-      )}
-    </View>
+        {/* Hình ảnh bài viết (nếu có) */}
+        {imageUri && <PostImage imageUri={imageUri} />}
+      </View>
+    </ScrollView>
   );
 }
 
 export default PostDetailScreen;
 
 const styles = StyleSheet.create({
+  scrollViewContainer: {
+    flexGrow: 1,
+  },
   container: {
     flex: 1,
     padding: 16,
@@ -108,18 +118,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 6,
   },
   content: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 20,
     color: GlobalColors.primaryBlack,
-    marginTop: 10,
-  },
-  postImage: {
-    width: "100%",
-    aspectRatio: 1,
-    borderRadius: 10,
-    marginTop: 10,
+    marginBottom: 6,
   },
 });

@@ -1,5 +1,5 @@
 import React, { memo, useCallback } from "react";
-import { StyleSheet, Text, View, Image, Pressable } from "react-native";
+import { StyleSheet, Text, View, Pressable } from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TASK_SECTIONS } from "../../data/dummy-data";
@@ -7,11 +7,11 @@ import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { useNavigation } from "@react-navigation/native";
 import PostHeader from "../../components/Posts/PostHeader";
 import PostContent from "../../components/Posts/PostContent";
+import PostImage from "../../components/Posts/PostImage";
 import useRealtimeLikes from "../../hooks/useRealtimeLikes";
 import { ref, update } from "firebase/database";
 import { database } from "../../util/firebase-config";
-import useUser from "../../hooks/useUser"; // Import hook useUser
-
+import useUser from "../../hooks/useUser";
 const Post = memo(({ item, currentUserId }) => {
   const navigation = useNavigation();
   const postId = item?.id;
@@ -20,7 +20,7 @@ const Post = memo(({ item, currentUserId }) => {
   const sectionId = item?.sectionId || "";
 
   // Sử dụng hook useUser để fetch thông tin người dùng
-  const { user, isLoading, error } = useUser(userId);
+  const { user, error } = useUser(userId);
 
   // Sử dụng custom hook để quản lý like
   const { isLiked, likeCount } = useRealtimeLikes(postId, currentUserId);
@@ -57,15 +57,7 @@ const Post = memo(({ item, currentUserId }) => {
     });
   }
 
-  // Hiển thị loading hoặc error nếu cần
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text>Loading post data...</Text>
-      </View>
-    );
-  }
-
+  // Hiển thị error nếu có lỗi
   if (error) {
     return (
       <View style={styles.errorContainer}>
@@ -90,7 +82,7 @@ const Post = memo(({ item, currentUserId }) => {
 
         {/* Image */}
         {typeof imageUri === "string" && imageUri.trim() !== "" && (
-          <Image source={{ uri: imageUri }} style={styles.postImage} />
+          <PostImage imageUri={imageUri} />
         )}
 
         {/* Action Buttons */}
@@ -163,12 +155,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 6,
   },
-  postImage: {
-    width: "100%",
-    aspectRatio: 1,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -186,11 +172,6 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontSize: 14,
     color: GlobalColors.inActivetabBarColor,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   errorContainer: {
     flex: 1,

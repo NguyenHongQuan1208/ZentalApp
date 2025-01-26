@@ -49,6 +49,7 @@ function NewPosts() {
   const fetchPosts = async () => {
     try {
       setError(null);
+      setLoading(true);
       const allPosts = await getAllPosts();
 
       // Lọc các bài đăng có status = 1 và publicStatus = 1
