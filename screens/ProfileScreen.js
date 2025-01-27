@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
 import { AuthContext } from "../store/auth-context";
 import Avatar from "../components/Profile/Avatar";
 import { GlobalColors } from "../constants/GlobalColors";
@@ -58,7 +58,7 @@ function ProfileScreen({ navigation }) {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Avatar photoUrl={photoUrl} size={100} />
       <Text style={styles.userName}>{userName}</Text>
       <Pressable
@@ -83,7 +83,7 @@ function ProfileScreen({ navigation }) {
         <MenuItem icon="paper-plane" screen="Posts" screenName="Posts" />
         <MenuItem icon="exit" screen="logout" screenName="Log out" />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 

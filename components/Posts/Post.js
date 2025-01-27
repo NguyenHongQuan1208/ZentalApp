@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from "react";
+import React, { memo } from "react";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -8,10 +8,9 @@ import { useNavigation } from "@react-navigation/native";
 import PostHeader from "../../components/Posts/PostHeader";
 import PostContent from "../../components/Posts/PostContent";
 import PostImage from "../../components/Posts/PostImage";
-import useRealtimeLikes from "../../hooks/useRealtimeLikes";
-import { ref, update } from "firebase/database";
-import { database } from "../../util/firebase-config";
 import useUser from "../../hooks/useUser";
+import LikeButton from "../../components/Posts/LikeButton"; // Import LikeButton
+
 const Post = memo(({ item, currentUserId }) => {
   const navigation = useNavigation();
   const postId = item?.id;
@@ -21,22 +20,6 @@ const Post = memo(({ item, currentUserId }) => {
 
   // Sử dụng hook useUser để fetch thông tin người dùng
   const { user, error } = useUser(userId);
-
-  // Sử dụng custom hook để quản lý like
-  const { isLiked, likeCount } = useRealtimeLikes(postId, currentUserId);
-
-  const handleLike = useCallback(async () => {
-    // Tham chiếu tới node `likes` của bài viết trong Firebase
-    const likesRef = ref(database, `posts/${postId}/likes`);
-
-    if (isLiked) {
-      // Unlike: Xóa currentUserId khỏi danh sách like
-      await update(likesRef, { [currentUserId]: null });
-    } else {
-      // Like: Thêm currentUserId vào danh sách like
-      await update(likesRef, { [currentUserId]: true });
-    }
-  }, [isLiked, postId, currentUserId]);
 
   const sectionColor =
     TASK_SECTIONS.find((section) => section.id === sectionId)?.color ||
@@ -88,27 +71,7 @@ const Post = memo(({ item, currentUserId }) => {
         {/* Action Buttons */}
         <View style={styles.actionRow}>
           {/* Like Button */}
-          <Pressable
-            style={({ pressed }) => [
-              styles.iconButton,
-              pressed && styles.pressedButton,
-            ]}
-            onPress={handleLike}
-          >
-            <Ionicons
-              name={isLiked ? "heart" : "heart-outline"}
-              size={24}
-              color={isLiked ? "red" : GlobalColors.inActivetabBarColor}
-            />
-            <Text
-              style={[
-                styles.iconText,
-                { color: GlobalColors.inActivetabBarColor },
-              ]}
-            >
-              {likeCount}
-            </Text>
-          </Pressable>
+          <LikeButton postId={postId} currentUserId={currentUserId} />
 
           {/* Comment Button */}
           <Pressable
