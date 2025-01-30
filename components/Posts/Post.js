@@ -37,6 +37,7 @@ const Post = memo(({ item, currentUserId }) => {
       sectionId: sectionId,
       sectionColor: sectionColor,
       timeAgo: timeAgo,
+      currentUserId: currentUserId,
     });
   }
 
@@ -121,7 +122,6 @@ const styles = StyleSheet.create({
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 6,
   },
   iconButton: {
     flexDirection: "row",

@@ -5,32 +5,38 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
+  Pressable,
 } from "react-native";
-import PostHeader from "../components/Posts/PostHeader"; // Import PostHeader
+import PostHeader from "../components/Posts/PostHeader";
 import { GlobalColors } from "../constants/GlobalColors";
-import useUser from "../hooks/useUser"; // Import hook useUser
-import { getPostById } from "../util/posts-data-http"; // Hàm fetch bài viết theo ID
-import PostImage from "../components/Posts/PostImage"; // Import component PostImage
+import useUser from "../hooks/useUser";
+import { getPostById } from "../util/posts-data-http";
+import PostImage from "../components/Posts/PostImage";
+import LikeButton from "../components/Posts/LikeButton"; // Import LikeButton
+import Ionicons from "@expo/vector-icons/Ionicons"; // Import icon
 
-function PostDetailScreen({ route }) {
-  // Lấy các tham số từ route.params
-  const { postId, userId, imageUri, sectionId, sectionColor, timeAgo } =
-    route.params;
+function PostDetailScreen({ route, navigation }) {
+  const {
+    postId,
+    userId,
+    imageUri,
+    sectionId,
+    sectionColor,
+    timeAgo,
+    currentUserId,
+  } = route.params;
 
-  // State để lưu thông tin bài viết
   const [post, setPost] = useState(null);
   const [isLoadingPost, setIsLoadingPost] = useState(true);
   const [postError, setPostError] = useState(null);
 
-  // Sử dụng hook useUser để fetch thông tin người dùng
   const { user, isLoadingUser, userError } = useUser(userId);
 
-  // Fetch thông tin bài viết dựa trên postId
   useEffect(() => {
     const fetchPost = async () => {
       try {
         setIsLoadingPost(true);
-        const postData = await getPostById(postId); // Hàm fetch bài viết theo ID
+        const postData = await getPostById(postId);
         setPost(postData);
       } catch (error) {
         console.error("Error fetching post data:", error);
@@ -45,7 +51,6 @@ function PostDetailScreen({ route }) {
     }
   }, [postId]);
 
-  // Hiển thị loading nếu đang fetch dữ liệu
   if (isLoadingPost || isLoadingUser) {
     return (
       <View style={styles.loadingContainer}>
@@ -55,7 +60,6 @@ function PostDetailScreen({ route }) {
     );
   }
 
-  // Hiển thị lỗi nếu có
   if (postError || userError) {
     return (
       <View style={styles.errorContainer}>
@@ -68,23 +72,37 @@ function PostDetailScreen({ route }) {
     );
   }
 
-  // Hiển thị nội dung bài viết
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContainer}>
       <View style={styles.container}>
-        {/* Phần PostHeader */}
         <PostHeader user={user} timeAgo={timeAgo} />
-
-        {/* Tiêu đề bài viết */}
         <Text style={[styles.title, { color: sectionColor }]}>
           {post?.title || "No title"}
         </Text>
-
-        {/* Nội dung bài viết */}
         <Text style={styles.content}>{post?.content || "No content"}</Text>
-
-        {/* Hình ảnh bài viết (nếu có) */}
         {imageUri && <PostImage imageUri={imageUri} />}
+
+        {/* Like & Comment Buttons */}
+        <View style={styles.actionRow}>
+          {/* Like Button */}
+          <LikeButton postId={postId} currentUserId={currentUserId} />
+
+          {/* Comment Button */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.iconButton,
+              pressed && styles.pressedButton,
+            ]}
+            onPress={() => {}}
+          >
+            <Ionicons
+              name="chatbubble-outline"
+              size={24}
+              color={GlobalColors.inActivetabBarColor}
+            />
+            <Text style={styles.iconText}>0</Text>
+          </Pressable>
+        </View>
       </View>
     </ScrollView>
   );
@@ -125,5 +143,22 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: GlobalColors.primaryBlack,
     marginBottom: 6,
+  },
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  pressedButton: {
+    opacity: 0.7,
+  },
+  iconText: {
+    marginLeft: 5,
+    fontSize: 14,
+    color: GlobalColors.inActivetabBarColor,
   },
 });
