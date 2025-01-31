@@ -1,23 +1,14 @@
-import React, { memo, useCallback } from "react";
+import React, { memo } from "react";
 import { Pressable, Text, StyleSheet } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { GlobalColors } from "../../constants/GlobalColors";
 import useRealtimeLikes from "../../hooks/useRealtimeLikes";
-import { ref, update } from "firebase/database";
-import { database } from "../../util/firebase-config";
 
 const LikeButton = memo(({ postId, currentUserId }) => {
-  const { isLiked, likeCount } = useRealtimeLikes(postId, currentUserId);
-
-  const handleLike = useCallback(async () => {
-    const likesRef = ref(database, `posts/${postId}/likes`);
-
-    if (isLiked) {
-      await update(likesRef, { [currentUserId]: null });
-    } else {
-      await update(likesRef, { [currentUserId]: true });
-    }
-  }, [isLiked, postId, currentUserId]);
+  const { isLiked, likeCount, toggleLike } = useRealtimeLikes(
+    postId,
+    currentUserId
+  );
 
   return (
     <Pressable
@@ -25,7 +16,7 @@ const LikeButton = memo(({ postId, currentUserId }) => {
         styles.iconButton,
         pressed && styles.pressedButton,
       ]}
-      onPress={handleLike}
+      onPress={toggleLike}
     >
       <Ionicons
         name={isLiked ? "heart" : "heart-outline"}
