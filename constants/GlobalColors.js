@@ -5,6 +5,7 @@ export const GlobalColors = {
   primaryWhite: "#F5F5F5",
   pureWhite: "#ffffff",
   primaryGrey: "#dcdcdc",
+  lightGray: "#D3D3D3",
   primaryBlack: "#000000",
   secondBlack: "#565656",
   inActivetabBarColor: "#767676",

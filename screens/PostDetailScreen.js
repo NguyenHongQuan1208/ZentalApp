@@ -4,16 +4,22 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  ScrollView,
+  FlatList,
   Pressable,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import PostHeader from "../components/Posts/PostHeader";
 import { GlobalColors } from "../constants/GlobalColors";
 import useUser from "../hooks/useUser";
 import { getPostById } from "../util/posts-data-http";
 import PostImage from "../components/Posts/PostImage";
-import LikeButton from "../components/Posts/LikeButton"; // Import LikeButton
-import Ionicons from "@expo/vector-icons/Ionicons"; // Import icon
+import LikeButton from "../components/Posts/LikeButton";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import CommentItem from "../components/Posts/CommentItem";
+import { getCommentsByPostId, addComment } from "../util/comment-data-http";
+import { getUser } from "../util/user-info-http";
 
 function PostDetailScreen({ route, navigation }) {
   const {
@@ -29,6 +35,12 @@ function PostDetailScreen({ route, navigation }) {
   const [post, setPost] = useState(null);
   const [isLoadingPost, setIsLoadingPost] = useState(true);
   const [postError, setPostError] = useState(null);
+
+  const [comments, setComments] = useState([]);
+  const [isLoadingComments, setIsLoadingComments] = useState(true);
+  const [commentError, setCommentError] = useState(null);
+
+  const [newComment, setNewComment] = useState("");
 
   const { user, isLoadingUser, userError } = useUser(userId);
 
@@ -46,10 +58,54 @@ function PostDetailScreen({ route, navigation }) {
       }
     };
 
+    const fetchComments = async () => {
+      try {
+        setIsLoadingComments(true);
+        const commentsData = await getCommentsByPostId(postId);
+
+        // Fetch user info for each comment
+        const commentsWithUser = await Promise.all(
+          commentsData.map(async (comment) => {
+            const userData = await getUser(comment.userId);
+            return { ...comment, user: userData };
+          })
+        );
+
+        setComments(commentsWithUser);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+        setCommentError(error);
+      } finally {
+        setIsLoadingComments(false);
+      }
+    };
+
     if (postId) {
       fetchPost();
+      fetchComments();
     }
   }, [postId]);
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return; // Prevent empty comments
+
+    try {
+      const commentId = await addComment(postId, currentUserId, newComment);
+      const userData = await getUser(currentUserId); // Fetch current user's info
+      const newCommentData = {
+        commentId,
+        postId,
+        userId: currentUserId,
+        user: userData, // Add user info
+        content: newComment,
+        createdAt: new Date().toISOString(),
+      };
+      setComments((prevComments) => [newCommentData, ...prevComments]);
+      setNewComment(""); // Reset input
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
 
   if (isLoadingPost || isLoadingUser) {
     return (
@@ -73,50 +129,87 @@ function PostDetailScreen({ route, navigation }) {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-      <View style={styles.container}>
-        <PostHeader user={user} timeAgo={timeAgo} />
-        <Text style={[styles.title, { color: sectionColor }]}>
-          {post?.title || "No title"}
-        </Text>
-        <Text style={styles.content}>{post?.content || "No content"}</Text>
-        {imageUri && <PostImage imageUri={imageUri} />}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <FlatList
+        data={comments}
+        keyExtractor={(item) => item.commentId.toString()}
+        renderItem={({ item }) => <CommentItem comment={item} />}
+        ListHeaderComponent={
+          <>
+            {/* Post Header and Content */}
+            <PostHeader user={user} timeAgo={timeAgo} />
+            <Text style={[styles.title, { color: sectionColor }]}>
+              {post?.title || "No title"}
+            </Text>
+            <Text style={styles.content}>{post?.content || "No content"}</Text>
+            {imageUri && <PostImage imageUri={imageUri} />}
 
-        {/* Like & Comment Buttons */}
-        <View style={styles.actionRow}>
-          {/* Like Button */}
-          <LikeButton postId={postId} currentUserId={currentUserId} />
+            {/* Like & Comment Buttons */}
+            <View style={styles.actionRow}>
+              <LikeButton postId={postId} currentUserId={currentUserId} />
+              <Pressable
+                style={({ pressed }) => [
+                  styles.iconButton,
+                  pressed && styles.pressedButton,
+                ]}
+                onPress={() => {}}
+              >
+                <Ionicons
+                  name="chatbubble-outline"
+                  size={24}
+                  color={GlobalColors.inActivetabBarColor}
+                />
+                <Text style={styles.iconText}>{comments.length}</Text>
+              </Pressable>
+            </View>
 
-          {/* Comment Button */}
-          <Pressable
-            style={({ pressed }) => [
-              styles.iconButton,
-              pressed && styles.pressedButton,
-            ]}
-            onPress={() => {}}
-          >
-            <Ionicons
-              name="chatbubble-outline"
-              size={24}
-              color={GlobalColors.inActivetabBarColor}
-            />
-            <Text style={styles.iconText}>0</Text>
-          </Pressable>
-        </View>
-      </View>
-    </ScrollView>
+            {/* Comment Input */}
+            <View style={styles.commentInputContainer}>
+              {/* Đường kẻ ngăn cách */}
+              <View style={styles.separator} />
+
+              <TextInput
+                style={styles.commentInput}
+                placeholder="Add a comment..."
+                value={newComment}
+                onChangeText={setNewComment}
+                onSubmitEditing={handleAddComment}
+              />
+            </View>
+          </>
+        }
+        ListEmptyComponent={
+          isLoadingComments ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator
+                size="small"
+                color={GlobalColors.primaryColor}
+              />
+              <Text>Loading comments...</Text>
+            </View>
+          ) : commentError ? (
+            <Text style={styles.errorText}>
+              Error loading comments: {commentError.message}
+            </Text>
+          ) : (
+            <Text style={styles.emptyText}>No comments yet.</Text>
+          )
+        }
+        contentContainerStyle={styles.container}
+      />
+    </KeyboardAvoidingView>
   );
 }
 
 export default PostDetailScreen;
 
 const styles = StyleSheet.create({
-  scrollViewContainer: {
-    flexGrow: 1,
-  },
   container: {
-    flex: 1,
-    padding: 16,
+    flexGrow: 1,
+    padding: 16, // Padding cho toàn bộ màn hình
     backgroundColor: GlobalColors.pureWhite,
   },
   loadingContainer: {
@@ -160,5 +253,25 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontSize: 14,
     color: GlobalColors.inActivetabBarColor,
+  },
+  commentInputContainer: {
+    paddingTop: 16,
+  },
+  separator: {
+    height: 1, // Độ dày của đường kẻ
+    backgroundColor: GlobalColors.lightGray, // Màu của đường kẻ
+    marginHorizontal: -16, // Kéo dài đường kẻ ra ngoài padding
+  },
+  commentInput: {
+    borderWidth: 1,
+    borderColor: GlobalColors.lightGray,
+    borderRadius: 8,
+    padding: 8,
+    marginTop: 12, // Khoảng cách giữa đường kẻ và ô nhập
+  },
+  emptyText: {
+    textAlign: "center",
+    color: GlobalColors.inActivetabBarColor,
+    marginTop: 16,
   },
 });
