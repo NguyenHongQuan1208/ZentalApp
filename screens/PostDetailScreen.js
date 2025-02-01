@@ -6,10 +6,6 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  Dimensions,
 } from "react-native";
 import PostHeader from "../components/Posts/PostHeader";
 import { GlobalColors } from "../constants/GlobalColors";
@@ -21,9 +17,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import CommentItem from "../components/Posts/CommentItem";
 import { getCommentsByPostId, addComment } from "../util/comment-data-http";
 import { getUser } from "../util/user-info-http";
-
-const { width, height } = Dimensions.get("window");
-const aspectRatio = height / width;
+import CommentInput from "../components/Posts/CommentInput";
 
 function PostDetailScreen({ route, navigation }) {
   const {
@@ -188,41 +182,11 @@ function PostDetailScreen({ route, navigation }) {
       />
 
       {/* Fixed Comment Input at Bottom */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-        style={styles.keyboardAvoidingView}
-      >
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.commentInput}
-            placeholder="Add a comment..."
-            value={newComment}
-            onChangeText={setNewComment}
-            multiline
-            maxLength={1000}
-          />
-          <Pressable
-            style={({ pressed }) => [
-              styles.sendButton,
-              pressed && styles.pressedButton,
-              !newComment.trim() && styles.disabledButton,
-            ]}
-            onPress={handleAddComment}
-            disabled={!newComment.trim()}
-          >
-            <Ionicons
-              name="send"
-              size={24}
-              color={
-                newComment.trim()
-                  ? GlobalColors.primaryColor
-                  : GlobalColors.lightGray
-              }
-            />
-          </Pressable>
-        </View>
-      </KeyboardAvoidingView>
+      <CommentInput
+        newComment={newComment}
+        setNewComment={setNewComment}
+        handleAddComment={handleAddComment}
+      />
     </View>
   );
 }
@@ -294,63 +258,6 @@ const styles = StyleSheet.create({
     color: GlobalColors.inActivetabBarColor,
     marginTop: 20,
     fontSize: 15,
-  },
-  keyboardAvoidingView: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: GlobalColors.pureWhite,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 5,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    paddingTop: 16,
-    paddingBottom: aspectRatio <= 1.78 ? 16 : 32,
-    borderTopWidth: 1,
-    borderTopColor: GlobalColors.lightGray,
-    backgroundColor: GlobalColors.pureWhite,
-  },
-  commentInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: GlobalColors.lightGray,
-    borderRadius: 24, // Tăng độ cong
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginRight: 12,
-    maxHeight: 100,
-    backgroundColor: GlobalColors.pureWhite,
-    fontSize: 15,
-    lineHeight: 20,
-  },
-  sendButton: {
-    width: 44,
-    height: 44,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 22,
-    backgroundColor: GlobalColors.pureWhite,
-    // Thêm shadow nhẹ cho nút gửi
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
-    elevation: 2,
-  },
-  disabledButton: {
-    opacity: 0.5,
+    paddingBottom: 20,
   },
 });
