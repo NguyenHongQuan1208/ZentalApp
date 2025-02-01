@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import PostHeader from "../components/Posts/PostHeader";
 import { GlobalColors } from "../constants/GlobalColors";
@@ -28,40 +30,38 @@ function PostDetailScreen({ route, navigation }) {
     sectionColor,
     timeAgo,
     currentUserId,
+    shouldFocusComment,
   } = route.params;
 
   const [post, setPost] = useState(null);
   const [isLoadingPost, setIsLoadingPost] = useState(true);
   const [postError, setPostError] = useState(null);
-
   const [comments, setComments] = useState([]);
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [commentError, setCommentError] = useState(null);
-
   const [newComment, setNewComment] = useState("");
-
   const { user, isLoadingUser, userError } = useUser(userId);
+  const [shouldFocus, setShouldFocus] = useState(shouldFocusComment);
+  const flatListRef = useRef(null);
 
+  // Update focus state when route params change
   useEffect(() => {
-    const fetchPost = async () => {
+    setShouldFocus(route.params.shouldFocusComment);
+  }, [route.params.shouldFocusComment]);
+
+  // Fetch post and comments data
+  useEffect(() => {
+    const fetchPostAndComments = async () => {
       try {
         setIsLoadingPost(true);
-        const postData = await getPostById(postId);
-        setPost(postData);
-      } catch (error) {
-        console.error("Error fetching post data:", error);
-        setPostError(error);
-      } finally {
-        setIsLoadingPost(false);
-      }
-    };
-
-    const fetchComments = async () => {
-      try {
         setIsLoadingComments(true);
-        const commentsData = await getCommentsByPostId(postId);
 
-        // Fetch user info for each comment
+        const [postData, commentsData] = await Promise.all([
+          getPostById(postId),
+          getCommentsByPostId(postId),
+        ]);
+
+        // Add user info to comments
         const commentsWithUser = await Promise.all(
           commentsData.map(async (comment) => {
             const userData = await getUser(comment.userId);
@@ -69,42 +69,107 @@ function PostDetailScreen({ route, navigation }) {
           })
         );
 
+        setPost(postData);
         setComments(commentsWithUser);
       } catch (error) {
-        console.error("Error fetching comments:", error);
+        console.error("Error fetching data:", error);
+        setPostError(error);
         setCommentError(error);
       } finally {
+        setIsLoadingPost(false);
         setIsLoadingComments(false);
       }
     };
 
-    if (postId) {
-      fetchPost();
-      fetchComments();
-    }
+    if (postId) fetchPostAndComments();
   }, [postId]);
 
-  const handleAddComment = async () => {
-    if (!newComment.trim()) return; // Prevent empty comments
+  // Handle adding a new comment
+  const handleAddComment = useCallback(async () => {
+    if (!newComment.trim()) return;
 
     try {
       const commentId = await addComment(postId, currentUserId, newComment);
-      const userData = await getUser(currentUserId); // Fetch current user's info
+      const userData = await getUser(currentUserId);
+
       const newCommentData = {
         commentId,
         postId,
         userId: currentUserId,
-        user: userData, // Add user info
+        user: userData,
         content: newComment,
         createdAt: new Date().toISOString(),
       };
+
       setComments((prevComments) => [newCommentData, ...prevComments]);
-      setNewComment(""); // Reset input
+      setNewComment("");
+
+      // Scroll to the last comment
+      flatListRef.current?.scrollToEnd({ animated: true });
     } catch (error) {
       console.error("Error adding comment:", error);
     }
-  };
+  }, [newComment, postId, currentUserId]);
 
+  // Handle comment button press
+  const handleCommentButtonPress = useCallback(() => {
+    setShouldFocus(true);
+  }, []);
+
+  // Handle input blur
+  const handleInputBlur = useCallback(() => {
+    setShouldFocus(false);
+    navigation.setParams({ shouldFocusComment: false });
+  }, [navigation]);
+
+  // Render a single comment item
+  const renderCommentItem = useCallback(
+    ({ item }) => <CommentItem comment={item} />,
+    []
+  );
+
+  // Render the header component for the FlatList
+  const renderListHeader = useCallback(
+    () => (
+      <>
+        <PostHeader user={user} timeAgo={timeAgo} />
+        <Text style={[styles.title, { color: sectionColor }]}>
+          {post?.title || "No title"}
+        </Text>
+        <Text style={styles.content}>{post?.content || "No content"}</Text>
+        {imageUri && <PostImage imageUri={imageUri} />}
+
+        <View style={styles.actionRow}>
+          <LikeButton postId={postId} currentUserId={currentUserId} />
+          <Pressable
+            style={({ pressed }) => [
+              styles.iconButton,
+              pressed && styles.pressedButton,
+            ]}
+            onPress={handleCommentButtonPress}
+          >
+            <Ionicons
+              name="chatbubble-outline"
+              size={24}
+              color={GlobalColors.inActivetabBarColor}
+            />
+            <Text style={styles.iconText}>{comments.length}</Text>
+          </Pressable>
+        </View>
+      </>
+    ),
+    [
+      user,
+      timeAgo,
+      sectionColor,
+      post,
+      imageUri,
+      comments.length,
+      handleCommentButtonPress,
+    ]
+  );
+
+  // Loading and error handling
   if (isLoadingPost || isLoadingUser) {
     return (
       <View style={styles.loadingContainer}>
@@ -127,67 +192,47 @@ function PostDetailScreen({ route, navigation }) {
   }
 
   return (
-    <View style={styles.rootContainer}>
-      {/* Main Content */}
-      <FlatList
-        data={comments}
-        keyExtractor={(item) => item.commentId.toString()}
-        renderItem={({ item }) => <CommentItem comment={item} />}
-        ListHeaderComponent={
-          <>
-            <PostHeader user={user} timeAgo={timeAgo} />
-            <Text style={[styles.title, { color: sectionColor }]}>
-              {post?.title || "No title"}
-            </Text>
-            <Text style={styles.content}>{post?.content || "No content"}</Text>
-            {imageUri && <PostImage imageUri={imageUri} />}
-
-            <View style={styles.actionRow}>
-              <LikeButton postId={postId} currentUserId={currentUserId} />
-              <Pressable
-                style={({ pressed }) => [
-                  styles.iconButton,
-                  pressed && styles.pressedButton,
-                ]}
-                onPress={() => {}}
-              >
-                <Ionicons
-                  name="chatbubble-outline"
-                  size={24}
-                  color={GlobalColors.inActivetabBarColor}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+    >
+      <View style={styles.rootContainer}>
+        <FlatList
+          ref={flatListRef}
+          data={comments}
+          keyExtractor={(item) => item.commentId.toString()}
+          renderItem={renderCommentItem}
+          ListHeaderComponent={renderListHeader}
+          ListEmptyComponent={
+            isLoadingComments ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator
+                  size="small"
+                  color={GlobalColors.primaryColor}
                 />
-                <Text style={styles.iconText}>{comments.length}</Text>
-              </Pressable>
-            </View>
-          </>
-        }
-        ListEmptyComponent={
-          isLoadingComments ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator
-                size="small"
-                color={GlobalColors.primaryColor}
-              />
-              <Text>Loading comments...</Text>
-            </View>
-          ) : commentError ? (
-            <Text style={styles.errorText}>
-              Error loading comments: {commentError.message}
-            </Text>
-          ) : (
-            <Text style={styles.emptyText}>No comments yet.</Text>
-          )
-        }
-        contentContainerStyle={styles.listContent}
-      />
+                <Text>Loading comments...</Text>
+              </View>
+            ) : commentError ? (
+              <Text style={styles.errorText}>
+                Error loading comments: {commentError.message}
+              </Text>
+            ) : (
+              <Text style={styles.emptyText}>No comments yet.</Text>
+            )
+          }
+          contentContainerStyle={styles.listContent}
+        />
 
-      {/* Fixed Comment Input at Bottom */}
-      <CommentInput
-        newComment={newComment}
-        setNewComment={setNewComment}
-        handleAddComment={handleAddComment}
-      />
-    </View>
+        <CommentInput
+          newComment={newComment}
+          setNewComment={setNewComment}
+          handleAddComment={handleAddComment}
+          autoFocus={shouldFocus}
+          onBlur={handleInputBlur}
+        />
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -200,7 +245,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
-    paddingBottom: 100, // Tăng padding bottom để tránh bị che khi có input
+    paddingBottom: 100,
   },
   loadingContainer: {
     flex: 1,

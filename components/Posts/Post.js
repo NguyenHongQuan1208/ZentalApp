@@ -18,7 +18,6 @@ const Post = memo(({ item, currentUserId }) => {
   const imageUri = item?.imageUri || "";
   const sectionId = item?.sectionId || "";
 
-  // Sử dụng hook useUser để fetch thông tin người dùng
   const { user, error } = useUser(userId);
 
   const sectionColor =
@@ -38,10 +37,25 @@ const Post = memo(({ item, currentUserId }) => {
       sectionColor: sectionColor,
       timeAgo: timeAgo,
       currentUserId: currentUserId,
+      shouldFocusComment: false, // Thêm param này
     });
   }
 
-  // Hiển thị error nếu có lỗi
+  // Thêm hàm xử lý click comment
+  function handleCommentPress(event) {
+    event.stopPropagation(); // Ngăn chặn sự kiện bubble lên Pressable cha
+    navigation.navigate("PostDetail", {
+      postId: postId,
+      userId: userId,
+      imageUri: imageUri,
+      sectionId: sectionId,
+      sectionColor: sectionColor,
+      timeAgo: timeAgo,
+      currentUserId: currentUserId,
+      shouldFocusComment: true, // Set true khi click vào nút comment
+    });
+  }
+
   if (error) {
     return (
       <View style={styles.errorContainer}>
@@ -53,34 +67,28 @@ const Post = memo(({ item, currentUserId }) => {
   return (
     <Pressable onPress={navigateHandler}>
       <View style={styles.postContainer}>
-        {/* Header */}
         <PostHeader user={user} timeAgo={timeAgo} />
 
-        {/* Title */}
         <Text style={[styles.title, { color: sectionColor }]}>
           {item?.title || "No title"}
         </Text>
 
-        {/* Content */}
         <PostContent content={item?.content} />
 
-        {/* Image */}
         {typeof imageUri === "string" && imageUri.trim() !== "" && (
           <PostImage imageUri={imageUri} />
         )}
 
-        {/* Action Buttons */}
         <View style={styles.actionRow}>
-          {/* Like Button */}
           <LikeButton postId={postId} currentUserId={currentUserId} />
 
-          {/* Comment Button */}
+          {/* Sửa phần Comment Button */}
           <Pressable
             style={({ pressed }) => [
               styles.iconButton,
               pressed && styles.pressedButton,
             ]}
-            onPress={() => console.log("Comment clicked!")}
+            onPress={handleCommentPress} // Thay đổi onPress handler
           >
             <Ionicons
               name="chatbubble-outline"

@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import {
-  View,
   TextInput,
   Pressable,
   StyleSheet,
@@ -16,22 +15,36 @@ import { GlobalColors } from "../../constants/GlobalColors";
 const { width, height } = Dimensions.get("window");
 const aspectRatio = height / width;
 
-const CommentInput = ({ newComment, setNewComment, handleAddComment }) => {
+const CommentInput = ({
+  newComment,
+  setNewComment,
+  handleAddComment,
+  autoFocus = false,
+  onBlur, // Thêm prop onBlur
+}) => {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const inputRef = useRef(null);
   const paddingBottomAnim = useRef(
     new Animated.Value(aspectRatio <= 1.78 ? 16 : 32)
   ).current;
+
+  useEffect(() => {
+    if (autoFocus && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current.focus();
+      }, 100);
+    }
+  }, [autoFocus]);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       "keyboardDidShow",
       () => {
         setKeyboardVisible(true);
-        // Tạo hiệu ứng chuyển đổi mượt khi bàn phím hiển thị
         Animated.timing(paddingBottomAnim, {
-          toValue: 6, // Giá trị paddingBottom khi bàn phím hiển thị
-          duration: 200, // Thời gian chuyển đổi (200ms)
-          useNativeDriver: false, // Vì paddingBottom không hỗ trợ native driver
+          toValue: 6,
+          duration: 200,
+          useNativeDriver: false,
         }).start();
       }
     );
@@ -40,12 +53,15 @@ const CommentInput = ({ newComment, setNewComment, handleAddComment }) => {
       "keyboardDidHide",
       () => {
         setKeyboardVisible(false);
-        // Tạo hiệu ứng chuyển đổi mượt khi bàn phím ẩn
         Animated.timing(paddingBottomAnim, {
-          toValue: aspectRatio <= 1.78 ? 16 : 32, // Giá trị paddingBottom khi bàn phím ẩn
-          duration: 100, // Thời gian chuyển đổi (100ms)
+          toValue: aspectRatio <= 1.78 ? 16 : 32,
+          duration: 100,
           useNativeDriver: false,
         }).start();
+        // Gọi onBlur khi keyboard ẩn
+        if (onBlur) {
+          onBlur();
+        }
       }
     );
 
@@ -53,12 +69,19 @@ const CommentInput = ({ newComment, setNewComment, handleAddComment }) => {
       keyboardDidHideListener.remove();
       keyboardDidShowListener.remove();
     };
-  }, [paddingBottomAnim]);
+  }, [paddingBottomAnim, onBlur]);
 
   const handleSend = () => {
     if (newComment.trim()) {
-      handleAddComment(); // Gọi hàm xử lý logic gửi bình luận
-      Keyboard.dismiss(); // Ẩn bàn phím
+      handleAddComment();
+      Keyboard.dismiss();
+    }
+  };
+
+  const handleInputBlur = () => {
+    // Gọi onBlur khi input bị blur
+    if (onBlur) {
+      onBlur();
     }
   };
 
@@ -72,17 +95,19 @@ const CommentInput = ({ newComment, setNewComment, handleAddComment }) => {
         style={[
           styles.inputContainer,
           {
-            paddingBottom: paddingBottomAnim, // Sử dụng Animated.Value cho paddingBottom
+            paddingBottom: paddingBottomAnim,
           },
         ]}
       >
         <TextInput
+          ref={inputRef}
           style={styles.commentInput}
           placeholder="Add a comment..."
           value={newComment}
           onChangeText={setNewComment}
           multiline
           maxLength={1000}
+          onBlur={handleInputBlur} // Thêm onBlur handler
         />
         <Pressable
           style={({ pressed }) => [
@@ -90,7 +115,7 @@ const CommentInput = ({ newComment, setNewComment, handleAddComment }) => {
             pressed && styles.pressedButton,
             !newComment.trim() && styles.disabledButton,
           ]}
-          onPress={handleSend} // Gọi hàm handleSend
+          onPress={handleSend}
           disabled={!newComment.trim()}
         >
           <Ionicons
