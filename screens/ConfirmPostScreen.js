@@ -3,7 +3,7 @@ import {
   View,
   StyleSheet,
   ScrollView,
-  Platform,
+  Dimensions,
   Alert,
 } from "react-native";
 import { useState } from "react";
@@ -14,6 +14,9 @@ import EmotionButton from "../components/TaskSection/EmotionButton";
 import LongButton from "../components/ui/LongButton";
 import { getAllPosts, updatePost } from "../util/posts-data-http";
 import { addPost } from "../util/posts-data-http";
+
+const { width, height } = Dimensions.get("window");
+const aspectRatio = height / width;
 
 function ConfirmPostScreen({ navigation, route }) {
   const content = route.params.content;
@@ -215,7 +218,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 16,
-    paddingBottom: Platform.OS === "ios" ? 32 : 16, // Tùy chỉnh marginBottom cho các thiết bị khác nhau
+    paddingBottom: aspectRatio <= 1.78 ? 16 : 32,
     justifyContent: "flex-end", // Đẩy nút xuống cuối màn hình
   },
   longButton: {

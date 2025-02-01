@@ -9,6 +9,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Dimensions,
 } from "react-native";
 import PostHeader from "../components/Posts/PostHeader";
 import { GlobalColors } from "../constants/GlobalColors";
@@ -20,6 +21,9 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import CommentItem from "../components/Posts/CommentItem";
 import { getCommentsByPostId, addComment } from "../util/comment-data-http";
 import { getUser } from "../util/user-info-http";
+
+const { width, height } = Dimensions.get("window");
+const aspectRatio = height / width;
 
 function PostDetailScreen({ route, navigation }) {
   const {
@@ -129,17 +133,14 @@ function PostDetailScreen({ route, navigation }) {
   }
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-    >
+    <View style={styles.rootContainer}>
+      {/* Main Content */}
       <FlatList
         data={comments}
         keyExtractor={(item) => item.commentId.toString()}
         renderItem={({ item }) => <CommentItem comment={item} />}
         ListHeaderComponent={
           <>
-            {/* Post Header and Content */}
             <PostHeader user={user} timeAgo={timeAgo} />
             <Text style={[styles.title, { color: sectionColor }]}>
               {post?.title || "No title"}
@@ -147,7 +148,6 @@ function PostDetailScreen({ route, navigation }) {
             <Text style={styles.content}>{post?.content || "No content"}</Text>
             {imageUri && <PostImage imageUri={imageUri} />}
 
-            {/* Like & Comment Buttons */}
             <View style={styles.actionRow}>
               <LikeButton postId={postId} currentUserId={currentUserId} />
               <Pressable
@@ -164,20 +164,6 @@ function PostDetailScreen({ route, navigation }) {
                 />
                 <Text style={styles.iconText}>{comments.length}</Text>
               </Pressable>
-            </View>
-
-            {/* Comment Input */}
-            <View style={styles.commentInputContainer}>
-              {/* Đường kẻ ngăn cách */}
-              <View style={styles.separator} />
-
-              <TextInput
-                style={styles.commentInput}
-                placeholder="Add a comment..."
-                value={newComment}
-                onChangeText={setNewComment}
-                onSubmitEditing={handleAddComment}
-              />
             </View>
           </>
         }
@@ -198,80 +184,173 @@ function PostDetailScreen({ route, navigation }) {
             <Text style={styles.emptyText}>No comments yet.</Text>
           )
         }
-        contentContainerStyle={styles.container}
+        contentContainerStyle={styles.listContent}
       />
-    </KeyboardAvoidingView>
+
+      {/* Fixed Comment Input at Bottom */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+        style={styles.keyboardAvoidingView}
+      >
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.commentInput}
+            placeholder="Add a comment..."
+            value={newComment}
+            onChangeText={setNewComment}
+            multiline
+            maxLength={1000}
+          />
+          <Pressable
+            style={({ pressed }) => [
+              styles.sendButton,
+              pressed && styles.pressedButton,
+              !newComment.trim() && styles.disabledButton,
+            ]}
+            onPress={handleAddComment}
+            disabled={!newComment.trim()}
+          >
+            <Ionicons
+              name="send"
+              size={24}
+              color={
+                newComment.trim()
+                  ? GlobalColors.primaryColor
+                  : GlobalColors.lightGray
+              }
+            />
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
 export default PostDetailScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 16, // Padding cho toàn bộ màn hình
+  rootContainer: {
+    flex: 1,
     backgroundColor: GlobalColors.pureWhite,
+  },
+  listContent: {
+    padding: 16,
+    paddingBottom: 100, // Tăng padding bottom để tránh bị che khi có input
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    padding: 20,
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    padding: 20,
   },
   errorText: {
     color: GlobalColors.error,
     fontSize: 16,
+    textAlign: "center",
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     marginBottom: 6,
   },
   content: {
     fontSize: 14,
-    lineHeight: 20,
     color: GlobalColors.primaryBlack,
     marginBottom: 6,
   },
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
+    marginHorizontal: -16,
+    paddingHorizontal: 16,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: GlobalColors.lightGray,
+    marginBottom: 6,
   },
   iconButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 16,
+    marginRight: 20,
+    padding: 4,
   },
   pressedButton: {
     opacity: 0.7,
   },
   iconText: {
-    marginLeft: 5,
-    fontSize: 14,
+    marginLeft: 6,
+    fontSize: 15,
     color: GlobalColors.inActivetabBarColor,
-  },
-  commentInputContainer: {
-    paddingTop: 16,
-  },
-  separator: {
-    height: 1, // Độ dày của đường kẻ
-    backgroundColor: GlobalColors.lightGray, // Màu của đường kẻ
-    marginHorizontal: -16, // Kéo dài đường kẻ ra ngoài padding
-  },
-  commentInput: {
-    borderWidth: 1,
-    borderColor: GlobalColors.lightGray,
-    borderRadius: 8,
-    padding: 8,
-    marginTop: 12, // Khoảng cách giữa đường kẻ và ô nhập
   },
   emptyText: {
     textAlign: "center",
     color: GlobalColors.inActivetabBarColor,
-    marginTop: 16,
+    marginTop: 20,
+    fontSize: 15,
+  },
+  keyboardAvoidingView: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: GlobalColors.pureWhite,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    paddingTop: 16,
+    paddingBottom: aspectRatio <= 1.78 ? 16 : 32,
+    borderTopWidth: 1,
+    borderTopColor: GlobalColors.lightGray,
+    backgroundColor: GlobalColors.pureWhite,
+  },
+  commentInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: GlobalColors.lightGray,
+    borderRadius: 24, // Tăng độ cong
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginRight: 12,
+    maxHeight: 100,
+    backgroundColor: GlobalColors.pureWhite,
+    fontSize: 15,
+    lineHeight: 20,
+  },
+  sendButton: {
+    width: 44,
+    height: 44,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 22,
+    backgroundColor: GlobalColors.pureWhite,
+    // Thêm shadow nhẹ cho nút gửi
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.5,
+    elevation: 2,
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
 });

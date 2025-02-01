@@ -6,7 +6,7 @@ import {
   TextInput,
   Alert,
   ScrollView,
-  Platform,
+  Dimensions,
 } from "react-native";
 import PhotoOptionsModal from "../components/Profile/PhotoOptionsModal";
 import LongButton from "../components/ui/LongButton";
@@ -26,6 +26,9 @@ import { supabase } from "../store/supabaseClient";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import { fetchImageBySectionId } from "../util/section-default-image-http";
+
+const { width, height } = Dimensions.get("window");
+const aspectRatio = height / width;
 
 function TaskNoteScreen({ route, navigation }) {
   const sectionId = route.params.id;
@@ -438,7 +441,7 @@ const styles = StyleSheet.create({
   },
   footerOverlay: {
     padding: 16,
-    paddingBottom: Platform.OS === "ios" ? 32 : 16,
+    paddingBottom: aspectRatio <= 1.78 ? 16 : 32,
     width: "100%",
     alignItems: "center",
   },
