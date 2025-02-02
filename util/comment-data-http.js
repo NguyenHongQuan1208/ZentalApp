@@ -38,9 +38,9 @@ export async function addComment(postId, userId, content) {
 }
 
 // Xóa bình luận
-export async function deleteComment(commentId) {
+export async function deleteComment(postId, commentId) {
   try {
-    await axios.delete(`${BACKEND_URL}/comments/${commentId}.json`);
+    await axios.delete(`${BACKEND_URL}/comments/${postId}/${commentId}.json`);
   } catch (error) {
     console.error("Error deleting comment:", error);
     throw new Error("Could not delete comment.");

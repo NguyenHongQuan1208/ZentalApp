@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -9,7 +9,8 @@ import PostHeader from "../../components/Posts/PostHeader";
 import PostContent from "../../components/Posts/PostContent";
 import PostImage from "../../components/Posts/PostImage";
 import useUser from "../../hooks/useUser";
-import LikeButton from "../../components/Posts/LikeButton"; // Import LikeButton
+import LikeButton from "../../components/Posts/LikeButton";
+import { getCommentsByPostId } from "../../util/comment-data-http";
 
 const Post = memo(({ item, currentUserId }) => {
   const navigation = useNavigation();
@@ -19,6 +20,7 @@ const Post = memo(({ item, currentUserId }) => {
   const sectionId = item?.sectionId || "";
 
   const { user, error } = useUser(userId);
+  const [commentCount, setCommentCount] = useState(0); // State for comment count
 
   const sectionColor =
     TASK_SECTIONS.find((section) => section.id === sectionId)?.color ||
@@ -27,6 +29,22 @@ const Post = memo(({ item, currentUserId }) => {
   const timeAgo = item?.createdAt
     ? formatDistanceToNowStrict(parseISO(item.createdAt), { addSuffix: false })
     : "Unknown time";
+
+  // Fetch comment count
+  useEffect(() => {
+    const fetchCommentCount = async () => {
+      try {
+        const comments = await getCommentsByPostId(postId); // Fetch comments for the post
+        setCommentCount(comments.length); // Update comment count
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      }
+    };
+
+    if (postId) {
+      fetchCommentCount();
+    }
+  }, [postId]);
 
   function navigateHandler() {
     navigation.navigate("PostDetail", {
@@ -37,13 +55,12 @@ const Post = memo(({ item, currentUserId }) => {
       sectionColor: sectionColor,
       timeAgo: timeAgo,
       currentUserId: currentUserId,
-      shouldFocusComment: false, // Thêm param này
+      shouldFocusComment: false,
     });
   }
 
-  // Thêm hàm xử lý click comment
   function handleCommentPress(event) {
-    event.stopPropagation(); // Ngăn chặn sự kiện bubble lên Pressable cha
+    event.stopPropagation();
     navigation.navigate("PostDetail", {
       postId: postId,
       userId: userId,
@@ -52,7 +69,7 @@ const Post = memo(({ item, currentUserId }) => {
       sectionColor: sectionColor,
       timeAgo: timeAgo,
       currentUserId: currentUserId,
-      shouldFocusComment: true, // Set true khi click vào nút comment
+      shouldFocusComment: true,
     });
   }
 
@@ -82,13 +99,13 @@ const Post = memo(({ item, currentUserId }) => {
         <View style={styles.actionRow}>
           <LikeButton postId={postId} currentUserId={currentUserId} />
 
-          {/* Sửa phần Comment Button */}
+          {/* Updated Comment Button */}
           <Pressable
             style={({ pressed }) => [
               styles.iconButton,
               pressed && styles.pressedButton,
             ]}
-            onPress={handleCommentPress} // Thay đổi onPress handler
+            onPress={handleCommentPress}
           >
             <Ionicons
               name="chatbubble-outline"
@@ -101,7 +118,7 @@ const Post = memo(({ item, currentUserId }) => {
                 { color: GlobalColors.inActivetabBarColor },
               ]}
             >
-              0
+              {commentCount} {/* Display dynamic comment count */}
             </Text>
           </Pressable>
         </View>
