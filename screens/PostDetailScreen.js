@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   View,
   Text,
@@ -37,16 +43,19 @@ function PostDetailScreen({ route, navigation }) {
   const [postError, setPostError] = useState(null);
   const [newComment, setNewComment] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { user, isLoadingUser, userError } = useUser(userId); // Lấy thông tin người đăng bài
+  const [shouldFocusInput, setShouldFocusInput] = useState(shouldFocusComment);
+
+  const { user, isLoadingUser, userError } = useUser(userId);
   const {
     comments,
     isLoading: isLoadingComments,
     error: commentError,
     addComment,
-  } = useRealtimeComments(postId); // Sử dụng custom hook để quản lý bình luận
+  } = useRealtimeComments(postId);
   const flatListRef = useRef(null);
 
-  // Fetch post data
+  const ITEM_HEIGHT = 80;
+
   const fetchPost = useCallback(async () => {
     try {
       setIsLoadingPost(true);
@@ -64,27 +73,32 @@ function PostDetailScreen({ route, navigation }) {
     if (postId) fetchPost();
   }, [postId, fetchPost]);
 
-  // Handle pull-to-refresh
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    await fetchPost(); // Tải lại bài viết
+    await fetchPost();
     setIsRefreshing(false);
   }, [fetchPost]);
 
-  // Handle adding a new comment
   const handleAddComment = useCallback(async () => {
     if (!newComment.trim()) return;
 
     try {
-      await addComment(currentUserId, newComment); // Gọi hàm addComment từ hook
-      setNewComment(""); // Reset input sau khi thêm bình luận
-      flatListRef.current?.scrollToEnd({ animated: true }); // Cuộn xuống cuối danh sách bình luận
+      await addComment(currentUserId, newComment);
+      setNewComment("");
+      flatListRef.current?.scrollToEnd({ animated: true });
     } catch (error) {
       console.error("Error adding comment:", error);
     }
   }, [newComment, addComment, currentUserId]);
 
-  // Loading and error handling
+  const sortedComments = useMemo(() => {
+    return comments.slice().sort((a, b) => a.timestamp - b.timestamp);
+  }, [comments]);
+
+  const renderCommentItem = useCallback(({ item }) => {
+    return <CommentItem comment={item} />;
+  }, []);
+
   if (isLoadingPost || isLoadingUser) {
     return (
       <View style={styles.loadingContainer}>
@@ -115,9 +129,18 @@ function PostDetailScreen({ route, navigation }) {
       <View style={styles.rootContainer}>
         <FlatList
           ref={flatListRef}
-          data={comments}
+          data={sortedComments}
           keyExtractor={(item) => item.commentId.toString()}
-          renderItem={({ item }) => <CommentItem comment={item} />}
+          renderItem={renderCommentItem}
+          initialNumToRender={10}
+          maxToRenderPerBatch={5}
+          windowSize={3}
+          getItemLayout={(data, index) => ({
+            length: ITEM_HEIGHT,
+            offset: ITEM_HEIGHT * index,
+            index,
+          })}
+          removeClippedSubviews={true}
           ListHeaderComponent={
             <>
               <PostHeader user={user} timeAgo={timeAgo} />
@@ -135,9 +158,10 @@ function PostDetailScreen({ route, navigation }) {
                     styles.iconButton,
                     pressed && styles.pressedButton,
                   ]}
-                  onPress={() =>
-                    flatListRef.current?.scrollToEnd({ animated: true })
-                  }
+                  onPress={() => {
+                    setShouldFocusInput(true);
+                    flatListRef.current?.scrollToEnd({ animated: true });
+                  }}
                 >
                   <Ionicons
                     name="chatbubble-outline"
@@ -181,8 +205,11 @@ function PostDetailScreen({ route, navigation }) {
           newComment={newComment}
           setNewComment={setNewComment}
           handleAddComment={handleAddComment}
-          autoFocus={shouldFocusComment}
-          onBlur={() => navigation.setParams({ shouldFocusComment: false })}
+          autoFocus={shouldFocusInput}
+          onBlur={() => {
+            setShouldFocusInput(false);
+            navigation.setParams({ shouldFocusComment: false });
+          }}
         />
       </View>
     </KeyboardAvoidingView>
