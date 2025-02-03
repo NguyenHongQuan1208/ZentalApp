@@ -1,10 +1,20 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { memo, useState } from "react";
+import { View, Text, StyleSheet, Pressable } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { GlobalColors } from "../../constants/GlobalColors";
 import Avatar from "../Profile/Avatar";
 
-function CommentItem({ comment }) {
+const CommentItem = memo(({ comment }) => {
   const user = comment.user;
+
+  // State to manage whether the current user has liked the comment
+  const [isLiked, setIsLiked] = useState(false); // Initialize to false
+  const [likeCount, setLikeCount] = useState(comment.likeCount || 0);
+
+  const handleLikeToggle = () => {
+    setIsLiked((prevLiked) => !prevLiked); // Toggle the liked state
+    setLikeCount((prevCount) => (isLiked ? prevCount - 1 : prevCount + 1)); // Update like count
+  };
 
   return (
     <View style={styles.commentContainer}>
@@ -19,13 +29,22 @@ function CommentItem({ comment }) {
             {new Date(comment.createdAt).toLocaleString()}
           </Text>
         </View>
+        {/* Like Button positioned to the right */}
+        <Pressable style={styles.iconButton} onPress={handleLikeToggle}>
+          <Ionicons
+            name={isLiked ? "heart" : "heart-outline"}
+            size={24}
+            color={isLiked ? "red" : GlobalColors.inActivetabBarColor}
+          />
+          <Text style={styles.iconText}>{likeCount}</Text>
+        </Pressable>
       </View>
 
       {/* Comment Content */}
       <Text style={styles.commentContent}>{comment.content}</Text>
     </View>
   );
-}
+});
 
 export default CommentItem;
 
@@ -44,11 +63,12 @@ const styles = StyleSheet.create({
   userInfoContainer: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between", // Align items to space between
     marginBottom: 8,
   },
   userTextContainer: {
-    marginLeft: 12,
     flex: 1,
+    marginLeft: 12,
   },
   commentUser: {
     fontSize: 16,
@@ -65,5 +85,14 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: GlobalColors.primaryBlack,
     marginTop: 4,
+  },
+  iconButton: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconText: {
+    marginLeft: 5,
+    fontSize: 14,
+    color: GlobalColors.inActivetabBarColor,
   },
 });
