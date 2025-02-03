@@ -1,49 +1,11 @@
-import React, { memo, useState, useEffect } from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { GlobalColors } from "../../constants/GlobalColors";
+import React, { memo } from "react";
+import { View, Text, StyleSheet } from "react-native";
 import Avatar from "../Profile/Avatar";
-import { ref, update } from "firebase/database";
-import { database } from "../../util/firebase-config"; // Adjust the import path as necessary
+import CommentLikeButton from "./CommentLikeButton";
+import { GlobalColors } from "../../constants/GlobalColors";
 
 const CommentItem = memo(({ comment, currentUserId, postId }) => {
   const user = comment.user;
-
-  // State to manage whether the current user has liked the comment
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(comment.likeCount || 0);
-
-  useEffect(() => {
-    // Check if the current user has liked the comment
-    if (comment.likedBy && comment.likedBy.includes(currentUserId)) {
-      setIsLiked(true);
-    }
-  }, [comment.likedBy, currentUserId]);
-
-  const handleLikeToggle = async () => {
-    const newLikeCount = isLiked ? likeCount - 1 : likeCount + 1;
-    const likedBy = comment.likedBy || [];
-
-    // Update the like status
-    if (isLiked) {
-      // Remove currentUserId from likedBy array
-      const updatedLikedBy = likedBy.filter((id) => id !== currentUserId);
-      await update(ref(database, `comments/${postId}/${comment.commentId}`), {
-        likeCount: newLikeCount,
-        likedBy: updatedLikedBy,
-      });
-    } else {
-      // Add currentUserId to likedBy array
-      await update(ref(database, `comments/${postId}/${comment.commentId}`), {
-        likeCount: newLikeCount,
-        likedBy: [...likedBy, currentUserId],
-      });
-    }
-
-    // Update local state
-    setIsLiked((prevLiked) => !prevLiked);
-    setLikeCount(newLikeCount);
-  };
 
   return (
     <View style={styles.commentContainer}>
@@ -58,15 +20,14 @@ const CommentItem = memo(({ comment, currentUserId, postId }) => {
             {new Date(comment.createdAt).toLocaleString()}
           </Text>
         </View>
-        {/* Like Button positioned to the right */}
-        <Pressable style={styles.iconButton} onPress={handleLikeToggle}>
-          <Ionicons
-            name={isLiked ? "heart" : "heart-outline"}
-            size={24}
-            color={isLiked ? "red" : GlobalColors.inActivetabBarColor}
-          />
-          <Text style={styles.iconText}>{likeCount}</Text>
-        </Pressable>
+        {/* Like Button */}
+        <CommentLikeButton
+          postId={postId}
+          commentId={comment.commentId}
+          currentUserId={currentUserId}
+          initialLikeCount={comment.likeCount}
+          initialLikedBy={comment.likedBy}
+        />
       </View>
 
       {/* Comment Content */}
@@ -114,14 +75,5 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: GlobalColors.primaryBlack,
     marginTop: 4,
-  },
-  iconButton: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  iconText: {
-    marginLeft: 5,
-    fontSize: 14,
-    color: GlobalColors.inActivetabBarColor,
   },
 });
