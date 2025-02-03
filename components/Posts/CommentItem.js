@@ -1,19 +1,48 @@
-import React, { memo, useState } from "react";
+import React, { memo, useState, useEffect } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { GlobalColors } from "../../constants/GlobalColors";
 import Avatar from "../Profile/Avatar";
+import { ref, update } from "firebase/database";
+import { database } from "../../util/firebase-config"; // Adjust the import path as necessary
 
-const CommentItem = memo(({ comment }) => {
+const CommentItem = memo(({ comment, currentUserId, postId }) => {
   const user = comment.user;
 
   // State to manage whether the current user has liked the comment
-  const [isLiked, setIsLiked] = useState(false); // Initialize to false
+  const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(comment.likeCount || 0);
 
-  const handleLikeToggle = () => {
-    setIsLiked((prevLiked) => !prevLiked); // Toggle the liked state
-    setLikeCount((prevCount) => (isLiked ? prevCount - 1 : prevCount + 1)); // Update like count
+  useEffect(() => {
+    // Check if the current user has liked the comment
+    if (comment.likedBy && comment.likedBy.includes(currentUserId)) {
+      setIsLiked(true);
+    }
+  }, [comment.likedBy, currentUserId]);
+
+  const handleLikeToggle = async () => {
+    const newLikeCount = isLiked ? likeCount - 1 : likeCount + 1;
+    const likedBy = comment.likedBy || [];
+
+    // Update the like status
+    if (isLiked) {
+      // Remove currentUserId from likedBy array
+      const updatedLikedBy = likedBy.filter((id) => id !== currentUserId);
+      await update(ref(database, `comments/${postId}/${comment.commentId}`), {
+        likeCount: newLikeCount,
+        likedBy: updatedLikedBy,
+      });
+    } else {
+      // Add currentUserId to likedBy array
+      await update(ref(database, `comments/${postId}/${comment.commentId}`), {
+        likeCount: newLikeCount,
+        likedBy: [...likedBy, currentUserId],
+      });
+    }
+
+    // Update local state
+    setIsLiked((prevLiked) => !prevLiked);
+    setLikeCount(newLikeCount);
   };
 
   return (
@@ -63,7 +92,7 @@ const styles = StyleSheet.create({
   userInfoContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between", // Align items to space between
+    justifyContent: "space-between",
     marginBottom: 8,
   },
   userTextContainer: {

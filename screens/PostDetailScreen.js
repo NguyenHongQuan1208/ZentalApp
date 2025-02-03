@@ -11,7 +11,6 @@ import {
   StyleSheet,
   ActivityIndicator,
   FlatList,
-  Pressable,
   KeyboardAvoidingView,
   Platform,
   RefreshControl,
@@ -95,9 +94,18 @@ function PostDetailScreen({ route, navigation }) {
     return comments.slice().sort((a, b) => a.timestamp - b.timestamp);
   }, [comments]);
 
-  const renderCommentItem = useCallback(({ item }) => {
-    return <CommentItem comment={item} />;
-  }, []);
+  const renderCommentItem = useCallback(
+    ({ item }) => {
+      return (
+        <CommentItem
+          comment={item}
+          currentUserId={currentUserId}
+          postId={postId} // Pass postId here
+        />
+      );
+    },
+    [currentUserId, postId] // Include postId in dependencies
+  );
 
   if (isLoadingPost || isLoadingUser) {
     return (
