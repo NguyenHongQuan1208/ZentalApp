@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
 import { AuthContext } from "../store/auth-context";
 import Avatar from "../components/Profile/Avatar";
@@ -22,7 +22,6 @@ function ProfileScreen({ navigation }) {
 
   async function fetchData() {
     try {
-      // Sử dụng getUserDataWithRetry để đảm bảo xử lý token hết hạn
       const authResponse = await getUserDataWithRetry(
         token,
         refreshToken,
@@ -31,7 +30,7 @@ function ProfileScreen({ navigation }) {
       );
 
       const uid = authResponse.localId;
-      setUserId(uid); // Lưu UID vào state
+      setUserId(uid);
 
       const userData = await getUser(uid);
       setUserName(userData.username || "");
@@ -43,14 +42,13 @@ function ProfileScreen({ navigation }) {
 
   useEffect(() => {
     fetchData();
-  }, [token, refreshToken]); // Đảm bảo useEffect chỉ chạy khi token thay đổi
+  }, [token, refreshToken]);
 
   const handleUserDataChange = (userData) => {
     setUserName(userData.username || "User Name");
     setPhotoUrl(userData.photoUrl || null);
   };
 
-  // Lắng nghe thay đổi dữ liệu người dùng realtime
   useRealtimeUser(userId, handleUserDataChange);
 
   function pressHandler() {
@@ -77,6 +75,7 @@ function ProfileScreen({ navigation }) {
           icon="person"
           screen="PersonalProfile"
           screenName="Personal Profile"
+          userId={userId} // Pass userId to MenuItem
         />
         <MenuItem icon="home" screen="Home" screenName="Home" />
         <MenuItem icon="sunny" screen="Task" screenName="Task" />
@@ -106,7 +105,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 10,
   },
-
   editPressed: {
     opacity: 0.5,
   },

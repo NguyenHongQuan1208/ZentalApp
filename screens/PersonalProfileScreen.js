@@ -1,35 +1,25 @@
 import { Text, View, StyleSheet, Pressable } from "react-native";
 import Avatar from "../components/Profile/Avatar";
-import { useContext, useState, useEffect } from "react";
-import { AuthContext } from "../store/auth-context";
+import { useState, useEffect } from "react";
 import { getUser } from "../util/user-info-http";
 import { GlobalColors } from "../constants/GlobalColors";
 import useRealtimeUser from "../hooks/useRealtimeUser";
-import { RefreshTokenContext } from "../store/RefreshTokenContext";
-import { getUserDataWithRetry } from "../util/refresh-auth-token";
 
-function PersonalProfileScreen({ navigation }) {
-  const authCtx = useContext(AuthContext);
-  const refreshCtx = useContext(RefreshTokenContext);
-  const token = authCtx.token;
-  const refreshToken = refreshCtx.refreshToken;
-
+function PersonalProfileScreen({ route }) {
+  // Get userId from navigation params
+  const { userId: routeUserId } = route.params || {};
   const [userName, setUserName] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [bio, setBio] = useState("");
-  const [userId, setUserId] = useState("");
+  const [userId, setUserId] = useState(routeUserId); // Set initial userId from params
 
   async function fetchData() {
     try {
-      const authResponse = await getUserDataWithRetry(
-        token,
-        refreshToken,
-        authCtx,
-        refreshCtx
-      );
-      const uid = authResponse.localId;
-      setUserId(uid); // Lưu UID vào state
-      const userData = await getUser(uid);
+      if (!userId) {
+        console.log("No userId provided");
+        return;
+      }
+      const userData = await getUser(userId);
       setUserName(userData.username || "No name available");
       setPhotoUrl(userData.photoUrl || "");
       setBio(userData.bio || "This user has no bio.");
@@ -40,7 +30,7 @@ function PersonalProfileScreen({ navigation }) {
 
   useEffect(() => {
     fetchData();
-  }, [token, refreshToken]);
+  }, [userId]); // Fetch data when userId changes
 
   const handleUserDataChange = (userData) => {
     setUserName(userData.username || "User Name");

@@ -5,14 +5,14 @@ import { GlobalColors } from "../../constants/GlobalColors";
 import { useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../../store/auth-context";
 
-function MenuItem({ icon, screenName, screen }) {
+function MenuItem({ icon, screenName, screen, userId }) {
   const navigation = useNavigation();
   const opacity = useRef(new Animated.Value(1)).current;
   const authCtx = useContext(AuthContext);
 
   function pressHandler() {
     if (screen === "logout") {
-      // Hiển thị hộp thoại xác nhận khi screen là "logout"
+      // Show confirmation dialog for logout
       Alert.alert("Confirm", "Are you sure you want to logout?", [
         {
           text: "Cancel",
@@ -21,21 +21,25 @@ function MenuItem({ icon, screenName, screen }) {
         },
         {
           text: "Logout",
-          onPress: () => authCtx.logout(), // Gọi hàm logout từ context
+          onPress: () => authCtx.logout(), // Call logout function from context
           style: "destructive",
         },
       ]);
     } else {
-      // Thực hiện hiệu ứng fade
+      // Perform fade effect
       Animated.timing(opacity, {
         toValue: 0.5,
         duration: 200,
         useNativeDriver: true,
       }).start(() => {
-        // Sau khi hoàn tất hiệu ứng, điều hướng tới trang khác
-        navigation.navigate(screen);
+        // After the animation completes, navigate to the specified screen
+        if (screen === "PersonalProfile" && userId) {
+          navigation.navigate(screen, { userId }); // Pass userId if navigating to PersonalProfile
+        } else {
+          navigation.navigate(screen);
+        }
 
-        // Đặt lại opacity
+        // Reset opacity
         Animated.timing(opacity, {
           toValue: 1,
           duration: 200,
