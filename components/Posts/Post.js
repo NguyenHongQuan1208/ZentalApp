@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from "react";
+import React, { memo } from "react";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
 import { TASK_SECTIONS } from "../../data/dummy-data";
@@ -9,8 +9,8 @@ import PostContent from "../../components/Posts/PostContent";
 import PostImage from "../../components/Posts/PostImage";
 import useUser from "../../hooks/useUser";
 import LikeButton from "../../components/Posts/LikeButton";
-import CommentButton from "../../components/Posts/CommentButton"; // Import CommentButton
-import { getCommentsByPostId } from "../../util/comment-data-http";
+import CommentButton from "../../components/Posts/CommentButton";
+import useRealtimeComments from "../../hooks/useRealtimeComments"; // Import the hook
 
 const Post = memo(({ item, currentUserId }) => {
   const navigation = useNavigation();
@@ -20,7 +20,7 @@ const Post = memo(({ item, currentUserId }) => {
   const sectionId = item?.sectionId || "";
 
   const { user, error } = useUser(userId);
-  const [commentCount, setCommentCount] = useState(0);
+  const { comments } = useRealtimeComments(postId); // Use the hook
 
   const sectionColor =
     TASK_SECTIONS.find((section) => section.id === sectionId)?.color ||
@@ -30,20 +30,7 @@ const Post = memo(({ item, currentUserId }) => {
     ? formatDistanceToNowStrict(parseISO(item.createdAt), { addSuffix: false })
     : "Unknown time";
 
-  useEffect(() => {
-    const fetchCommentCount = async () => {
-      try {
-        const comments = await getCommentsByPostId(postId);
-        setCommentCount(comments.length);
-      } catch (error) {
-        console.error("Error fetching comments:", error);
-      }
-    };
-
-    if (postId) {
-      fetchCommentCount();
-    }
-  }, [postId]);
+  const commentCount = comments ? comments.length : 0; // Calculate comment count
 
   function navigateHandler() {
     navigation.navigate("PostDetail", {
