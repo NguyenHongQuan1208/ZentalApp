@@ -1,7 +1,6 @@
 import React, { memo, useEffect, useState } from "react";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { TASK_SECTIONS } from "../../data/dummy-data";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { useNavigation } from "@react-navigation/native";
@@ -10,6 +9,7 @@ import PostContent from "../../components/Posts/PostContent";
 import PostImage from "../../components/Posts/PostImage";
 import useUser from "../../hooks/useUser";
 import LikeButton from "../../components/Posts/LikeButton";
+import CommentButton from "../../components/Posts/CommentButton"; // Import CommentButton
 import { getCommentsByPostId } from "../../util/comment-data-http";
 
 const Post = memo(({ item, currentUserId }) => {
@@ -20,7 +20,7 @@ const Post = memo(({ item, currentUserId }) => {
   const sectionId = item?.sectionId || "";
 
   const { user, error } = useUser(userId);
-  const [commentCount, setCommentCount] = useState(0); // State for comment count
+  const [commentCount, setCommentCount] = useState(0);
 
   const sectionColor =
     TASK_SECTIONS.find((section) => section.id === sectionId)?.color ||
@@ -30,12 +30,11 @@ const Post = memo(({ item, currentUserId }) => {
     ? formatDistanceToNowStrict(parseISO(item.createdAt), { addSuffix: false })
     : "Unknown time";
 
-  // Fetch comment count
   useEffect(() => {
     const fetchCommentCount = async () => {
       try {
-        const comments = await getCommentsByPostId(postId); // Fetch comments for the post
-        setCommentCount(comments.length); // Update comment count
+        const comments = await getCommentsByPostId(postId);
+        setCommentCount(comments.length);
       } catch (error) {
         console.error("Error fetching comments:", error);
       }
@@ -98,29 +97,10 @@ const Post = memo(({ item, currentUserId }) => {
 
         <View style={styles.actionRow}>
           <LikeButton postId={postId} currentUserId={currentUserId} />
-
-          {/* Updated Comment Button */}
-          <Pressable
-            style={({ pressed }) => [
-              styles.iconButton,
-              pressed && styles.pressedButton,
-            ]}
+          <CommentButton
+            commentCount={commentCount}
             onPress={handleCommentPress}
-          >
-            <Ionicons
-              name="chatbubble-outline"
-              size={24}
-              color={GlobalColors.inActivetabBarColor}
-            />
-            <Text
-              style={[
-                styles.iconText,
-                { color: GlobalColors.inActivetabBarColor },
-              ]}
-            >
-              {commentCount} {/* Display dynamic comment count */}
-            </Text>
-          </Pressable>
+          />
         </View>
       </View>
     </Pressable>
@@ -147,19 +127,6 @@ const styles = StyleSheet.create({
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
-  },
-  iconButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 16,
-  },
-  pressedButton: {
-    opacity: 0.7,
-  },
-  iconText: {
-    marginLeft: 5,
-    fontSize: 14,
-    color: GlobalColors.inActivetabBarColor,
   },
   errorContainer: {
     flex: 1,

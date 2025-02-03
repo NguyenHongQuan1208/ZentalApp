@@ -22,7 +22,7 @@ import useUser from "../hooks/useUser";
 import { getPostById } from "../util/posts-data-http";
 import PostImage from "../components/Posts/PostImage";
 import LikeButton from "../components/Posts/LikeButton";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import CommentButton from "../components/Posts/CommentButton";
 import CommentItem from "../components/Posts/CommentItem";
 import CommentInput from "../components/Posts/CommentInput";
 import useRealtimeComments from "../hooks/useRealtimeComments";
@@ -153,23 +153,13 @@ function PostDetailScreen({ route, navigation }) {
               {imageUri && <PostImage imageUri={imageUri} />}
               <View style={styles.actionRow}>
                 <LikeButton postId={postId} currentUserId={currentUserId} />
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.iconButton,
-                    pressed && styles.pressedButton,
-                  ]}
+                <CommentButton
+                  commentCount={comments.length}
                   onPress={() => {
                     setShouldFocusInput(true);
                     flatListRef.current?.scrollToEnd({ animated: true });
                   }}
-                >
-                  <Ionicons
-                    name="chatbubble-outline"
-                    size={24}
-                    color={GlobalColors.inActivetabBarColor}
-                  />
-                  <Text style={styles.iconText}>{comments.length}</Text>
-                </Pressable>
+                />
               </View>
             </>
           }
@@ -263,20 +253,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: GlobalColors.lightGray,
     marginBottom: 6,
-  },
-  iconButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 20,
-    padding: 4,
-  },
-  pressedButton: {
-    opacity: 0.7,
-  },
-  iconText: {
-    marginLeft: 6,
-    fontSize: 15,
-    color: GlobalColors.inActivetabBarColor,
   },
   emptyText: {
     textAlign: "center",
