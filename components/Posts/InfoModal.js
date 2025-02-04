@@ -1,9 +1,22 @@
 // InfoModal.js
 import React from "react";
-import { Modal, View, Text, Pressable, StyleSheet } from "react-native";
+import {
+  Modal,
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  FlatList,
+} from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
 
-const InfoModal = ({ visible, onClose, content }) => {
+const InfoModal = ({ visible, onClose, userIds, title }) => {
+  const renderItem = ({ item }) => (
+    <View style={styles.listItem}>
+      <Text>{item}</Text>
+    </View>
+  );
+
   return (
     <Modal
       animationType="slide"
@@ -18,7 +31,16 @@ const InfoModal = ({ visible, onClose, content }) => {
             { backgroundColor: GlobalColors.primaryWhite },
           ]}
         >
-          <Text style={styles.modalText}>{content}</Text>
+          {title && <Text style={styles.modalTitle}>{title}</Text>}
+          {userIds && userIds.length > 0 ? (
+            <FlatList
+              data={userIds}
+              renderItem={renderItem}
+              keyExtractor={(item) => item}
+            />
+          ) : (
+            <Text style={styles.modalText}>No likes yet.</Text>
+          )}
           <Pressable style={styles.closeButton} onPress={onClose}>
             <Text>Close</Text>
           </Pressable>
@@ -59,6 +81,18 @@ const styles = StyleSheet.create({
   },
   modalText: {
     marginBottom: 15,
+    textAlign: "center",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  listItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    width: "100%",
     textAlign: "center",
   },
 });

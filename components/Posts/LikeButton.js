@@ -1,15 +1,13 @@
 import React, { memo, useState } from "react";
-import { Pressable, Text, StyleSheet } from "react-native";
+import { Pressable, Text, StyleSheet, ActivityIndicator } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { GlobalColors } from "../../constants/GlobalColors";
 import useRealtimeLikes from "../../hooks/useRealtimeLikes";
-import InfoModal from "./InfoModal"; // Import the InfoModal component
+import InfoModal from "./InfoModal";
 
 const LikeButton = memo(({ postId, currentUserId }) => {
-  const { isLiked, likeCount, toggleLike } = useRealtimeLikes(
-    postId,
-    currentUserId
-  );
+  const { isLiked, likeCount, toggleLike, likedUserIds, loading } =
+    useRealtimeLikes(postId, currentUserId);
   const [modalVisible, setModalVisible] = useState(false);
 
   const openModal = () => {
@@ -28,12 +26,20 @@ const LikeButton = memo(({ postId, currentUserId }) => {
           pressed && styles.pressedButton,
         ]}
         onPress={toggleLike}
+        disabled={loading} // Vô hiệu hóa nút khi loading
       >
-        <Ionicons
-          name={isLiked ? "heart" : "heart-outline"}
-          size={24}
-          color={isLiked ? "red" : GlobalColors.inActivetabBarColor}
-        />
+        {loading ? (
+          <ActivityIndicator
+            size="small"
+            color={GlobalColors.inActivetabBarColor}
+          />
+        ) : (
+          <Ionicons
+            name={isLiked ? "heart" : "heart-outline"}
+            size={24}
+            color={isLiked ? "red" : GlobalColors.inActivetabBarColor}
+          />
+        )}
         <Pressable onPress={openModal} style={styles.likeCountPressable}>
           <Text
             style={[
@@ -46,11 +52,11 @@ const LikeButton = memo(({ postId, currentUserId }) => {
         </Pressable>
       </Pressable>
 
-      {/* Replace LikesModal with InfoModal */}
       <InfoModal
         visible={modalVisible}
         onClose={closeModal}
-        content={`Likes: ${likeCount}`} // Pass dynamic content for the modal
+        userIds={likedUserIds}
+        title="Likes"
       />
     </>
   );
