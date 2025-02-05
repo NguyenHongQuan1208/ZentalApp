@@ -1,5 +1,4 @@
-// InfoModal.js
-import React from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
   Modal,
   View,
@@ -7,44 +6,116 @@ import {
   Pressable,
   StyleSheet,
   FlatList,
+  Animated,
+  PanResponder,
+  Dimensions,
 } from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
+import ProfileBar from "./ProfileBar";
+
+const { height: screenHeight } = Dimensions.get("window");
 
 const InfoModal = ({ visible, onClose, userIds, title }) => {
+  const translateY = useRef(new Animated.Value(screenHeight)).current;
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: (e, gestureState) => {
+        if (gestureState.dy > 0 && !isClosing) {
+          const newTranslateY = Math.max(0, gestureState.dy);
+          translateY.setValue(newTranslateY);
+        }
+      },
+      onPanResponderRelease: (e, gestureState) => {
+        if (gestureState.dy > 100) {
+          closeModal();
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            tension: 30,
+            friction: 10,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
+  useEffect(() => {
+    if (visible) {
+      setIsModalVisible(true);
+      Animated.spring(translateY, {
+        toValue: 0,
+        tension: 30,
+        friction: 10,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible]);
+
+  const closeModal = useCallback(() => {
+    if (isClosing) return;
+
+    setIsClosing(true);
+    Animated.timing(translateY, {
+      toValue: screenHeight,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setIsModalVisible(false);
+      setIsClosing(false);
+      onClose();
+    });
+  }, [onClose, isClosing]);
+
+  const handleOverlayPress = useCallback(() => {
+    if (!isClosing) {
+      closeModal();
+    }
+  }, [closeModal, isClosing]);
+
   const renderItem = ({ item }) => (
     <View style={styles.listItem}>
-      <Text>{item}</Text>
+      <ProfileBar userId={item} />
     </View>
   );
 
+  if (!isModalVisible) return null;
+
   return (
     <Modal
-      animationType="slide"
+      animationType="none"
       transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
+      visible={true}
+      onRequestClose={closeModal}
     >
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <View
+      <Pressable style={styles.overlay} onPress={handleOverlayPress}>
+        <Animated.View
+          {...panResponder.panHandlers}
           style={[
             styles.modalView,
-            { backgroundColor: GlobalColors.primaryWhite },
+            {
+              backgroundColor: GlobalColors.primaryWhite,
+              transform: [{ translateY }],
+            },
           ]}
         >
+          <View style={styles.dragHandle} />
           {title && <Text style={styles.modalTitle}>{title}</Text>}
           {userIds && userIds.length > 0 ? (
             <FlatList
               data={userIds}
               renderItem={renderItem}
               keyExtractor={(item) => item}
+              contentContainerStyle={styles.listContent}
             />
           ) : (
             <Text style={styles.modalText}>No likes yet.</Text>
           )}
-          <Pressable style={styles.closeButton} onPress={onClose}>
-            <Text>Close</Text>
-          </Pressable>
-        </View>
+        </Animated.View>
       </Pressable>
     </Modal>
   );
@@ -53,14 +124,15 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "flex-end",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
   },
   modalView: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 35,
+    paddingTop: 10,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
@@ -71,13 +143,14 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     width: "100%",
-    height: "66%", // Occupy 2/3 of the screen height
+    height: "66%",
   },
-  closeButton: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: "#ddd",
-    borderRadius: 5,
+  dragHandle: {
+    width: 40,
+    height: 5,
+    backgroundColor: "#ccc",
+    borderRadius: 2.5,
+    marginBottom: 10,
   },
   modalText: {
     marginBottom: 15,
@@ -93,8 +166,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
     width: "100%",
-    textAlign: "center",
+  },
+  listContent: {
+    paddingBottom: 20,
   },
 });
 
-export default InfoModal;
+export default React.memo(InfoModal);
