@@ -1,3 +1,4 @@
+// InfoModal.js
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
   Modal,
@@ -162,12 +163,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   listItem: {
-    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
     width: "100%",
   },
   listContent: {
+    width: "100%",
     paddingBottom: 20,
   },
 });
