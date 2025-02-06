@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 12,
+    paddingVertical: 8,
     width: "100%",
   },
   userName: {
