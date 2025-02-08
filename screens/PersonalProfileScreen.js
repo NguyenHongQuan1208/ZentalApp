@@ -10,12 +10,13 @@ import { useState, useEffect, useContext } from "react";
 import { getUser } from "../util/user-info-http";
 import { GlobalColors } from "../constants/GlobalColors";
 import useRealtimeUser from "../hooks/useRealtimeUser";
-import Icon from "react-native-vector-icons/Ionicons";
+import Ionicons from "react-native-vector-icons/Ionicons";
 import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
+import IconButton from "../components/ui/IconButton";
 
-function PersonalProfileScreen({ route }) {
+function PersonalProfileScreen({ route, navigation }) {
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
   const token = authCtx.token;
@@ -80,6 +81,19 @@ function PersonalProfileScreen({ route }) {
 
   useRealtimeUser(userId, handleUserDataChange);
 
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <IconButton
+          icon="add"
+          size={24}
+          color="white"
+          onPress={() => navigation.navigate("AppOverview", { screen: "Task" })}
+        />
+      ),
+    });
+  }, [navigation]); // Add navigation as a dependency
+
   return (
     <View style={styles.container}>
       {loading ? ( // Full-screen loading indicator
@@ -125,7 +139,7 @@ function PersonalProfileScreen({ route }) {
                 ]}
                 android_ripple={{ color: "#ccc" }}
               >
-                <Icon name="funnel-outline" size={20} color="#fff" />
+                <Ionicons name="funnel-outline" size={20} color="#fff" />
               </Pressable>
             )}
           </View>

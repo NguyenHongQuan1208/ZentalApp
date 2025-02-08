@@ -258,20 +258,10 @@ function AuthenticatedStack() {
       <Stack.Screen
         name="PersonalProfile"
         component={PersonalProfileScreen}
-        options={({ navigation }) => ({
+        options={{
           headerTitle: "Personal Profile",
           headerTitleAlign: "center",
-          headerRight: () => (
-            <IconButton
-              icon="add"
-              size={24}
-              color="white"
-              onPress={() =>
-                navigation.navigate("AppOverview", { screen: "Task" })
-              }
-            />
-          ),
-        })}
+        }}
       />
     </Stack.Navigator>
   );

@@ -1,12 +1,13 @@
-import React from "react";
+import { useState } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import Avatar from "../Profile/Avatar";
 import { GlobalColors } from "../../constants/GlobalColors";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useNavigation } from "@react-navigation/native"; // Import useNavigation
+import { useNavigation } from "@react-navigation/native";
 
 function PostHeader({ user, timeAgo }) {
-  const navigation = useNavigation(); // Get the navigation object
+  const navigation = useNavigation();
+  const [isUsernamePressed, setIsUsernamePressed] = useState(false);
 
   const handleMoreOptions = () => {
     console.log("More options clicked!");
@@ -14,26 +15,47 @@ function PostHeader({ user, timeAgo }) {
 
   const handleAvatarPress = () => {
     if (user?.uid) {
-      navigation.navigate("PersonalProfile", { userId: user.uid }); // Navigate to PersonalProfile with userId
+      navigation.navigate("PersonalProfile", { userId: user.uid });
     }
   };
 
   const handleUsernamePress = () => {
     if (user?.uid) {
-      navigation.navigate("PersonalProfile", { userId: user.uid }); // Navigate to PersonalProfile with userId
+      navigation.navigate("PersonalProfile", { userId: user.uid });
     }
+  };
+
+  const handleUsernamePressIn = () => {
+    setIsUsernamePressed(true);
+  };
+
+  const handleUsernamePressOut = () => {
+    setIsUsernamePressed(false);
   };
 
   return (
     <View style={styles.header}>
-      {/* User Information Section */}
       <View style={styles.userContainer}>
-        <Pressable onPress={handleAvatarPress}>
+        <Pressable
+          onPress={handleAvatarPress}
+          style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+        >
           <Avatar photoUrl={user?.photoUrl} size={40} />
         </Pressable>
         <View style={styles.userInfo}>
-          <Pressable onPress={handleUsernamePress}>
-            <Text style={styles.username}>
+          <Pressable
+            onPressIn={handleUsernamePressIn}
+            onPressOut={handleUsernamePressOut}
+            onPress={handleUsernamePress} // Add onPress handler
+          >
+            <Text
+              style={[
+                styles.username,
+                {
+                  textDecorationLine: isUsernamePressed ? "underline" : "none",
+                },
+              ]}
+            >
               {user?.username || "Loading..."}
             </Text>
           </Pressable>
@@ -41,7 +63,6 @@ function PostHeader({ user, timeAgo }) {
         </View>
       </View>
 
-      {/* More Options Icon */}
       <Pressable onPress={handleMoreOptions} style={styles.moreOptionsButton}>
         <Ionicons
           name="ellipsis-horizontal"
@@ -59,7 +80,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between", // Align the more options icon to the right
+    justifyContent: "space-between",
     marginBottom: 6,
   },
   userContainer: {
@@ -81,6 +102,6 @@ const styles = StyleSheet.create({
   },
   moreOptionsButton: {
     marginTop: -16,
-    padding: 8, // Increase the pressable area for the icon
+    padding: 8,
   },
 });
