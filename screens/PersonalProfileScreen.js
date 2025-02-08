@@ -1,19 +1,58 @@
-import { Text, View, StyleSheet, Pressable } from "react-native";
+import {
+  Text,
+  View,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 import Avatar from "../components/Profile/Avatar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { getUser } from "../util/user-info-http";
 import { GlobalColors } from "../constants/GlobalColors";
 import useRealtimeUser from "../hooks/useRealtimeUser";
+import Icon from "react-native-vector-icons/Ionicons";
+import { AuthContext } from "../store/auth-context";
+import { RefreshTokenContext } from "../store/RefreshTokenContext";
+import { getUserDataWithRetry } from "../util/refresh-auth-token";
 
 function PersonalProfileScreen({ route }) {
-  // Get userId from navigation params
+  const authCtx = useContext(AuthContext);
+  const refreshCtx = useContext(RefreshTokenContext);
+  const token = authCtx.token;
+  const refreshToken = refreshCtx.refreshToken;
+  const [currentUserId, setCurrentUserId] = useState("");
+  const [loading, setLoading] = useState(true); // Loading state
+
+  // Fetch current user data with retry logic
+  async function fetchCurrentUserData() {
+    try {
+      const authResponse = await getUserDataWithRetry(
+        token,
+        refreshToken,
+        authCtx,
+        refreshCtx
+      );
+      const uid = authResponse.localId;
+      setCurrentUserId(uid);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    } finally {
+      setLoading(false); // Set loading to false after fetching
+    }
+  }
+
+  useEffect(() => {
+    fetchCurrentUserData();
+  }, [token, refreshToken]);
+
   const { userId: routeUserId } = route.params || {};
   const [userName, setUserName] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [bio, setBio] = useState("");
-  const [userId, setUserId] = useState(routeUserId); // Set initial userId from params
+  const [userId, setUserId] = useState(routeUserId);
 
-  async function fetchData() {
+  // Fetch user data based on userId
+  async function fetchUserData() {
     try {
       if (!userId) {
         console.log("No userId provided");
@@ -29,57 +68,73 @@ function PersonalProfileScreen({ route }) {
   }
 
   useEffect(() => {
-    fetchData();
-  }, [userId]); // Fetch data when userId changes
+    fetchUserData();
+  }, [userId]);
 
+  // Handle user data changes in real-time
   const handleUserDataChange = (userData) => {
     setUserName(userData.username || "User Name");
     setPhotoUrl(userData.photoUrl || null);
     setBio(userData.bio || null);
   };
 
-  // Lắng nghe thay đổi dữ liệu người dùng realtime
   useRealtimeUser(userId, handleUserDataChange);
 
   return (
     <View style={styles.container}>
-      {/* Phần thông tin cá nhân */}
-      <View style={styles.header}>
-        <View style={styles.avatarWrapper}>
-          <Avatar photoUrl={photoUrl} size={60} />
+      {loading ? ( // Full-screen loading indicator
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={GlobalColors.primaryColor} />
         </View>
-        <View style={styles.info}>
-          <Text style={styles.name}>{userName}</Text>
-          <Text style={styles.bio}>{bio}</Text>
-        </View>
-      </View>
+      ) : (
+        <>
+          <View style={styles.header}>
+            <View style={styles.avatarWrapper}>
+              <Avatar photoUrl={photoUrl} size={60} />
+            </View>
+            <View style={styles.info}>
+              <Text style={styles.name}>{userName}</Text>
+              <Text style={styles.bio}>{bio}</Text>
+            </View>
+          </View>
 
-      {/* Các nút Following và Follower nằm ngang */}
-      <View style={styles.buttonsContainer}>
-        <Pressable
-          style={({ pressed }) => [
-            styles.button,
-            pressed && styles.buttonPressed,
-          ]}
-          android_ripple={{ color: "#ccc" }}
-        >
-          <Text style={styles.buttonText}>Following</Text>
-        </Pressable>
-        <Pressable
-          style={({ pressed }) => [
-            styles.button,
-            pressed && styles.buttonPressed,
-          ]}
-          android_ripple={{ color: "#ccc" }}
-        >
-          <Text style={styles.buttonText}>Follower</Text>
-        </Pressable>
-      </View>
+          <View style={styles.buttonsContainer}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.button,
+                pressed && styles.buttonPressed,
+              ]}
+              android_ripple={{ color: "#ccc" }}
+            >
+              <Text style={styles.buttonText}>Following</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                styles.button,
+                pressed && styles.buttonPressed,
+              ]}
+              android_ripple={{ color: "#ccc" }}
+            >
+              <Text style={styles.buttonText}>Follower</Text>
+            </Pressable>
+            {currentUserId === userId && ( // Render filter button only if currentUserId matches userId
+              <Pressable
+                style={({ pressed }) => [
+                  styles.filterButton,
+                  pressed && styles.buttonPressed,
+                ]}
+                android_ripple={{ color: "#ccc" }}
+              >
+                <Icon name="funnel-outline" size={20} color="#fff" />
+              </Pressable>
+            )}
+          </View>
 
-      {/* Phần các bài đăng */}
-      <View style={styles.postsContainer}>
-        <Text style={styles.postsText}>Các bài đăng</Text>
-      </View>
+          <View style={styles.postsContainer}>
+            <Text style={styles.postsText}>Các bài đăng</Text>
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -88,6 +143,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5", // Optional: same as container background
   },
   header: {
     flexDirection: "row",
@@ -119,22 +180,32 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   buttonsContainer: {
-    flexDirection: "row", // Nút nằm ngang
-    justifyContent: "space-evenly", // Căn đều
-    width: "100%", // Chiếm hết chiều rộng
-    paddingHorizontal: 20, // Lề trái phải
-    marginTop: -10, // Giảm khoảng cách giữa các nút và phần thông tin cá nhân
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    paddingHorizontal: 20,
+    marginTop: -10,
     marginBottom: 10,
   },
   button: {
     backgroundColor: GlobalColors.primaryColor,
     paddingVertical: 5,
-    paddingHorizontal: 25,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+    flex: 1,
+    marginHorizontal: 3,
     alignItems: "center",
     justifyContent: "center",
-    width: "48%", // Kích thước nút
   },
-
+  filterButton: {
+    backgroundColor: GlobalColors.primaryColor,
+    padding: 5,
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
+    width: 40,
+    marginLeft: 3,
+  },
   buttonPressed: {
     opacity: 0.7,
   },
@@ -144,10 +215,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   postsContainer: {
-    flex: 1, // Chiếm phần còn lại của màn hình
-    backgroundColor: GlobalColors.primaryGrey, // Màu nền
-    borderTopWidth: 2, // Đường viền ngăn cách
-    borderTopColor: GlobalColors.primaryColor, // Màu đường viền
+    flex: 1,
+    backgroundColor: GlobalColors.primaryGrey,
+    borderTopWidth: 2,
+    borderTopColor: GlobalColors.primaryColor,
     padding: 20,
     justifyContent: "center",
     alignItems: "center",
