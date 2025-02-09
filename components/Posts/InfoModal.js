@@ -91,10 +91,10 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
   const renderItem = useCallback(
     ({ item }) => (
       <View style={styles.listItem}>
-        <ProfileBar userId={item} />
+        <ProfileBar userId={item} onClose={closeModal} />
       </View>
     ),
-    []
+    [closeModal]
   );
 
   // Memoize the keyExtractor function

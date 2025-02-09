@@ -1,21 +1,63 @@
-import React, { memo } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { memo, useCallback, useState } from "react";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import Avatar from "../Profile/Avatar";
 import CommentLikeButton from "./CommentLikeButton";
 import { GlobalColors } from "../../constants/GlobalColors";
+import { useNavigation } from "@react-navigation/native";
 
 const CommentItem = memo(({ comment, currentUserId, postId }) => {
   const user = comment.user;
+  const navigation = useNavigation();
+
+  const [isUsernamePressed, setIsUsernamePressed] = useState(false);
+
+  const handleAvatarPress = useCallback(() => {
+    if (user?.uid) {
+      navigation.navigate("PersonalProfile", { userId: user.uid });
+    }
+  }, [navigation, user?.uid]);
+
+  const handleUsernamePress = useCallback(() => {
+    if (user?.uid) {
+      navigation.navigate("PersonalProfile", { userId: user.uid });
+    }
+  }, [navigation, user?.uid]);
+
+  const handleUsernamePressIn = useCallback(() => {
+    setIsUsernamePressed(true);
+  }, []);
+
+  const handleUsernamePressOut = useCallback(() => {
+    setIsUsernamePressed(false);
+  }, []);
 
   return (
     <View style={styles.commentContainer}>
       {/* Avatar and User Info */}
       <View style={styles.userInfoContainer}>
-        <Avatar photoUrl={user?.photoUrl} size={40} />
+        <Pressable
+          onPress={handleAvatarPress}
+          style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+        >
+          <Avatar photoUrl={user?.photoUrl} size={40} />
+        </Pressable>
         <View style={styles.userTextContainer}>
-          <Text style={styles.commentUser}>
-            {user?.username || "Unknown User"}
-          </Text>
+          <Pressable
+            onPressIn={handleUsernamePressIn}
+            onPressOut={handleUsernamePressOut}
+            onPress={handleUsernamePress}
+          >
+            <Text
+              style={[
+                styles.commentUser,
+                {
+                  textDecorationLine: isUsernamePressed ? "underline" : "none",
+                },
+              ]}
+            >
+              {user?.username || "Unknown User"}
+            </Text>
+          </Pressable>
           <Text style={styles.commentTime}>
             {new Date(comment.createdAt).toLocaleString()}
           </Text>

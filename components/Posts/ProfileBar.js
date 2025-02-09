@@ -1,15 +1,23 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Pressable,
+} from "react-native";
 import Avatar from "../Profile/Avatar";
 import { getUser } from "../../util/user-info-http";
 import useRealtimeUser from "../../hooks/useRealtimeUser";
 import { GlobalColors } from "../../constants/GlobalColors";
+import { useNavigation } from "@react-navigation/native";
 
-const ProfileBar = ({ userId }) => {
+const ProfileBar = React.memo(({ userId, onClose }) => {
   const [photoUrl, setPhotoUrl] = useState(null);
   const [userName, setUserName] = useState("User Name");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -42,6 +50,13 @@ const ProfileBar = ({ userId }) => {
 
   useRealtimeUser(userId, handleUserDataChange);
 
+  const handleProfilePress = useCallback(() => {
+    if (userId) {
+      onClose(); // Gọi hàm onClose để đóng Modal
+      navigation.navigate("PersonalProfile", { userId: userId });
+    }
+  }, [navigation, userId, onClose]);
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -55,12 +70,19 @@ const ProfileBar = ({ userId }) => {
   }
 
   return (
-    <View style={styles.container}>
-      <Avatar photoUrl={photoUrl} size={40} />
-      <Text style={styles.userName}>{userName}</Text>
-    </View>
+    <Pressable
+      onPress={handleProfilePress}
+      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+      accessible={true}
+      aria-label={`View profile of ${userName}`}
+    >
+      <View style={styles.container}>
+        <Avatar photoUrl={photoUrl} size={40} />
+        <Text style={styles.userName}>{userName}</Text>
+      </View>
+    </Pressable>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
