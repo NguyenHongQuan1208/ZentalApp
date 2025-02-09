@@ -1,5 +1,10 @@
-// InfoModal.js
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   Modal,
   View,
@@ -21,29 +26,32 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (e, gestureState) => {
-        if (gestureState.dy > 0 && !isClosing) {
-          const newTranslateY = Math.max(0, gestureState.dy);
-          translateY.setValue(newTranslateY);
-        }
-      },
-      onPanResponderRelease: (e, gestureState) => {
-        if (gestureState.dy > 100) {
-          closeModal();
-        } else {
-          Animated.spring(translateY, {
-            toValue: 0,
-            tension: 30,
-            friction: 10,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    })
-  ).current;
+  // Memoize the panResponder to prevent unnecessary recreation
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onPanResponderMove: (e, gestureState) => {
+          if (gestureState.dy > 0 && !isClosing) {
+            const newTranslateY = Math.max(0, gestureState.dy);
+            translateY.setValue(newTranslateY);
+          }
+        },
+        onPanResponderRelease: (e, gestureState) => {
+          if (gestureState.dy > 100) {
+            closeModal();
+          } else {
+            Animated.spring(translateY, {
+              toValue: 0,
+              tension: 30,
+              friction: 10,
+              useNativeDriver: true,
+            }).start();
+          }
+        },
+      }),
+    [closeModal, isClosing, translateY]
+  );
 
   useEffect(() => {
     if (visible) {
@@ -53,9 +61,10 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
         tension: 30,
         friction: 10,
         useNativeDriver: true,
+        useNativeDriver: true, // Ensure useNativeDriver is consistent
       }).start();
     }
-  }, [visible]);
+  }, [visible, translateY]);
 
   const closeModal = useCallback(() => {
     if (isClosing) return;
@@ -70,7 +79,7 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
       setIsClosing(false);
       onClose();
     });
-  }, [onClose, isClosing]);
+  }, [onClose, isClosing, translateY]);
 
   const handleOverlayPress = useCallback(() => {
     if (!isClosing) {
@@ -78,10 +87,30 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
     }
   }, [closeModal, isClosing]);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.listItem}>
-      <ProfileBar userId={item} />
-    </View>
+  // Memoize the renderItem function
+  const renderItem = useCallback(
+    ({ item }) => (
+      <View style={styles.listItem}>
+        <ProfileBar userId={item} />
+      </View>
+    ),
+    []
+  );
+
+  // Memoize the keyExtractor function
+  const keyExtractor = useCallback((item) => item, []);
+
+  // Memoize the FlatList component
+  const MemoizedFlatList = useMemo(
+    () => (
+      <FlatList
+        data={userIds}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        contentContainerStyle={styles.listContent}
+      />
+    ),
+    [userIds, renderItem, keyExtractor]
   );
 
   if (!isModalVisible) return null;
@@ -107,12 +136,7 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
           <View style={styles.dragHandle} />
           {title && <Text style={styles.modalTitle}>{title}</Text>}
           {userIds && userIds.length > 0 ? (
-            <FlatList
-              data={userIds}
-              renderItem={renderItem}
-              keyExtractor={(item) => item}
-              contentContainerStyle={styles.listContent}
-            />
+            MemoizedFlatList // Use the memoized FlatList
           ) : (
             <Text style={styles.modalText}>No likes yet.</Text>
           )}
@@ -158,7 +182,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
   },

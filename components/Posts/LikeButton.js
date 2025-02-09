@@ -56,7 +56,7 @@ const LikeButton = memo(({ postId, currentUserId }) => {
         visible={modalVisible}
         onClose={closeModal}
         userIds={likedUserIds}
-        title="Likes"
+        title="Posts Likes"
       />
     </>
   );
