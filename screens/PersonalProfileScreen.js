@@ -15,6 +15,7 @@ import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import IconButton from "../components/ui/IconButton";
+import FollowButton from "../components/PersonalProfile/FollowButton";
 
 function PersonalProfileScreen({ route, navigation }) {
   const authCtx = useContext(AuthContext);
@@ -22,7 +23,7 @@ function PersonalProfileScreen({ route, navigation }) {
   const token = authCtx.token;
   const refreshToken = refreshCtx.refreshToken;
   const [currentUserId, setCurrentUserId] = useState("");
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
 
   // Fetch current user data with retry logic
   async function fetchCurrentUserData() {
@@ -38,7 +39,7 @@ function PersonalProfileScreen({ route, navigation }) {
     } catch (error) {
       console.error("Error fetching user data:", error);
     } finally {
-      setLoading(false); // Set loading to false after fetching
+      setLoading(false);
     }
   }
 
@@ -82,21 +83,40 @@ function PersonalProfileScreen({ route, navigation }) {
   useRealtimeUser(userId, handleUserDataChange);
 
   useEffect(() => {
+    const isCurrentUserProfile = currentUserId === userId;
+
     navigation.setOptions({
-      headerRight: () => (
-        <IconButton
-          icon="add"
-          size={24}
-          color="white"
-          onPress={() => navigation.navigate("AppOverview", { screen: "Task" })}
-        />
-      ),
+      headerRight: () => {
+        if (isCurrentUserProfile) {
+          return (
+            <IconButton
+              icon="add"
+              size={24}
+              color="white"
+              onPress={() =>
+                navigation.navigate("AppOverview", { screen: "Task" })
+              }
+            />
+          );
+        } else {
+          return (
+            <IconButton
+              icon="alert-circle"
+              size={24}
+              color="white"
+              onPress={() => {
+                console.log("Options");
+              }}
+            />
+          );
+        }
+      },
     });
-  }, [navigation]); // Add navigation as a dependency
+  }, [navigation, currentUserId, userId]);
 
   return (
     <View style={styles.container}>
-      {loading ? ( // Full-screen loading indicator
+      {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={GlobalColors.primaryColor} />
         </View>
@@ -113,25 +133,15 @@ function PersonalProfileScreen({ route, navigation }) {
           </View>
 
           <View style={styles.buttonsContainer}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.button,
-                pressed && styles.buttonPressed,
-              ]}
-              android_ripple={{ color: "#ccc" }}
-            >
-              <Text style={styles.buttonText}>Following</Text>
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [
-                styles.button,
-                pressed && styles.buttonPressed,
-              ]}
-              android_ripple={{ color: "#ccc" }}
-            >
-              <Text style={styles.buttonText}>Follower</Text>
-            </Pressable>
-            {currentUserId === userId && ( // Render filter button only if currentUserId matches userId
+            <FollowButton
+              title="Following"
+              onPress={() => console.log("Following pressed")}
+            />
+            <FollowButton
+              title="Follower"
+              onPress={() => console.log("Follower pressed")}
+            />
+            {currentUserId === userId && (
               <Pressable
                 style={({ pressed }) => [
                   styles.filterButton,
@@ -162,7 +172,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f5f5", // Optional: same as container background
+    backgroundColor: "#f5f5f5",
   },
   header: {
     flexDirection: "row",
@@ -201,16 +211,6 @@ const styles = StyleSheet.create({
     marginTop: -10,
     marginBottom: 10,
   },
-  button: {
-    backgroundColor: GlobalColors.primaryColor,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-    flex: 1,
-    marginHorizontal: 3,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   filterButton: {
     backgroundColor: GlobalColors.primaryColor,
     padding: 5,
@@ -219,14 +219,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: 40,
     marginLeft: 3,
-  },
-  buttonPressed: {
-    opacity: 0.7,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
   },
   postsContainer: {
     flex: 1,
