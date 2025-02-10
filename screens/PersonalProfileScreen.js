@@ -1,21 +1,16 @@
-import {
-  Text,
-  View,
-  StyleSheet,
-  Pressable,
-  ActivityIndicator,
-} from "react-native";
+import { Text, View, StyleSheet, ActivityIndicator } from "react-native";
 import Avatar from "../components/Profile/Avatar";
 import { useState, useEffect, useContext } from "react";
 import { getUser } from "../util/user-info-http";
 import { GlobalColors } from "../constants/GlobalColors";
 import useRealtimeUser from "../hooks/useRealtimeUser";
-import Ionicons from "react-native-vector-icons/Ionicons";
 import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import IconButton from "../components/ui/IconButton";
 import FollowButton from "../components/PersonalProfile/FollowButton";
+import FilterButton from "../components/PersonalProfile/FilterButton";
+import OptionsModal from "../components/ui/OptionsModal";
 
 function PersonalProfileScreen({ route, navigation }) {
   const authCtx = useContext(AuthContext);
@@ -24,6 +19,7 @@ function PersonalProfileScreen({ route, navigation }) {
   const refreshToken = refreshCtx.refreshToken;
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
 
   // Fetch current user data with retry logic
   async function fetchCurrentUserData() {
@@ -83,12 +79,12 @@ function PersonalProfileScreen({ route, navigation }) {
   useRealtimeUser(userId, handleUserDataChange);
 
   useEffect(() => {
-    const isCurrentUserProfile = currentUserId === userId;
-
     navigation.setOptions({
       headerRight: () => {
-        if (isCurrentUserProfile) {
-          return (
+        if (!loading && currentUserId && userId) {
+          const isCurrentUserProfile = currentUserId === userId;
+
+          return isCurrentUserProfile ? (
             <IconButton
               icon="add"
               size={24}
@@ -97,9 +93,7 @@ function PersonalProfileScreen({ route, navigation }) {
                 navigation.navigate("AppOverview", { screen: "Task" })
               }
             />
-          );
-        } else {
-          return (
+          ) : (
             <IconButton
               icon="alert-circle"
               size={24}
@@ -110,9 +104,23 @@ function PersonalProfileScreen({ route, navigation }) {
             />
           );
         }
+        return null;
       },
     });
-  }, [navigation, currentUserId, userId]);
+  }, [navigation, currentUserId, userId, loading]);
+
+  const openModal = () => {
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+
+  const handleSelect = (option) => {
+    console.log("Selected option:", option);
+    closeModal(); // Close the modal after selection
+  };
 
   return (
     <View style={styles.container}>
@@ -142,21 +150,23 @@ function PersonalProfileScreen({ route, navigation }) {
               onPress={() => console.log("Follower pressed")}
             />
             {currentUserId === userId && (
-              <Pressable
-                style={({ pressed }) => [
-                  styles.filterButton,
-                  pressed && styles.buttonPressed,
-                ]}
-                android_ripple={{ color: "#ccc" }}
-              >
-                <Ionicons name="funnel-outline" size={20} color="#fff" />
-              </Pressable>
+              <FilterButton
+                onPress={openModal} // Open modal when pressed
+              />
             )}
           </View>
 
           <View style={styles.postsContainer}>
-            <Text style={styles.postsText}>Các bài đăng</Text>
+            <Text style={styles.postsText}>No Posts yet</Text>
           </View>
+
+          {/* Render OptionsModal */}
+          <OptionsModal
+            visible={modalVisible}
+            onClose={closeModal}
+            onSelect={handleSelect}
+            title="Select Filter"
+          />
         </>
       )}
     </View>
@@ -210,15 +220,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: -10,
     marginBottom: 10,
-  },
-  filterButton: {
-    backgroundColor: GlobalColors.primaryColor,
-    padding: 5,
-    borderRadius: 5,
-    alignItems: "center",
-    justifyContent: "center",
-    width: 40,
-    marginLeft: 3,
   },
   postsContainer: {
     flex: 1,
