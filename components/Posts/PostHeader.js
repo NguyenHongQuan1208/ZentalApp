@@ -5,7 +5,7 @@ import { GlobalColors } from "../../constants/GlobalColors";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 
-function PostHeader({ user, timeAgo }) {
+function PostHeader({ user, timeAgo, noPressEffect }) {
   const navigation = useNavigation();
   const [isUsernamePressed, setIsUsernamePressed] = useState(false);
 
@@ -14,23 +14,27 @@ function PostHeader({ user, timeAgo }) {
   };
 
   const handleAvatarPress = () => {
-    if (user?.uid) {
+    if (!noPressEffect && user?.uid) {
       navigation.navigate("PersonalProfile", { userId: user.uid });
     }
   };
 
   const handleUsernamePress = () => {
-    if (user?.uid) {
+    if (!noPressEffect && user?.uid) {
       navigation.navigate("PersonalProfile", { userId: user.uid });
     }
   };
 
   const handleUsernamePressIn = () => {
-    setIsUsernamePressed(true);
+    if (!noPressEffect) {
+      setIsUsernamePressed(true);
+    }
   };
 
   const handleUsernamePressOut = () => {
-    setIsUsernamePressed(false);
+    if (!noPressEffect) {
+      setIsUsernamePressed(false);
+    }
   };
 
   return (
@@ -38,7 +42,9 @@ function PostHeader({ user, timeAgo }) {
       <View style={styles.userContainer}>
         <Pressable
           onPress={handleAvatarPress}
-          style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+          style={({ pressed }) => ({
+            opacity: pressed && !noPressEffect ? 0.5 : 1,
+          })}
         >
           <Avatar photoUrl={user?.photoUrl} size={40} />
         </Pressable>
@@ -46,7 +52,7 @@ function PostHeader({ user, timeAgo }) {
           <Pressable
             onPressIn={handleUsernamePressIn}
             onPressOut={handleUsernamePressOut}
-            onPress={handleUsernamePress} // Add onPress handler
+            onPress={handleUsernamePress}
           >
             <Text
               style={[
