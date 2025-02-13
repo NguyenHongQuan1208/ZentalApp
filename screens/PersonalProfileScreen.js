@@ -37,6 +37,7 @@ function PersonalProfileScreen({ route, navigation }) {
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedFilter, setSelectedFilter] = useState("All Posts");
 
   const fetchUserData = useCallback(async (userId) => {
     if (!userId) {
@@ -59,9 +60,18 @@ function PersonalProfileScreen({ route, navigation }) {
   const fetchPosts = useCallback(async () => {
     try {
       const allPosts = await getAllPosts();
-      const filteredPosts = allPosts.filter(
-        (post) => post.uid === userId && post.status === 1
-      );
+      const filteredPosts = allPosts.filter((post) => {
+        // Check if the post belongs to the current user and is active
+        const isUserPost = post.uid === userId && post.status === 1;
+
+        // Filter based on the selected filter option
+        if (selectedFilter === "All Posts") return isUserPost;
+        if (selectedFilter === "Public Posts")
+          return isUserPost && post.publicStatus === 1;
+        return isUserPost && post.publicStatus === 0;
+
+        return false; // Default case, should not happen
+      });
 
       const sortedPosts = filteredPosts.sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
@@ -74,7 +84,7 @@ function PersonalProfileScreen({ route, navigation }) {
     } finally {
       setRefreshing(false);
     }
-  }, [userId]);
+  }, [userId, selectedFilter]);
 
   async function fetchCurrentUserData() {
     try {
@@ -172,8 +182,11 @@ function PersonalProfileScreen({ route, navigation }) {
 
   const openModal = () => setModalVisible(true);
   const closeModal = () => setModalVisible(false);
+  const options = ["All Posts", "Public Posts", "Private Posts"];
+
   const handleSelect = (option) => {
-    console.log("Selected option:", option);
+    setSelectedFilter(option);
+    fetchPosts();
     closeModal();
   };
 
@@ -185,29 +198,28 @@ function PersonalProfileScreen({ route, navigation }) {
     );
   }
 
-  if (posts.length === 0) {
-    return (
-      <View style={styles.postsContainer}>
-        <Text style={styles.noPostsText}>No Posts yet</Text>
-      </View>
-    );
-  }
-
   const ListHeaderComponent = () => (
-    <View style={styles.headerContainer}>
-      <UserProfileHeader userName={userName} bio={bio} photoUrl={photoUrl} />
-      <View style={styles.buttonsContainer}>
-        <FollowButton
-          title="Following"
-          onPress={() => console.log("Following pressed")}
-        />
-        <FollowButton
-          title="Follower"
-          onPress={() => console.log("Follower pressed")}
-        />
-        {currentUserId === userId && <FilterButton onPress={openModal} />}
+    <>
+      <View style={styles.headerContainer}>
+        <UserProfileHeader userName={userName} bio={bio} photoUrl={photoUrl} />
+        <View style={styles.buttonsContainer}>
+          <FollowButton
+            title="Following"
+            onPress={() => console.log("Following pressed")}
+          />
+          <FollowButton
+            title="Follower"
+            onPress={() => console.log("Follower pressed")}
+          />
+          {currentUserId === userId && <FilterButton onPress={openModal} />}
+        </View>
       </View>
-    </View>
+      {posts.length === 0 && (
+        <View style={styles.postsContainer}>
+          <Text style={styles.noPostsText}>No Posts yet</Text>
+        </View>
+      )}
+    </>
   );
 
   return (
@@ -241,6 +253,7 @@ function PersonalProfileScreen({ route, navigation }) {
         onClose={closeModal}
         onSelect={handleSelect}
         title="Select Filter"
+        options={options}
       />
     </View>
   );
@@ -273,6 +286,8 @@ const styles = StyleSheet.create({
   },
   postsContainer: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: GlobalColors.primaryWhite,
   },
   postWrapper: {

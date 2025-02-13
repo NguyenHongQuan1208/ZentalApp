@@ -89,11 +89,7 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
 
   // Memoize the renderItem function
   const renderItem = useCallback(
-    ({ item }) => (
-      <View style={styles.listItem}>
-        <ProfileBar userId={item} onClose={closeModal} />
-      </View>
-    ),
+    ({ item }) => <ProfileBar userId={item} onClose={closeModal} />,
     [closeModal]
   );
 
@@ -136,7 +132,7 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
           <View style={styles.dragHandle} />
           {title && <Text style={styles.modalTitle}>{title}</Text>}
           {userIds && userIds.length > 0 ? (
-            MemoizedFlatList // Use the memoized FlatList
+            MemoizedFlatList
           ) : (
             <Text style={styles.modalText}>No likes yet.</Text>
           )}
@@ -185,11 +181,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
-  },
-  listItem: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-    width: "100%",
   },
   listContent: {
     width: "100%",

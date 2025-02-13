@@ -16,10 +16,12 @@ import {
   PanResponder,
 } from "react-native";
 import PropTypes from "prop-types";
+import OptionButton from "./OptionButton";
+import { GlobalColors } from "../../constants/GlobalColors";
 
 const { height: screenHeight } = Dimensions.get("window");
 
-const OptionsModal = ({ visible, onClose, onSelect, title }) => {
+const OptionsModal = ({ visible, onClose, onSelect, title, options }) => {
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -59,6 +61,8 @@ const OptionsModal = ({ visible, onClose, onSelect, title }) => {
         friction: 10,
         useNativeDriver: true,
       }).start();
+    } else {
+      closeModal();
     }
   }, [visible, translateY]);
 
@@ -104,17 +108,10 @@ const OptionsModal = ({ visible, onClose, onSelect, title }) => {
           ]}
         >
           <View style={styles.dragHandle} />
-
           <Text style={styles.modalTitle}>{title}</Text>
-          <Pressable onPress={() => onSelect("All Posts")}>
-            <Text style={styles.modalOption}>All Posts</Text>
-          </Pressable>
-          <Pressable onPress={() => onSelect("Public Posts")}>
-            <Text style={styles.modalOption}>Public Posts</Text>
-          </Pressable>
-          <Pressable onPress={() => onSelect("Private Posts")}>
-            <Text style={styles.modalOption}>Private Posts</Text>
-          </Pressable>
+          {options.map((option) => (
+            <OptionButton key={option} title={option} onSelect={onSelect} />
+          ))}
           <View style={styles.overlayExtension} />
         </Animated.View>
       </View>
@@ -127,6 +124,7 @@ OptionsModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
   title: PropTypes.string,
+  options: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 const styles = StyleSheet.create({
@@ -140,7 +138,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: "100%",
-    backgroundColor: "white",
+    backgroundColor: GlobalColors.pureWhite,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -152,14 +150,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 20,
-  },
-  modalOption: {
-    fontSize: 16,
-    paddingVertical: 10,
-  },
-  closeButton: {
-    marginTop: 20,
-    color: "blue",
   },
   overlayExtension: {
     position: "absolute",
