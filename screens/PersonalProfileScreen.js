@@ -25,6 +25,7 @@ import {
   GestureHandlerRootView,
   PanGestureHandler,
 } from "react-native-gesture-handler";
+import PostGridItem from "../components/Posts/PostGridItem";
 
 function PersonalProfileScreen({ route, navigation }) {
   const authCtx = useContext(AuthContext);
@@ -141,13 +142,17 @@ function PersonalProfileScreen({ route, navigation }) {
 
   const renderPost = useCallback(
     ({ item }) => (
-      <View style={styles.postWrapper}>
+      <>
         {viewMode === "grid" ? (
-          <Text style={styles.dummyGridText}>Grid Item</Text>
+          <View style={styles.postsGrid}>
+            <PostGridItem item={item} currentUserId={currentUserId} />
+          </View>
         ) : (
-          <Post item={item} currentUserId={currentUserId} noPressEffect />
+          <View style={styles.postWrapper}>
+            <Post item={item} currentUserId={currentUserId} noPressEffect />
+          </View>
         )}
-      </View>
+      </>
     ),
     [currentUserId, viewMode]
   );
@@ -221,7 +226,11 @@ function PersonalProfileScreen({ route, navigation }) {
           {currentUserId === userId && <FilterButton onPress={openModal} />}
         </View>
       </View>
-      <ToggleViewMode viewMode={viewMode} setViewMode={setViewMode} />
+      <ToggleViewMode
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        style={{ marginBottom: viewMode === "grid" ? 1 : 16 }}
+      />
       {posts.length === 0 && (
         <View style={styles.postsContainer}>
           <Text style={styles.noPostsText}>No Posts yet</Text>
@@ -232,10 +241,7 @@ function PersonalProfileScreen({ route, navigation }) {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <PanGestureHandler
-        activeOffsetX={[-10, 10]} // Chỉ kích hoạt khi vuốt ngang
-        onGestureEvent={onSwipe}
-      >
+      <PanGestureHandler activeOffsetX={[-10, 10]} onGestureEvent={onSwipe}>
         <View style={styles.container}>
           {loading ? (
             <View style={styles.loadingContainer}>
@@ -246,12 +252,14 @@ function PersonalProfileScreen({ route, navigation }) {
             </View>
           ) : (
             <FlatList
+              key={viewMode}
               data={posts}
               keyExtractor={(item) => item.id?.toString()}
               renderItem={renderPost}
               initialNumToRender={10}
               maxToRenderPerBatch={10}
               windowSize={21}
+              numColumns={viewMode === "grid" ? 3 : 1}
               refreshControl={
                 <RefreshControl
                   refreshing={refreshing}
@@ -261,6 +269,8 @@ function PersonalProfileScreen({ route, navigation }) {
                 />
               }
               ListHeaderComponent={ListHeaderComponent}
+              contentContainerStyle={{ gap: 2 }} // Khoảng cách giữa các mục
+              columnWrapperStyle={viewMode === "grid" ? { gap: 2 } : null} // Khoảng cách giữa các cột (chỉ áp dụng khi numColumns > 1)
             />
           )}
           <OptionsModal

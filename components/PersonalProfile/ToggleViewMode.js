@@ -4,14 +4,14 @@ import { Ionicons } from "@expo/vector-icons";
 import PropTypes from "prop-types"; // For prop validation
 import { GlobalColors } from "../../constants/GlobalColors";
 
-const ToggleViewMode = ({ viewMode, setViewMode }) => {
+const ToggleViewMode = ({ viewMode, setViewMode, style }) => {
   const modes = [
-    { mode: "grid", icon: "grid-sharp", label: "Grid View" },
+    { mode: "grid", icon: "grid-outline", label: "Grid View" },
     { mode: "list", icon: "image-sharp", label: "List View" },
   ];
 
   return (
-    <View style={styles.toggleContainer}>
+    <View style={[styles.toggleContainer, style]}>
       {modes.map(({ mode, icon, label }) => (
         <Pressable
           key={mode}
@@ -50,7 +50,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     backgroundColor: GlobalColors.pureWhite,
-    marginBottom: 16,
   },
   toggleButton: {
     flex: 1,

@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { View, Image, ActivityIndicator, StyleSheet } from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
 
-const PostImage = ({ imageUri }) => {
+const PostImage = ({ imageUri, style }) => {
   const [isImageLoading, setIsImageLoading] = useState(false);
 
   return (
-    <View style={styles.imageContainer}>
+    <View style={[styles.imageContainer, style]}>
       {isImageLoading && (
         <View style={styles.loadingBackground}>
           <ActivityIndicator
@@ -18,7 +18,7 @@ const PostImage = ({ imageUri }) => {
       )}
       <Image
         source={{ uri: imageUri }}
-        style={styles.postImage}
+        style={[styles.postImage, style]}
         onLoadStart={() => setIsImageLoading(true)}
         onLoadEnd={() => setIsImageLoading(false)}
         onError={() => setIsImageLoading(false)}
