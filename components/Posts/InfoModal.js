@@ -26,7 +26,6 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
-  // Memoize the panResponder to prevent unnecessary recreation
   const panResponder = useMemo(
     () =>
       PanResponder.create({
@@ -61,7 +60,6 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
         tension: 30,
         friction: 10,
         useNativeDriver: true,
-        useNativeDriver: true, // Ensure useNativeDriver is consistent
       }).start();
     }
   }, [visible, translateY]);
@@ -87,16 +85,14 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
     }
   }, [closeModal, isClosing]);
 
-  // Memoize the renderItem function
   const renderItem = useCallback(
     ({ item }) => <ProfileBar userId={item} onClose={closeModal} />,
     [closeModal]
   );
 
-  // Memoize the keyExtractor function
   const keyExtractor = useCallback((item) => item, []);
 
-  // Memoize the FlatList component
+  // Memoized FlatList with optimizations
   const MemoizedFlatList = useMemo(
     () => (
       <FlatList
@@ -104,6 +100,9 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         contentContainerStyle={styles.listContent}
+        initialNumToRender={5} // Adjust based on expected size
+        maxToRenderPerBatch={10} // Adjust for performance
+        windowSize={5} // Number of items to render off-screen
       />
     ),
     [userIds, renderItem, keyExtractor]

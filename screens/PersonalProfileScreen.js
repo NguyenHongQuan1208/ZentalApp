@@ -20,6 +20,7 @@ import OptionsModal from "../components/ui/OptionsModal";
 import { getAllPosts } from "../util/posts-data-http";
 import Post from "../components/Posts/Post";
 import UserProfileHeader from "../components/PersonalProfile/UserProfileHeader";
+import ToggleViewMode from "../components/PersonalProfile/ToggleViewMode";
 
 function PersonalProfileScreen({ route, navigation }) {
   const authCtx = useContext(AuthContext);
@@ -38,6 +39,7 @@ function PersonalProfileScreen({ route, navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState("All Posts");
+  const [viewMode, setViewMode] = useState("list");
 
   const fetchUserData = useCallback(async (userId) => {
     if (!userId) {
@@ -143,11 +145,15 @@ function PersonalProfileScreen({ route, navigation }) {
     ({ item }) => {
       return (
         <View style={styles.postWrapper}>
-          <Post item={item} currentUserId={currentUserId} noPressEffect />
+          {viewMode === "grid" ? (
+            <Text style={styles.dummyGridText}>Grid Item</Text> // Dummy text for grid view
+          ) : (
+            <Post item={item} currentUserId={currentUserId} noPressEffect />
+          )}
         </View>
       );
     },
-    [currentUserId]
+    [currentUserId, viewMode]
   );
 
   useEffect(() => {
@@ -214,6 +220,10 @@ function PersonalProfileScreen({ route, navigation }) {
           {currentUserId === userId && <FilterButton onPress={openModal} />}
         </View>
       </View>
+
+      {/* View Mode Toggle */}
+      <ToggleViewMode viewMode={viewMode} setViewMode={setViewMode} />
+
       {posts.length === 0 && (
         <View style={styles.postsContainer}>
           <Text style={styles.noPostsText}>No Posts yet</Text>
@@ -272,10 +282,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     backgroundColor: GlobalColors.pureWhite,
-    borderBottomWidth: 2,
-    borderBottomColor: GlobalColors.primaryColor,
     paddingBottom: 12,
-    marginBottom: 16,
   },
   buttonsContainer: {
     flexDirection: "row",
