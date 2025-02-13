@@ -25,6 +25,7 @@ import PersonalProfileScreen from "./screens/PersonalProfileScreen";
 import RefreshTokenContextProvider from "./store/RefreshTokenContext";
 import ConfirmPostScreen from "./screens/ConfirmPostScreen";
 import PostDetailScreen from "./screens/PostDetailScreen";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -313,11 +314,13 @@ export default function App() {
   return (
     <>
       <StatusBar style="light" />
-      <AuthContextProvider>
-        <RefreshTokenContextProvider>
-          <Root />
-        </RefreshTokenContextProvider>
-      </AuthContextProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <AuthContextProvider>
+          <RefreshTokenContextProvider>
+            <Root />
+          </RefreshTokenContextProvider>
+        </AuthContextProvider>
+      </GestureHandlerRootView>
     </>
   );
 }

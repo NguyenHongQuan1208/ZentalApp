@@ -21,6 +21,7 @@ import { getAllPosts } from "../util/posts-data-http";
 import Post from "../components/Posts/Post";
 import UserProfileHeader from "../components/PersonalProfile/UserProfileHeader";
 import ToggleViewMode from "../components/PersonalProfile/ToggleViewMode";
+import { PanGestureHandler } from "react-native-gesture-handler"; // Import PanGestureHandler
 
 function PersonalProfileScreen({ route, navigation }) {
   const authCtx = useContext(AuthContext);
@@ -63,16 +64,12 @@ function PersonalProfileScreen({ route, navigation }) {
     try {
       const allPosts = await getAllPosts();
       const filteredPosts = allPosts.filter((post) => {
-        // Check if the post belongs to the current user and is active
         const isUserPost = post.uid === userId && post.status === 1;
 
-        // Filter based on the selected filter option
         if (selectedFilter === "All Posts") return isUserPost;
         if (selectedFilter === "Public Posts")
           return isUserPost && post.publicStatus === 1;
         return isUserPost && post.publicStatus === 0;
-
-        return false; // Default case, should not happen
       });
 
       const sortedPosts = filteredPosts.sort(
@@ -146,7 +143,7 @@ function PersonalProfileScreen({ route, navigation }) {
       return (
         <View style={styles.postWrapper}>
           {viewMode === "grid" ? (
-            <Text style={styles.dummyGridText}>Grid Item</Text> // Dummy text for grid view
+            <Text style={styles.dummyGridText}>Grid Item</Text>
           ) : (
             <Post item={item} currentUserId={currentUserId} noPressEffect />
           )}
@@ -196,6 +193,18 @@ function PersonalProfileScreen({ route, navigation }) {
     closeModal();
   };
 
+  const onSwipe = (event) => {
+    const { translationX } = event.nativeEvent;
+
+    if (translationX < -50) {
+      // Swipe phải
+      setViewMode("list");
+    } else if (translationX > 50) {
+      // Swipe trái
+      setViewMode("grid");
+    }
+  };
+
   if (error) {
     return (
       <View style={styles.errorContainer}>
@@ -233,39 +242,41 @@ function PersonalProfileScreen({ route, navigation }) {
   );
 
   return (
-    <View style={styles.container}>
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={GlobalColors.primaryColor} />
-        </View>
-      ) : (
-        <FlatList
-          data={posts}
-          keyExtractor={(item) => item.id?.toString()}
-          renderItem={renderPost}
-          initialNumToRender={10}
-          maxToRenderPerBatch={10}
-          windowSize={21}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={[GlobalColors.primaryColor]}
-              tintColor={GlobalColors.primaryColor}
-            />
-          }
-          ListHeaderComponent={ListHeaderComponent}
-        />
-      )}
+    <PanGestureHandler onGestureEvent={onSwipe}>
+      <View style={styles.container}>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={GlobalColors.primaryColor} />
+          </View>
+        ) : (
+          <FlatList
+            data={posts}
+            keyExtractor={(item) => item.id?.toString()}
+            renderItem={renderPost}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={21}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={[GlobalColors.primaryColor]}
+                tintColor={GlobalColors.primaryColor}
+              />
+            }
+            ListHeaderComponent={ListHeaderComponent}
+          />
+        )}
 
-      <OptionsModal
-        visible={modalVisible}
-        onClose={closeModal}
-        onSelect={handleSelect}
-        title="Select Filter"
-        options={options}
-      />
-    </View>
+        <OptionsModal
+          visible={modalVisible}
+          onClose={closeModal}
+          onSelect={handleSelect}
+          title="Select Filter"
+          options={options}
+        />
+      </View>
+    </PanGestureHandler>
   );
 }
 

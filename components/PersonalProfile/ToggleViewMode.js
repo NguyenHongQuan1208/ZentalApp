@@ -7,7 +7,7 @@ import { GlobalColors } from "../../constants/GlobalColors";
 const ToggleViewMode = ({ viewMode, setViewMode }) => {
   const modes = [
     { mode: "grid", icon: "grid-sharp", label: "Grid View" },
-    { mode: "list", icon: "list", label: "List View" }, // Changed icon to 'list' for better representation
+    { mode: "list", icon: "image-sharp", label: "List View" },
   ];
 
   return (
@@ -17,8 +17,8 @@ const ToggleViewMode = ({ viewMode, setViewMode }) => {
           key={mode}
           style={({ pressed }) => [
             styles.toggleButton,
-            mode === "grid" && { borderRightWidth: 2 }, // Add border only for grid button
-            pressed && styles.pressed, // Add pressed effect
+            mode === "grid" && { borderRightWidth: 2 },
+            pressed && styles.pressed,
           ]}
           onPress={() => setViewMode(mode)}
           accessibilityLabel={label}
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
   toggleButton: {
     flex: 1,
-    padding: 8, // Slightly increased padding for better touch area
+    padding: 6, // Slightly increased padding for better touch area
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: GlobalColors.pureWhite,
