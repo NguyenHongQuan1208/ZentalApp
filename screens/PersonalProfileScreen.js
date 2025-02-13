@@ -21,7 +21,10 @@ import { getAllPosts } from "../util/posts-data-http";
 import Post from "../components/Posts/Post";
 import UserProfileHeader from "../components/PersonalProfile/UserProfileHeader";
 import ToggleViewMode from "../components/PersonalProfile/ToggleViewMode";
-import { PanGestureHandler } from "react-native-gesture-handler"; // Import PanGestureHandler
+import {
+  GestureHandlerRootView,
+  PanGestureHandler,
+} from "react-native-gesture-handler";
 
 function PersonalProfileScreen({ route, navigation }) {
   const authCtx = useContext(AuthContext);
@@ -32,9 +35,11 @@ function PersonalProfileScreen({ route, navigation }) {
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-  const [userName, setUserName] = useState("");
-  const [photoUrl, setPhotoUrl] = useState("");
-  const [bio, setBio] = useState("");
+  const [userData, setUserData] = useState({
+    userName: "",
+    photoUrl: "",
+    bio: "",
+  });
   const [userId, setUserId] = useState(route.params?.userId || "");
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -43,16 +48,14 @@ function PersonalProfileScreen({ route, navigation }) {
   const [viewMode, setViewMode] = useState("list");
 
   const fetchUserData = useCallback(async (userId) => {
-    if (!userId) {
-      console.warn("No userId provided");
-      setError("No user ID provided.");
-      return;
-    }
+    if (!userId) return setError("No user ID provided.");
     try {
       const userData = await getUser(userId);
-      setUserName(userData.username || "No name available");
-      setPhotoUrl(userData.photoUrl || "");
-      setBio(userData.bio || "No bio");
+      setUserData({
+        userName: userData.username || "No name available",
+        photoUrl: userData.photoUrl || "",
+        bio: userData.bio || "No bio",
+      });
       setError(null);
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -65,7 +68,6 @@ function PersonalProfileScreen({ route, navigation }) {
       const allPosts = await getAllPosts();
       const filteredPosts = allPosts.filter((post) => {
         const isUserPost = post.uid === userId && post.status === 1;
-
         if (selectedFilter === "All Posts") return isUserPost;
         if (selectedFilter === "Public Posts")
           return isUserPost && post.publicStatus === 1;
@@ -85,7 +87,7 @@ function PersonalProfileScreen({ route, navigation }) {
     }
   }, [userId, selectedFilter]);
 
-  async function fetchCurrentUserData() {
+  const fetchCurrentUserData = useCallback(async () => {
     try {
       const authResponse = await getUserDataWithRetry(
         token,
@@ -96,34 +98,33 @@ function PersonalProfileScreen({ route, navigation }) {
       setCurrentUserId(authResponse.localId);
       setError(null);
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      console.error("Error fetching current user data:", error);
       setError("Failed to fetch current user data.");
     } finally {
       setLoading(false);
     }
-  }
+  }, [token, refreshToken, authCtx, refreshCtx]);
 
   useEffect(() => {
     fetchCurrentUserData();
-  }, [token, refreshToken]);
-
-  useEffect(() => {
-    fetchUserData(userId);
-  }, [userId, fetchUserData]);
-
-  const handleUserDataChange = useCallback((userData) => {
-    setUserName(userData.username || "User Name");
-    setPhotoUrl(userData.photoUrl || null);
-    setBio(userData.bio || null);
-  }, []);
-
-  useRealtimeUser(userId, handleUserDataChange);
+  }, [fetchCurrentUserData]);
 
   useEffect(() => {
     if (userId) {
+      fetchUserData(userId);
       fetchPosts();
     }
-  }, [userId, fetchPosts]);
+  }, [userId, fetchUserData, fetchPosts]);
+
+  const handleUserDataChange = useCallback((userData) => {
+    setUserData({
+      userName: userData.username || "User Name",
+      photoUrl: userData.photoUrl || null,
+      bio: userData.bio || null,
+    });
+  }, []);
+
+  useRealtimeUser(userId, handleUserDataChange);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -139,26 +140,22 @@ function PersonalProfileScreen({ route, navigation }) {
   }, [fetchUserData, fetchPosts, userId]);
 
   const renderPost = useCallback(
-    ({ item }) => {
-      return (
-        <View style={styles.postWrapper}>
-          {viewMode === "grid" ? (
-            <Text style={styles.dummyGridText}>Grid Item</Text>
-          ) : (
-            <Post item={item} currentUserId={currentUserId} noPressEffect />
-          )}
-        </View>
-      );
-    },
+    ({ item }) => (
+      <View style={styles.postWrapper}>
+        {viewMode === "grid" ? (
+          <Text style={styles.dummyGridText}>Grid Item</Text>
+        ) : (
+          <Post item={item} currentUserId={currentUserId} noPressEffect />
+        )}
+      </View>
+    ),
     [currentUserId, viewMode]
   );
 
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => {
-        if (loading || !currentUserId || !userId) {
-          return null;
-        }
+        if (loading || !currentUserId || !userId) return null;
 
         const isCurrentUserProfile = currentUserId === userId;
 
@@ -195,13 +192,8 @@ function PersonalProfileScreen({ route, navigation }) {
 
   const onSwipe = (event) => {
     const { translationX } = event.nativeEvent;
-
-    if (translationX < -50) {
-      // Swipe phải
-      setViewMode("list");
-    } else if (translationX > 50) {
-      // Swipe trái
-      setViewMode("grid");
+    if (Math.abs(translationX) > 50) {
+      setViewMode(translationX < 0 ? "list" : "grid");
     }
   };
 
@@ -216,7 +208,7 @@ function PersonalProfileScreen({ route, navigation }) {
   const ListHeaderComponent = () => (
     <>
       <View style={styles.headerContainer}>
-        <UserProfileHeader userName={userName} bio={bio} photoUrl={photoUrl} />
+        <UserProfileHeader {...userData} />
         <View style={styles.buttonsContainer}>
           <FollowButton
             title="Following"
@@ -229,10 +221,7 @@ function PersonalProfileScreen({ route, navigation }) {
           {currentUserId === userId && <FilterButton onPress={openModal} />}
         </View>
       </View>
-
-      {/* View Mode Toggle */}
       <ToggleViewMode viewMode={viewMode} setViewMode={setViewMode} />
-
       {posts.length === 0 && (
         <View style={styles.postsContainer}>
           <Text style={styles.noPostsText}>No Posts yet</Text>
@@ -242,41 +231,48 @@ function PersonalProfileScreen({ route, navigation }) {
   );
 
   return (
-    <PanGestureHandler onGestureEvent={onSwipe}>
-      <View style={styles.container}>
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={GlobalColors.primaryColor} />
-          </View>
-        ) : (
-          <FlatList
-            data={posts}
-            keyExtractor={(item) => item.id?.toString()}
-            renderItem={renderPost}
-            initialNumToRender={10}
-            maxToRenderPerBatch={10}
-            windowSize={21}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                colors={[GlobalColors.primaryColor]}
-                tintColor={GlobalColors.primaryColor}
+    <GestureHandlerRootView style={styles.container}>
+      <PanGestureHandler
+        activeOffsetX={[-10, 10]} // Chỉ kích hoạt khi vuốt ngang
+        onGestureEvent={onSwipe}
+      >
+        <View style={styles.container}>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator
+                size="large"
+                color={GlobalColors.primaryColor}
               />
-            }
-            ListHeaderComponent={ListHeaderComponent}
+            </View>
+          ) : (
+            <FlatList
+              data={posts}
+              keyExtractor={(item) => item.id?.toString()}
+              renderItem={renderPost}
+              initialNumToRender={10}
+              maxToRenderPerBatch={10}
+              windowSize={21}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  colors={[GlobalColors.primaryColor]}
+                  tintColor={GlobalColors.primaryColor}
+                />
+              }
+              ListHeaderComponent={ListHeaderComponent}
+            />
+          )}
+          <OptionsModal
+            visible={modalVisible}
+            onClose={closeModal}
+            onSelect={handleSelect}
+            title="Select Filter"
+            options={options}
           />
-        )}
-
-        <OptionsModal
-          visible={modalVisible}
-          onClose={closeModal}
-          onSelect={handleSelect}
-          title="Select Filter"
-          options={options}
-        />
-      </View>
-    </PanGestureHandler>
+        </View>
+      </PanGestureHandler>
+    </GestureHandlerRootView>
   );
 }
 
@@ -315,6 +311,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: GlobalColors.primaryBlack,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: GlobalColors.primaryWhite,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 16,
   },
 });
 
