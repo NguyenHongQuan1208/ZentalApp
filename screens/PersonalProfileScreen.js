@@ -6,7 +6,7 @@ import {
   FlatList,
   RefreshControl,
 } from "react-native";
-import { useState, useEffect, useContext, useCallback } from "react";
+import { useState, useEffect, useContext, useCallback, useMemo } from "react";
 import { getUser } from "../util/user-info-http";
 import { GlobalColors } from "../constants/GlobalColors";
 import useRealtimeUser from "../hooks/useRealtimeUser";
@@ -27,11 +27,11 @@ import {
 } from "react-native-gesture-handler";
 import PostGridItem from "../components/Posts/PostGridItem";
 
-function PersonalProfileScreen({ route, navigation }) {
+const PersonalProfileScreen = ({ route, navigation }) => {
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
-  const token = authCtx.token;
-  const refreshToken = refreshCtx.refreshToken;
+  const { token } = authCtx;
+  const { refreshToken } = refreshCtx;
 
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -47,7 +47,7 @@ function PersonalProfileScreen({ route, navigation }) {
   const [error, setError] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState("Public Posts");
   const [viewMode, setViewMode] = useState("grid");
-  const [loadingFilter, setLoadingFilter] = useState(false);
+  const [loadingFilter, setLoadingFilter] = useState(true);
 
   const fetchUserData = useCallback(async (userId) => {
     if (!userId) return setError("No user ID provided.");
@@ -60,7 +60,6 @@ function PersonalProfileScreen({ route, navigation }) {
       });
       setError(null);
     } catch (error) {
-      console.error("Error fetching user data:", error);
       setError("Failed to load user data.");
     }
   }, []);
@@ -71,9 +70,10 @@ function PersonalProfileScreen({ route, navigation }) {
       const filteredPosts = allPosts.filter((post) => {
         const isUserPost = post.uid === userId && post.status === 1;
         if (selectedFilter === "All Posts") return isUserPost;
-        if (selectedFilter === "Public Posts")
-          return isUserPost && post.publicStatus === 1;
-        return isUserPost && post.publicStatus === 0;
+        return (
+          isUserPost &&
+          post.publicStatus === (selectedFilter === "Public Posts" ? 1 : 0)
+        );
       });
 
       const sortedPosts = filteredPosts.sort(
@@ -82,7 +82,6 @@ function PersonalProfileScreen({ route, navigation }) {
       setPosts(sortedPosts);
       setError(null);
     } catch (error) {
-      console.error("Error fetching posts:", error);
       setError("Failed to load posts.");
     } finally {
       setRefreshing(false);
@@ -101,7 +100,6 @@ function PersonalProfileScreen({ route, navigation }) {
       setCurrentUserId(authResponse.localId);
       setError(null);
     } catch (error) {
-      console.error("Error fetching current user data:", error);
       setError("Failed to fetch current user data.");
     } finally {
       setLoading(false);
@@ -121,11 +119,9 @@ function PersonalProfileScreen({ route, navigation }) {
 
   useEffect(() => {
     if (currentUserId && userId) {
-      if (currentUserId === userId) {
-        setSelectedFilter("All Posts");
-      } else {
-        setSelectedFilter("Public Posts");
-      }
+      setSelectedFilter(
+        currentUserId === userId ? "All Posts" : "Public Posts"
+      );
     }
   }, [currentUserId, userId]);
 
@@ -142,29 +138,19 @@ function PersonalProfileScreen({ route, navigation }) {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     setError(null);
-    try {
-      await Promise.all([fetchUserData(userId), fetchPosts()]);
-    } catch (error) {
-      console.error("Error during refresh:", error);
-      setError("Failed to refresh data.");
-    } finally {
-      setRefreshing(false);
-    }
+    await Promise.all([fetchUserData(userId), fetchPosts()]);
+    setRefreshing(false);
   }, [fetchUserData, fetchPosts, userId]);
 
   const renderPost = useCallback(
     ({ item }) => (
-      <>
+      <View style={viewMode === "grid" ? styles.postsGrid : styles.postWrapper}>
         {viewMode === "grid" ? (
-          <View style={styles.postsGrid}>
-            <PostGridItem item={item} currentUserId={currentUserId} />
-          </View>
+          <PostGridItem item={item} currentUserId={currentUserId} />
         ) : (
-          <View style={styles.postWrapper}>
-            <Post item={item} currentUserId={currentUserId} noPressEffect />
-          </View>
+          <Post item={item} currentUserId={currentUserId} noPressEffect />
         )}
-      </>
+      </View>
     ),
     [currentUserId, viewMode]
   );
@@ -175,22 +161,16 @@ function PersonalProfileScreen({ route, navigation }) {
         if (loading || !currentUserId || !userId) return null;
 
         const isCurrentUserProfile = currentUserId === userId;
-
-        return isCurrentUserProfile ? (
+        return (
           <IconButton
-            icon="add"
+            icon={isCurrentUserProfile ? "add" : "alert-circle"}
             size={24}
             color="white"
             onPress={() =>
-              navigation.navigate("AppOverview", { screen: "Task" })
+              isCurrentUserProfile
+                ? navigation.navigate("AppOverview", { screen: "Task" })
+                : console.log("Options")
             }
-          />
-        ) : (
-          <IconButton
-            icon="alert-circle"
-            size={24}
-            color="white"
-            onPress={() => console.log("Options")}
           />
         );
       },
@@ -199,7 +179,10 @@ function PersonalProfileScreen({ route, navigation }) {
 
   const openModal = () => setModalVisible(true);
   const closeModal = () => setModalVisible(false);
-  const options = ["All Posts", "Public Posts", "Private Posts"];
+  const options = useMemo(
+    () => ["All Posts", "Public Posts", "Private Posts"],
+    []
+  );
 
   const handleSelect = (option) => {
     setLoadingFilter(true);
@@ -261,7 +244,7 @@ function PersonalProfileScreen({ route, navigation }) {
     <GestureHandlerRootView style={styles.container}>
       <PanGestureHandler activeOffsetX={[-10, 10]} onGestureEvent={onSwipe}>
         <View style={styles.container}>
-          {loading ? (
+          {loading || loadingFilter ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator
                 size="large"
@@ -288,7 +271,7 @@ function PersonalProfileScreen({ route, navigation }) {
               }
               ListHeaderComponent={ListHeaderComponent}
               contentContainerStyle={{ gap: 2 }}
-              columnWrapperStyle={viewMode === "grid" ? { gap: 2 } : null} // Khoảng cách giữa các cột (chỉ áp dụng khi numColumns > 1)
+              columnWrapperStyle={viewMode === "grid" ? { gap: 2 } : null}
             />
           )}
           <OptionsModal
@@ -302,7 +285,7 @@ function PersonalProfileScreen({ route, navigation }) {
       </PanGestureHandler>
     </GestureHandlerRootView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
