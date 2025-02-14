@@ -45,8 +45,9 @@ function PersonalProfileScreen({ route, navigation }) {
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedFilter, setSelectedFilter] = useState("All Posts");
-  const [viewMode, setViewMode] = useState("list");
+  const [selectedFilter, setSelectedFilter] = useState("Public Posts");
+  const [viewMode, setViewMode] = useState("grid");
+  const [loadingFilter, setLoadingFilter] = useState(false);
 
   const fetchUserData = useCallback(async (userId) => {
     if (!userId) return setError("No user ID provided.");
@@ -85,6 +86,7 @@ function PersonalProfileScreen({ route, navigation }) {
       setError("Failed to load posts.");
     } finally {
       setRefreshing(false);
+      setLoadingFilter(false);
     }
   }, [userId, selectedFilter]);
 
@@ -116,6 +118,16 @@ function PersonalProfileScreen({ route, navigation }) {
       fetchPosts();
     }
   }, [userId, fetchUserData, fetchPosts]);
+
+  useEffect(() => {
+    if (currentUserId && userId) {
+      if (currentUserId === userId) {
+        setSelectedFilter("All Posts");
+      } else {
+        setSelectedFilter("Public Posts");
+      }
+    }
+  }, [currentUserId, userId]);
 
   const handleUserDataChange = useCallback((userData) => {
     setUserData({
@@ -190,6 +202,7 @@ function PersonalProfileScreen({ route, navigation }) {
   const options = ["All Posts", "Public Posts", "Private Posts"];
 
   const handleSelect = (option) => {
+    setLoadingFilter(true);
     setSelectedFilter(option);
     fetchPosts();
     closeModal();
@@ -232,7 +245,12 @@ function PersonalProfileScreen({ route, navigation }) {
         style={{ marginBottom: viewMode === "grid" ? 1 : 16 }}
       />
       {posts.length === 0 && (
-        <View style={styles.postsContainer}>
+        <View
+          style={[
+            styles.postsContainer,
+            { marginTop: viewMode === "grid" ? 15 : 0 },
+          ]}
+        >
           <Text style={styles.noPostsText}>No Posts yet</Text>
         </View>
       )}
@@ -269,7 +287,7 @@ function PersonalProfileScreen({ route, navigation }) {
                 />
               }
               ListHeaderComponent={ListHeaderComponent}
-              contentContainerStyle={{ gap: 2 }} // Khoảng cách giữa các mục
+              contentContainerStyle={{ gap: 2 }}
               columnWrapperStyle={viewMode === "grid" ? { gap: 2 } : null} // Khoảng cách giữa các cột (chỉ áp dụng khi numColumns > 1)
             />
           )}
