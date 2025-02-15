@@ -111,7 +111,12 @@ function ConfirmPostScreen({ navigation, route }) {
         );
       }
 
-      navigation.navigate("AppOverview", { screen: "Posts" });
+      if (publicStatus === 0) {
+        navigation.navigate("AppOverview", { screen: "Task" });
+      } else {
+        // If public, navigate to the posts overview
+        navigation.navigate("AppOverview", { screen: "Posts" });
+      }
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Có lỗi xảy ra khi xử lý yêu cầu.");

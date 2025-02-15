@@ -41,7 +41,7 @@ function TaskNoteScreen({ route, navigation }) {
   const [isFocused, setIsFocused] = useState(false);
   const [file, setFile] = useState();
   const [imageUri, setImageUri] = useState(null);
-  const [defaultImageUri, setDefaultImageUri] = useState(null);
+  const [defaultImageUri, setDefaultImageUri] = useState(null); // Thêm state cho ảnh mặc định
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const authCtx = useContext(AuthContext);
@@ -49,7 +49,7 @@ function TaskNoteScreen({ route, navigation }) {
   const token = authCtx.token;
   const refreshToken = refreshCtx.refreshToken;
 
-  const [uid, setUid] = useState(null); // Store UID here
+  const [uid, setUid] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -59,15 +59,15 @@ function TaskNoteScreen({ route, navigation }) {
         authCtx,
         refreshCtx
       );
-      setUid(authResponse.localId); // Fetch and set UID
+      setUid(authResponse.localId);
     };
 
     fetchUserData();
-  }, [token, refreshToken]); // Dependency on token to refetch user data when token changes
+  }, [token, refreshToken]);
 
   useEffect(() => {
     const fetchPostData = async () => {
-      if (!uid || !sectionId) return; // Tránh gọi API khi dữ liệu chưa sẵn sàng
+      if (!uid || !sectionId) return;
 
       try {
         const posts = await getAllPosts();
@@ -88,17 +88,17 @@ function TaskNoteScreen({ route, navigation }) {
     };
 
     fetchPostData();
-  }, [sectionId, uid]); // Dependency vào sectionId và uid
+  }, [sectionId, uid]);
 
   useEffect(() => {
     const fetchDefaultImage = async () => {
-      if (!sectionId) return; // Đảm bảo sectionId hợp lệ
+      if (!sectionId) return;
 
       try {
-        const fetchedDefaultImageUri = await fetchImageBySectionId(sectionId);
-        setDefaultImageUri(fetchedDefaultImageUri);
+        const defaultImageUri = await fetchImageBySectionId(sectionId);
         if (defaultImageUri) {
-          setImageUri((prevUri) => prevUri || defaultImageUri); // Chỉ set ảnh mặc định nếu người dùng chưa chọn ảnh
+          setDefaultImageUri(defaultImageUri);
+          setImageUri((prevUri) => prevUri || defaultImageUri);
         }
       } catch (error) {
         console.error("Error fetching default image:", error);
@@ -168,16 +168,14 @@ function TaskNoteScreen({ route, navigation }) {
   };
 
   const handleDeletePhoto = () => {
-    setImageUri(defaultImageUri);
+    setImageUri(defaultImageUri); // Set imageUri thành defaultImageUri khi xóa ảnh
     setIsModalVisible(false);
   };
 
-  // Hàm dùng chung để upload ảnh lên Supabase và trả về public URL
   const uploadImageToSupabase = async (file, uid, sectionId) => {
     try {
       const filePath = `task_notes/${uid}_${sectionId}_${Date.now()}.jpg`;
 
-      // Upload ảnh lên Supabase
       const { data, error } = await supabase.storage
         .from("ZentalApp")
         .upload(filePath, {
@@ -192,7 +190,6 @@ function TaskNoteScreen({ route, navigation }) {
         return null;
       }
 
-      // Lấy URL công khai
       const { data: publicData, error: publicError } = supabase.storage
         .from("ZentalApp")
         .getPublicUrl(filePath);
@@ -214,7 +211,6 @@ function TaskNoteScreen({ route, navigation }) {
     }
   };
 
-  // Hàm lưu bài đăng lên cơ sở dữ liệu
   const saveOrUpdatePost = async (postData, sectionId, uid) => {
     try {
       const posts = await getAllPosts();
@@ -236,7 +232,6 @@ function TaskNoteScreen({ route, navigation }) {
     }
   };
 
-  // Tối ưu hàm handlePledgeToDoIt
   const handlePledgeToDoIt = async () => {
     if (!textInputValue || !uid) {
       Alert.alert("Error", "Please enter your note.");
@@ -246,30 +241,25 @@ function TaskNoteScreen({ route, navigation }) {
     let publicUrl = imageUri;
 
     try {
-      // Upload ảnh nếu có file
       if (file) {
         const uploadedUrl = await uploadImageToSupabase(file, uid, sectionId);
         if (uploadedUrl) {
           publicUrl = uploadedUrl;
         }
       } else if (!imageUri) {
-        // Nếu chưa có ảnh, lấy ảnh mặc định
-        publicUrl = await fetchImageBySectionId(sectionId);
+        publicUrl = defaultImageUri;
       }
 
-      // Chuẩn bị dữ liệu để lưu
       const postData = {
         content: textInputValue,
         imageUri: publicUrl,
         sectionId: sectionId,
-        status: 0, // Mark as incomplete
+        status: 0,
         title: target,
         uid: uid,
       };
 
       await saveOrUpdatePost(postData, sectionId, uid);
-
-      // Chuyển hướng về màn hình tổng quan nhiệm vụ
       navigation.navigate("AppOverview", { screen: "Task" });
     } catch (error) {
       console.error("Error in handlePledgeToDoIt:", error);
@@ -277,7 +267,6 @@ function TaskNoteScreen({ route, navigation }) {
     }
   };
 
-  // Tối ưu hàm handlePost
   const handlePost = async () => {
     if (!textInputValue.trim()) {
       Alert.alert("Error", "Please enter your note.");
@@ -287,7 +276,6 @@ function TaskNoteScreen({ route, navigation }) {
     let publicUrl = imageUri;
 
     try {
-      // Upload ảnh nếu có file
       if (file) {
         const uploadedUrl = await uploadImageToSupabase(file, uid, sectionId);
         if (uploadedUrl) {
@@ -295,7 +283,6 @@ function TaskNoteScreen({ route, navigation }) {
         }
       }
 
-      // Điều hướng sang màn hình ConfirmPost
       navigation.navigate("ConfirmPost", {
         content: textInputValue,
         imageUri: publicUrl,
@@ -313,7 +300,6 @@ function TaskNoteScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Main Scrollable Area */}
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.targetContainer}>
           <Target
@@ -330,7 +316,6 @@ function TaskNoteScreen({ route, navigation }) {
           </Text>
         </View>
 
-        {/* Main Content */}
         <View style={styles.content}>
           {isFocused && (
             <Text style={[styles.placeholderText, { color: color }]}>
@@ -356,7 +341,6 @@ function TaskNoteScreen({ route, navigation }) {
           />
         </View>
 
-        {/* Modal */}
         <PhotoOptionsModal
           visible={isModalVisible}
           onTakePhoto={handleTakePhoto}
@@ -366,7 +350,6 @@ function TaskNoteScreen({ route, navigation }) {
         />
       </ScrollView>
 
-      {/* Footer (Fixed at bottom) */}
       <View style={styles.footer}>
         <View style={styles.footerOverlay}>
           <LongButton
