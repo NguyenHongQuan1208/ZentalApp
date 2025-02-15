@@ -41,6 +41,7 @@ function TaskNoteScreen({ route, navigation }) {
   const [isFocused, setIsFocused] = useState(false);
   const [file, setFile] = useState();
   const [imageUri, setImageUri] = useState(null);
+  const [defaultImageUri, setDefaultImageUri] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const authCtx = useContext(AuthContext);
@@ -94,7 +95,8 @@ function TaskNoteScreen({ route, navigation }) {
       if (!sectionId) return; // Đảm bảo sectionId hợp lệ
 
       try {
-        const defaultImageUri = await fetchImageBySectionId(sectionId);
+        const fetchedDefaultImageUri = await fetchImageBySectionId(sectionId);
+        setDefaultImageUri(fetchedDefaultImageUri);
         if (defaultImageUri) {
           setImageUri((prevUri) => prevUri || defaultImageUri); // Chỉ set ảnh mặc định nếu người dùng chưa chọn ảnh
         }
@@ -166,7 +168,7 @@ function TaskNoteScreen({ route, navigation }) {
   };
 
   const handleDeletePhoto = () => {
-    setImageUri(null);
+    setImageUri(defaultImageUri);
     setIsModalVisible(false);
   };
 
