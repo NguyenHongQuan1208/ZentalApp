@@ -34,10 +34,10 @@ function PostDetailScreen({ route, navigation }) {
     sectionColor,
     timeAgo,
     currentUserId,
-    publicStatus,
     shouldFocusComment,
   } = route.params;
 
+  const [publicStatus, setPublicStatus] = useState(route.params.publicStatus);
   const [post, setPost] = useState(null);
   const [isLoadingPost, setIsLoadingPost] = useState(true);
   const [postError, setPostError] = useState(null);
@@ -72,6 +72,11 @@ function PostDetailScreen({ route, navigation }) {
   useEffect(() => {
     if (postId) fetchPost();
   }, [postId, fetchPost]);
+
+  const onPrivacyChange = useCallback(async () => {
+    await fetchPost();
+    setPublicStatus((prevStatus) => (prevStatus === 1 ? 0 : 1)); // Cập nhật trạng thái
+  }, [fetchPost]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -157,6 +162,8 @@ function PostDetailScreen({ route, navigation }) {
                 timeAgo={timeAgo}
                 publicStatus={publicStatus}
                 currentUserId={currentUserId}
+                postId={postId}
+                onPrivacyChange={onPrivacyChange}
               />
               <Text style={[styles.title, { color: sectionColor }]}>
                 {post?.title || "No title"}

@@ -5,6 +5,7 @@ import { GlobalColors } from "../../constants/GlobalColors";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import OptionsModal from "../../components/ui/OptionsModal";
+import { changePublicStatus } from "../../util/posts-data-http";
 
 function PostHeader({
   user,
@@ -12,6 +13,8 @@ function PostHeader({
   noPressEffect,
   publicStatus,
   currentUserId,
+  postId,
+  onPrivacyChange,
 }) {
   const navigation = useNavigation();
   const [isUsernamePressed, setIsUsernamePressed] = useState(false);
@@ -57,7 +60,7 @@ function PostHeader({
     }
   };
 
-  const handleOptionSelect = (option) => {
+  const handleOptionSelect = async (option) => {
     setModalVisible(false);
 
     switch (option) {
@@ -65,10 +68,20 @@ function PostHeader({
         // Handle report post logic
         break;
       case "Change Post to Private":
-        // Handle change privacy logic (set post to private)
+        try {
+          await changePublicStatus(postId, 0);
+          if (onPrivacyChange) onPrivacyChange();
+        } catch (error) {
+          console.error("Failed to change post to private:", error);
+        }
         break;
       case "Change Post to Public":
-        // Handle change privacy logic (set post to public)
+        try {
+          await changePublicStatus(postId, 1); // Đặt trạng thái thành public
+          if (onPrivacyChange) onPrivacyChange();
+        } catch (error) {
+          console.error("Failed to change post to public:", error);
+        }
         break;
       case "Delete Post":
         // Handle delete post logic

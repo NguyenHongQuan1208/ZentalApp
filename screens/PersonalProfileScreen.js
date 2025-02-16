@@ -142,13 +142,22 @@ const PersonalProfileScreen = ({ route, navigation }) => {
     setRefreshing(false);
   }, [fetchUserData, fetchPosts, userId]);
 
+  const onPrivacyChange = useCallback(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
   const renderPost = useCallback(
     ({ item }) => (
       <View style={viewMode === "grid" ? styles.postsGrid : styles.postWrapper}>
         {viewMode === "grid" ? (
           <PostGridItem item={item} currentUserId={currentUserId} />
         ) : (
-          <Post item={item} currentUserId={currentUserId} noPressEffect />
+          <Post
+            item={item}
+            currentUserId={currentUserId}
+            noPressEffect
+            onPrivacyChange={onPrivacyChange}
+          />
         )}
       </View>
     ),
@@ -253,7 +262,7 @@ const PersonalProfileScreen = ({ route, navigation }) => {
             </View>
           ) : (
             <FlatList
-              key={viewMode}
+              key={viewMode + posts.length} // Đảm bảo re-render khi posts thay đổi
               data={posts}
               keyExtractor={(item) => item.id?.toString()}
               renderItem={renderPost}

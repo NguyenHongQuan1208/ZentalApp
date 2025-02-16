@@ -7,11 +7,6 @@ const OptionButton = ({ title, onSelect }) => {
   // Xác định style dựa trên title
   const getButtonStyle = () => {
     switch (title) {
-      case "Cancel":
-        return {
-          color: GlobalColors.primaryColor,
-          fontWeight: "bold",
-        };
       case "Delete Post":
         return {
           color: "red",

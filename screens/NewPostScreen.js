@@ -84,9 +84,19 @@ function NewPosts() {
     await fetchPosts();
   };
 
+  const onPrivacyChange = async () => {
+    await fetchPosts();
+  };
+
   const renderPost = useCallback(
     ({ item }) => {
-      return <Post item={item} currentUserId={currentUserId} />;
+      return (
+        <Post
+          item={item}
+          currentUserId={currentUserId}
+          onPrivacyChange={onPrivacyChange}
+        />
+      );
     },
     [currentUserId]
   );

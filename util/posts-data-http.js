@@ -82,3 +82,19 @@ export async function deletePost(postId) {
     throw new Error("Could not delete post.");
   }
 }
+
+// Hàm cập nhật trạng thái công khai của bài đăng
+export async function changePublicStatus(postId, newStatus) {
+  try {
+    // Gửi yêu cầu PATCH để cập nhật publicStatus
+    const response = await axios.patch(
+      `${BACKEND_URL}/posts/${postId}.json`,
+      { publicStatus: newStatus } // Cập nhật trường publicStatus
+    );
+
+    return response.data; // Trả về dữ liệu đã cập nhật
+  } catch (error) {
+    console.error("Error updating public status:", error);
+    throw new Error("Could not update public status.");
+  }
+}

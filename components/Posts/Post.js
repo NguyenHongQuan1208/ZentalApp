@@ -12,7 +12,7 @@ import LikeButton from "../../components/Posts/LikeButton";
 import CommentButton from "../../components/Posts/CommentButton";
 import useRealtimeComments from "../../hooks/useRealtimeComments"; // Import the hook
 
-const Post = memo(({ item, currentUserId, noPressEffect }) => {
+const Post = memo(({ item, currentUserId, noPressEffect, onPrivacyChange }) => {
   const navigation = useNavigation();
   const postId = item?.id;
   const userId = item?.uid || "";
@@ -79,6 +79,8 @@ const Post = memo(({ item, currentUserId, noPressEffect }) => {
           noPressEffect={noPressEffect}
           publicStatus={publicStatus}
           currentUserId={currentUserId}
+          postId={postId}
+          onPrivacyChange={onPrivacyChange}
         />
 
         <Text style={[styles.title, { color: sectionColor }]}>
