@@ -18,6 +18,7 @@ const Post = memo(({ item, currentUserId, noPressEffect }) => {
   const userId = item?.uid || "";
   const imageUri = item?.imageUri || "";
   const sectionId = item?.sectionId || "";
+  const publicStatus = item?.publicStatus;
 
   const { user, error } = useUser(userId);
   const { comments } = useRealtimeComments(postId); // Use the hook
@@ -41,6 +42,7 @@ const Post = memo(({ item, currentUserId, noPressEffect }) => {
       sectionColor: sectionColor,
       timeAgo: timeAgo,
       currentUserId: currentUserId,
+      publicStatus: publicStatus,
       shouldFocusComment: false,
     });
   }
@@ -55,6 +57,7 @@ const Post = memo(({ item, currentUserId, noPressEffect }) => {
       sectionColor: sectionColor,
       timeAgo: timeAgo,
       currentUserId: currentUserId,
+      publicStatus: publicStatus,
       shouldFocusComment: true,
     });
   }
@@ -74,6 +77,7 @@ const Post = memo(({ item, currentUserId, noPressEffect }) => {
           user={user}
           timeAgo={timeAgo}
           noPressEffect={noPressEffect}
+          publicStatus={publicStatus}
         />
 
         <Text style={[styles.title, { color: sectionColor }]}>

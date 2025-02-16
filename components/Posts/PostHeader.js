@@ -4,13 +4,22 @@ import Avatar from "../Profile/Avatar";
 import { GlobalColors } from "../../constants/GlobalColors";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
+import OptionsModal from "../../components/ui/OptionsModal";
 
-function PostHeader({ user, timeAgo, noPressEffect }) {
+function PostHeader({ user, timeAgo, noPressEffect, publicStatus }) {
   const navigation = useNavigation();
   const [isUsernamePressed, setIsUsernamePressed] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false); // State for modal visibility
+
+  // Adjust options based on publicStatus
+  const options = [
+    "Report Post",
+    publicStatus === 1 ? "Change Post to Private" : "Change Post to Public",
+    "Delete Post",
+  ];
 
   const handleMoreOptions = () => {
-    console.log("More options clicked!");
+    setModalVisible(true); // Open the modal
   };
 
   const handleAvatarPress = () => {
@@ -34,6 +43,28 @@ function PostHeader({ user, timeAgo, noPressEffect }) {
   const handleUsernamePressOut = () => {
     if (!noPressEffect) {
       setIsUsernamePressed(false);
+    }
+  };
+
+  const handleOptionSelect = (option) => {
+    console.log(`${option} selected for user: ${user?.username}`);
+    setModalVisible(false); // Close modal after selection
+    // Add additional handling for each option here
+    switch (option) {
+      case "Report Post":
+        // Handle report post logic
+        break;
+      case "Change Post to Private":
+        // Handle change privacy logic (set post to private)
+        break;
+      case "Change Post to Public":
+        // Handle change privacy logic (set post to public)
+        break;
+      case "Delete Post":
+        // Handle delete post logic
+        break;
+      default:
+        break;
     }
   };
 
@@ -76,6 +107,15 @@ function PostHeader({ user, timeAgo, noPressEffect }) {
           color={GlobalColors.inActivetabBarColor}
         />
       </Pressable>
+
+      {/* Options Modal */}
+      <OptionsModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSelect={handleOptionSelect}
+        title="Options"
+        options={options}
+      />
     </View>
   );
 }

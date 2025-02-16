@@ -34,6 +34,7 @@ function PostDetailScreen({ route, navigation }) {
     sectionColor,
     timeAgo,
     currentUserId,
+    publicStatus,
     shouldFocusComment,
   } = route.params;
 
@@ -151,7 +152,11 @@ function PostDetailScreen({ route, navigation }) {
           removeClippedSubviews={true}
           ListHeaderComponent={
             <>
-              <PostHeader user={user} timeAgo={timeAgo} />
+              <PostHeader
+                user={user}
+                timeAgo={timeAgo}
+                publicStatus={publicStatus}
+              />
               <Text style={[styles.title, { color: sectionColor }]}>
                 {post?.title || "No title"}
               </Text>
