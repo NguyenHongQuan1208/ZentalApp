@@ -156,6 +156,7 @@ function PostDetailScreen({ route, navigation }) {
                 user={user}
                 timeAgo={timeAgo}
                 publicStatus={publicStatus}
+                currentUserId={currentUserId}
               />
               <Text style={[styles.title, { color: sectionColor }]}>
                 {post?.title || "No title"}

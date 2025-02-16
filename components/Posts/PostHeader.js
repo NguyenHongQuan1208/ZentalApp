@@ -6,20 +6,31 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import OptionsModal from "../../components/ui/OptionsModal";
 
-function PostHeader({ user, timeAgo, noPressEffect, publicStatus }) {
+function PostHeader({
+  user,
+  timeAgo,
+  noPressEffect,
+  publicStatus,
+  currentUserId,
+}) {
   const navigation = useNavigation();
   const [isUsernamePressed, setIsUsernamePressed] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false); // State for modal visibility
+  const [modalVisible, setModalVisible] = useState(false);
 
-  // Adjust options based on publicStatus
-  const options = [
-    "Report Post",
-    publicStatus === 1 ? "Change Post to Private" : "Change Post to Public",
-    "Delete Post",
-  ];
+  // Kiểm tra xem currentUserId có khác với user.uid hay không
+  const isCurrentUser = currentUserId === user?.uid;
+
+  // Options sẽ thay đổi dựa trên isCurrentUser
+  const options = isCurrentUser
+    ? [
+        publicStatus === 1 ? "Change Post to Private" : "Change Post to Public",
+        "Delete Post",
+        "Cancel",
+      ]
+    : ["Report Post", "Cancel"]; // Chỉ hiển thị "Report Post" nếu không phải là người dùng hiện tại
 
   const handleMoreOptions = () => {
-    setModalVisible(true); // Open the modal
+    setModalVisible(true);
   };
 
   const handleAvatarPress = () => {
@@ -47,9 +58,8 @@ function PostHeader({ user, timeAgo, noPressEffect, publicStatus }) {
   };
 
   const handleOptionSelect = (option) => {
-    console.log(`${option} selected for user: ${user?.username}`);
-    setModalVisible(false); // Close modal after selection
-    // Add additional handling for each option here
+    setModalVisible(false);
+
     switch (option) {
       case "Report Post":
         // Handle report post logic
@@ -63,8 +73,7 @@ function PostHeader({ user, timeAgo, noPressEffect, publicStatus }) {
       case "Delete Post":
         // Handle delete post logic
         break;
-      default:
-        break;
+      // "Cancel" sẽ tự động đóng modal
     }
   };
 
@@ -84,6 +93,7 @@ function PostHeader({ user, timeAgo, noPressEffect, publicStatus }) {
             onPressIn={handleUsernamePressIn}
             onPressOut={handleUsernamePressOut}
             onPress={handleUsernamePress}
+            style={styles.usernameContainer}
           >
             <Text
               style={[
@@ -95,6 +105,14 @@ function PostHeader({ user, timeAgo, noPressEffect, publicStatus }) {
             >
               {user?.username || "Loading..."}
             </Text>
+            {publicStatus === 0 && (
+              <Ionicons
+                name="lock-closed"
+                size={14}
+                color={GlobalColors.inActivetabBarColor}
+                style={styles.lockIcon}
+              />
+            )}
           </Pressable>
           <Text style={styles.timeAgo}>{timeAgo}</Text>
         </View>
@@ -108,7 +126,6 @@ function PostHeader({ user, timeAgo, noPressEffect, publicStatus }) {
         />
       </Pressable>
 
-      {/* Options Modal */}
       <OptionsModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -137,9 +154,17 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     justifyContent: "center",
   },
+  usernameContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   username: {
     fontWeight: "bold",
     fontSize: 16,
+    marginRight: 5,
+  },
+  lockIcon: {
+    marginBottom: 2,
   },
   timeAgo: {
     fontSize: 12,

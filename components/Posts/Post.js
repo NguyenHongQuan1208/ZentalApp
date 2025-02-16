@@ -78,6 +78,7 @@ const Post = memo(({ item, currentUserId, noPressEffect }) => {
           timeAgo={timeAgo}
           noPressEffect={noPressEffect}
           publicStatus={publicStatus}
+          currentUserId={currentUserId}
         />
 
         <Text style={[styles.title, { color: sectionColor }]}>

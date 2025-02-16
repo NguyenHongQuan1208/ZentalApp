@@ -35,6 +35,7 @@ function PostGridItem({ item, currentUserId }) {
       sectionColor: sectionColor,
       timeAgo: timeAgo,
       currentUserId: currentUserId,
+      publicStatus: publicStatus,
       shouldFocusComment: false,
     });
   }
