@@ -146,6 +146,10 @@ const PersonalProfileScreen = ({ route, navigation }) => {
     fetchPosts();
   }, [fetchPosts]);
 
+  const onPostDelete = useCallback(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
   const renderPost = useCallback(
     ({ item }) => (
       <View style={viewMode === "grid" ? styles.postsGrid : styles.postWrapper}>
@@ -157,6 +161,7 @@ const PersonalProfileScreen = ({ route, navigation }) => {
             currentUserId={currentUserId}
             noPressEffect
             onPrivacyChange={onPrivacyChange}
+            onPostDelete={onPostDelete}
           />
         )}
       </View>

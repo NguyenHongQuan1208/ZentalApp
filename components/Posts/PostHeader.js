@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
 import Avatar from "../Profile/Avatar";
 import { GlobalColors } from "../../constants/GlobalColors";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import OptionsModal from "../../components/ui/OptionsModal";
-import { changePublicStatus } from "../../util/posts-data-http";
+import { changePublicStatus, deletePost } from "../../util/posts-data-http";
 
 function PostHeader({
   user,
@@ -15,22 +15,22 @@ function PostHeader({
   currentUserId,
   postId,
   onPrivacyChange,
+  onPostDelete,
+  showOptions = true, // Thêm prop này
 }) {
   const navigation = useNavigation();
   const [isUsernamePressed, setIsUsernamePressed] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
-  // Kiểm tra xem currentUserId có khác với user.uid hay không
   const isCurrentUser = currentUserId === user?.uid;
 
-  // Options sẽ thay đổi dựa trên isCurrentUser
   const options = isCurrentUser
     ? [
         publicStatus === 1 ? "Change Post to Private" : "Change Post to Public",
         "Delete Post",
         "Cancel",
       ]
-    : ["Report Post", "Cancel"]; // Chỉ hiển thị "Report Post" nếu không phải là người dùng hiện tại
+    : ["Report Post", "Cancel"];
 
   const handleMoreOptions = () => {
     setModalVisible(true);
@@ -77,16 +77,35 @@ function PostHeader({
         break;
       case "Change Post to Public":
         try {
-          await changePublicStatus(postId, 1); // Đặt trạng thái thành public
+          await changePublicStatus(postId, 1);
           if (onPrivacyChange) onPrivacyChange();
         } catch (error) {
           console.error("Failed to change post to public:", error);
         }
         break;
       case "Delete Post":
-        // Handle delete post logic
+        Alert.alert(
+          "Confirm Deletion",
+          "Are you sure you want to delete this post?",
+          [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
+            {
+              text: "Delete",
+              onPress: async () => {
+                try {
+                  await deletePost(postId);
+                  if (onPostDelete) onPostDelete(); // Callback to update the UI
+                } catch (error) {
+                  console.error("Failed to delete post:", error);
+                }
+              },
+            },
+          ]
+        );
         break;
-      // "Cancel" sẽ tự động đóng modal
     }
   };
 
@@ -131,13 +150,15 @@ function PostHeader({
         </View>
       </View>
 
-      <Pressable onPress={handleMoreOptions} style={styles.moreOptionsButton}>
-        <Ionicons
-          name="ellipsis-horizontal"
-          size={20}
-          color={GlobalColors.inActivetabBarColor}
-        />
-      </Pressable>
+      {showOptions && ( // Kiểm tra prop showOptions
+        <Pressable onPress={handleMoreOptions} style={styles.moreOptionsButton}>
+          <Ionicons
+            name="ellipsis-horizontal"
+            size={20}
+            color={GlobalColors.inActivetabBarColor}
+          />
+        </Pressable>
+      )}
 
       <OptionsModal
         visible={modalVisible}

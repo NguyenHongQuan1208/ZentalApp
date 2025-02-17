@@ -88,6 +88,10 @@ function NewPosts() {
     await fetchPosts();
   };
 
+  const onPostDelete = async () => {
+    await fetchPosts();
+  };
+
   const renderPost = useCallback(
     ({ item }) => {
       return (
@@ -95,6 +99,7 @@ function NewPosts() {
           item={item}
           currentUserId={currentUserId}
           onPrivacyChange={onPrivacyChange}
+          onPostDelete={onPostDelete}
         />
       );
     },

@@ -12,98 +12,103 @@ import LikeButton from "../../components/Posts/LikeButton";
 import CommentButton from "../../components/Posts/CommentButton";
 import useRealtimeComments from "../../hooks/useRealtimeComments"; // Import the hook
 
-const Post = memo(({ item, currentUserId, noPressEffect, onPrivacyChange }) => {
-  const navigation = useNavigation();
-  const postId = item?.id;
-  const userId = item?.uid || "";
-  const imageUri = item?.imageUri || "";
-  const sectionId = item?.sectionId || "";
-  const publicStatus = item?.publicStatus;
+const Post = memo(
+  ({ item, currentUserId, noPressEffect, onPrivacyChange, onPostDelete }) => {
+    const navigation = useNavigation();
+    const postId = item?.id;
+    const userId = item?.uid || "";
+    const imageUri = item?.imageUri || "";
+    const sectionId = item?.sectionId || "";
+    const publicStatus = item?.publicStatus;
 
-  const { user, error } = useUser(userId);
-  const { comments } = useRealtimeComments(postId); // Use the hook
+    const { user, error } = useUser(userId);
+    const { comments } = useRealtimeComments(postId); // Use the hook
 
-  const sectionColor =
-    TASK_SECTIONS.find((section) => section.id === sectionId)?.color ||
-    GlobalColors.primaryBlack;
+    const sectionColor =
+      TASK_SECTIONS.find((section) => section.id === sectionId)?.color ||
+      GlobalColors.primaryBlack;
 
-  const timeAgo = item?.createdAt
-    ? formatDistanceToNowStrict(parseISO(item.createdAt), { addSuffix: false })
-    : "Unknown time";
+    const timeAgo = item?.createdAt
+      ? formatDistanceToNowStrict(parseISO(item.createdAt), {
+          addSuffix: false,
+        })
+      : "Unknown time";
 
-  const commentCount = comments ? comments.length : 0; // Calculate comment count
+    const commentCount = comments ? comments.length : 0; // Calculate comment count
 
-  function navigateHandler() {
-    navigation.navigate("PostDetail", {
-      postId: postId,
-      userId: userId,
-      imageUri: imageUri,
-      sectionId: sectionId,
-      sectionColor: sectionColor,
-      timeAgo: timeAgo,
-      currentUserId: currentUserId,
-      publicStatus: publicStatus,
-      shouldFocusComment: false,
-    });
-  }
+    function navigateHandler() {
+      navigation.navigate("PostDetail", {
+        postId: postId,
+        userId: userId,
+        imageUri: imageUri,
+        sectionId: sectionId,
+        sectionColor: sectionColor,
+        timeAgo: timeAgo,
+        currentUserId: currentUserId,
+        publicStatus: publicStatus,
+        shouldFocusComment: false,
+      });
+    }
 
-  function handleCommentPress(event) {
-    event.stopPropagation();
-    navigation.navigate("PostDetail", {
-      postId: postId,
-      userId: userId,
-      imageUri: imageUri,
-      sectionId: sectionId,
-      sectionColor: sectionColor,
-      timeAgo: timeAgo,
-      currentUserId: currentUserId,
-      publicStatus: publicStatus,
-      shouldFocusComment: true,
-    });
-  }
+    function handleCommentPress(event) {
+      event.stopPropagation();
+      navigation.navigate("PostDetail", {
+        postId: postId,
+        userId: userId,
+        imageUri: imageUri,
+        sectionId: sectionId,
+        sectionColor: sectionColor,
+        timeAgo: timeAgo,
+        currentUserId: currentUserId,
+        publicStatus: publicStatus,
+        shouldFocusComment: true,
+      });
+    }
 
-  if (error) {
+    if (error) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text>Error fetching user data.</Text>
+        </View>
+      );
+    }
+
     return (
-      <View style={styles.errorContainer}>
-        <Text>Error fetching user data.</Text>
-      </View>
+      <Pressable onPress={navigateHandler}>
+        <View style={styles.postContainer}>
+          <PostHeader
+            user={user}
+            timeAgo={timeAgo}
+            noPressEffect={noPressEffect}
+            publicStatus={publicStatus}
+            currentUserId={currentUserId}
+            postId={postId}
+            onPrivacyChange={onPrivacyChange}
+            onPostDelete={onPostDelete}
+          />
+
+          <Text style={[styles.title, { color: sectionColor }]}>
+            {item?.title || "No title"}
+          </Text>
+
+          <PostContent content={item?.content} />
+
+          {typeof imageUri === "string" && imageUri.trim() !== "" && (
+            <PostImage imageUri={imageUri} />
+          )}
+
+          <View style={styles.actionRow}>
+            <LikeButton postId={postId} currentUserId={currentUserId} />
+            <CommentButton
+              commentCount={commentCount}
+              onPress={handleCommentPress}
+            />
+          </View>
+        </View>
+      </Pressable>
     );
   }
-
-  return (
-    <Pressable onPress={navigateHandler}>
-      <View style={styles.postContainer}>
-        <PostHeader
-          user={user}
-          timeAgo={timeAgo}
-          noPressEffect={noPressEffect}
-          publicStatus={publicStatus}
-          currentUserId={currentUserId}
-          postId={postId}
-          onPrivacyChange={onPrivacyChange}
-        />
-
-        <Text style={[styles.title, { color: sectionColor }]}>
-          {item?.title || "No title"}
-        </Text>
-
-        <PostContent content={item?.content} />
-
-        {typeof imageUri === "string" && imageUri.trim() !== "" && (
-          <PostImage imageUri={imageUri} />
-        )}
-
-        <View style={styles.actionRow}>
-          <LikeButton postId={postId} currentUserId={currentUserId} />
-          <CommentButton
-            commentCount={commentCount}
-            onPress={handleCommentPress}
-          />
-        </View>
-      </View>
-    </Pressable>
-  );
-});
+);
 
 const styles = StyleSheet.create({
   postContainer: {
