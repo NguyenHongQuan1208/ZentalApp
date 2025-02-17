@@ -154,7 +154,12 @@ const PersonalProfileScreen = ({ route, navigation }) => {
     ({ item }) => (
       <View style={viewMode === "grid" ? styles.postsGrid : styles.postWrapper}>
         {viewMode === "grid" ? (
-          <PostGridItem item={item} currentUserId={currentUserId} />
+          <PostGridItem
+            item={item}
+            currentUserId={currentUserId}
+            onPrivacyChange={onPrivacyChange}
+            onPostDelete={onPostDelete}
+          />
         ) : (
           <Post
             item={item}
@@ -166,7 +171,7 @@ const PersonalProfileScreen = ({ route, navigation }) => {
         )}
       </View>
     ),
-    [currentUserId, viewMode]
+    [currentUserId, viewMode, onPrivacyChange, onPostDelete]
   );
 
   useEffect(() => {
@@ -267,7 +272,7 @@ const PersonalProfileScreen = ({ route, navigation }) => {
             </View>
           ) : (
             <FlatList
-              key={viewMode + posts.length} // Đảm bảo re-render khi posts thay đổi
+              key={viewMode + posts.length}
               data={posts}
               keyExtractor={(item) => item.id?.toString()}
               renderItem={renderPost}

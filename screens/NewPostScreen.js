@@ -17,13 +17,17 @@ import Post from "../components/Posts/Post";
 function NewPosts() {
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
-  const token = authCtx.token;
-  const refreshToken = refreshCtx.refreshToken;
+  const { token } = authCtx;
+  const { refreshToken } = refreshCtx;
 
   const [currentUserId, setCurrentUserId] = useState("");
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    async function fetchUserData() {
+    const fetchUserData = async () => {
       try {
         const authResponse = await getUserDataWithRetry(
           token,
@@ -31,40 +35,29 @@ function NewPosts() {
           authCtx,
           refreshCtx
         );
-        const uid = authResponse.localId;
-        setCurrentUserId(uid);
+        setCurrentUserId(authResponse.localId);
       } catch (error) {
         console.error("Error fetching user data:", error);
         authCtx.logout();
       }
-    }
+    };
     fetchUserData();
   }, [token, refreshToken, authCtx, refreshCtx]);
 
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
       setError(null);
       setLoading(true);
       const allPosts = await getAllPosts();
 
-      // Lọc các bài đăng có status = 1 và publicStatus = 1
       const filteredPosts = allPosts.filter(
         (post) => post.status === 1 && post.publicStatus === 1
       );
 
-      // Sắp xếp bài đăng từ mới nhất đến cũ nhất
       const sortedPosts = filteredPosts.sort((a, b) => {
-        const dateA = new Date(a.createdAt);
-        const dateB = new Date(b.createdAt);
-        return dateB - dateA; // Mới nhất lên đầu
+        return new Date(b.createdAt) - new Date(a.createdAt); // Mới nhất lên đầu
       });
 
-      // Cập nhật state với bài đăng đã lọc và sắp xếp
       setPosts(sortedPosts);
     } catch (err) {
       console.error("Error fetching posts:", err);
@@ -73,37 +66,35 @@ function NewPosts() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchPosts();
-  }, []);
+  }, [fetchPosts]);
 
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchPosts();
   };
 
-  const onPrivacyChange = async () => {
-    await fetchPosts();
-  };
+  const onPrivacyChange = useCallback(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
-  const onPostDelete = async () => {
-    await fetchPosts();
-  };
+  const onPostDelete = useCallback(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   const renderPost = useCallback(
-    ({ item }) => {
-      return (
-        <Post
-          item={item}
-          currentUserId={currentUserId}
-          onPrivacyChange={onPrivacyChange}
-          onPostDelete={onPostDelete}
-        />
-      );
-    },
-    [currentUserId]
+    ({ item }) => (
+      <Post
+        item={item}
+        currentUserId={currentUserId}
+        onPrivacyChange={onPrivacyChange}
+        onPostDelete={onPostDelete}
+      />
+    ),
+    [currentUserId, onPrivacyChange, onPostDelete]
   );
 
   if (loading) {
