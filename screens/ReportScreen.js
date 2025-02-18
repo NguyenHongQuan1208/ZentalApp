@@ -9,12 +9,14 @@ import {
   Pressable,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { GlobalColors } from "../constants/GlobalColors";
 import LongButton from "../components/ui/LongButton";
+import { reportPost } from "../util/report-http";
 
 function ReportScreen({ route, navigation }) {
-  const { postId, headerTitle } = route.params;
+  const { postId, currentUserId, headerTitle } = route.params;
   const [reason, setReason] = useState("");
   const [additionalDetails, setAdditionalDetails] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,13 +44,26 @@ function ReportScreen({ route, navigation }) {
       return;
     }
 
+    if (reason === "Other" && additionalDetails.trim().length < 10) {
+      Alert.alert(
+        "Incomplete Report",
+        "Please provide at least 10 characters of additional details."
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      await submitReport(
-        postId,
-        reason === "Other" ? additionalDetails : reason
-      );
+      const timestamp = new Date().toISOString();
+      const reportData = {
+        reason: reason === "Other" ? additionalDetails : reason,
+        timestamp: timestamp,
+        repporterId: currentUserId,
+        isViewed: 0,
+      };
+
+      await reportPost(postId, reportData);
 
       Alert.alert(
         "Report Submitted",
@@ -71,16 +86,11 @@ function ReportScreen({ route, navigation }) {
     }
   };
 
-  const submitReport = async (postId, reportReason) => {
-    return new Promise((resolve) => {
-      setTimeout(resolve, 1000);
-    });
-  };
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
     >
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <Text style={styles.title}>Report Post</Text>
@@ -98,10 +108,10 @@ function ReportScreen({ route, navigation }) {
               ]}
               onPress={() => {
                 setReason(reportReason);
-                if (reportReason === "Other") {
-                  setAdditionalDetails("");
+                if (reportReason !== "Other") {
+                  setAdditionalDetails(reportReason); // Set additional details to the chosen reason
                 } else {
-                  setAdditionalDetails(reportReason);
+                  setAdditionalDetails(""); // Reset additional details
                 }
               }}
             >
@@ -117,16 +127,12 @@ function ReportScreen({ route, navigation }) {
           ))}
         </View>
 
-        {/* Always show the TextInput */}
+        {/* Always show the input field */}
         <TextInput
           style={styles.input}
           placeholder="Additional details"
-          value={reason === "Other" ? additionalDetails : reason}
-          onChangeText={(text) => {
-            if (reason === "Other") {
-              setAdditionalDetails(text);
-            }
-          }}
+          value={additionalDetails}
+          onChangeText={setAdditionalDetails}
           multiline
           numberOfLines={4}
         />
@@ -136,7 +142,7 @@ function ReportScreen({ route, navigation }) {
           onPress={handleReport}
           disabled={isSubmitting || !reason}
         >
-          {isSubmitting ? "Submitting..." : "Submit Report"}
+          {isSubmitting ? <ActivityIndicator color="white" /> : "Submit Report"}
         </LongButton>
       </ScrollView>
     </KeyboardAvoidingView>

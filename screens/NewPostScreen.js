@@ -13,8 +13,9 @@ import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import Post from "../components/Posts/Post";
+import { Ionicons } from "@expo/vector-icons";
 
-function NewPosts() {
+function NewPosts({ navigation }) {
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
   const { token } = authCtx;
@@ -84,6 +85,19 @@ function NewPosts() {
   const onPostDelete = useCallback(() => {
     fetchPosts();
   }, [fetchPosts]);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Ionicons
+          name="search"
+          size={22}
+          color={GlobalColors.pureWhite}
+          style={{ marginRight: 10 }}
+        />
+      ),
+    });
+  }, [navigation]);
 
   const renderPost = useCallback(
     ({ item }) => (

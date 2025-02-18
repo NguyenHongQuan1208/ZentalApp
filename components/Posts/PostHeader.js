@@ -70,6 +70,7 @@ function PostHeader({
         navigation.navigate("Report", {
           postId: postId,
           headerTitle: "Report Post",
+          currentUserId: currentUserId,
         });
         break;
       case "Change Post to Private":
