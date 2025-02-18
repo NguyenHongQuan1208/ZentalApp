@@ -19,6 +19,27 @@ export async function storeUser(userId, userInfo) {
   }
 }
 
+export async function getAllUsers() {
+  try {
+    // Gửi yêu cầu GET tới Firebase Realtime Database để lấy tất cả thông tin người dùng
+    const response = await axios.get(`${BACKEND_URL}/userInfo.json`);
+
+    // Kiểm tra nếu không có dữ liệu, trả về một mảng rỗng
+    if (!response.data) {
+      return []; // Không có người dùng nào
+    }
+
+    // Trả về danh sách người dùng
+    return Object.keys(response.data).map((key) => ({
+      id: key,
+      ...response.data[key],
+    }));
+  } catch (error) {
+    console.error("Error fetching all user data:", error);
+    throw new Error("Could not fetch all user data.");
+  }
+}
+
 export async function updateUser(userId, updatedInfo) {
   try {
     // Gửi yêu cầu PATCH tới Firebase Realtime Database, sử dụng userId làm ID

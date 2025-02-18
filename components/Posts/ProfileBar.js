@@ -52,7 +52,9 @@ const ProfileBar = React.memo(({ userId, onClose }) => {
 
   const handleProfilePress = useCallback(() => {
     if (userId) {
-      onClose(); // Gọi hàm onClose để đóng Modal
+      if (onClose) {
+        onClose(); // Gọi hàm onClose nếu tồn tại
+      }
       navigation.navigate("PersonalProfile", { userId: userId });
     }
   }, [navigation, userId, onClose]);
