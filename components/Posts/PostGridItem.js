@@ -100,6 +100,12 @@ function PostGridItem({ item, currentUserId, onPrivacyChange, onPostDelete }) {
           ]
         );
         break;
+      case "Report Post":
+        navigation.navigate("Report", {
+          postId: postId,
+          headerTitle: "Report Post",
+        });
+        break;
       case "Cancel":
         break;
       default:
@@ -107,11 +113,17 @@ function PostGridItem({ item, currentUserId, onPrivacyChange, onPostDelete }) {
     }
   };
 
-  const options = [
-    publicStatus === 1 ? "Change Post to Private" : "Change Post to Public",
-    "Delete Post",
-    "Cancel",
-  ];
+  // Determine options based on userId comparison
+  const options =
+    userId === currentUserId
+      ? [
+          publicStatus === 1
+            ? "Change Post to Private"
+            : "Change Post to Public",
+          "Delete Post",
+          "Cancel",
+        ]
+      : ["Report Post", "Cancel"];
 
   return (
     <View>

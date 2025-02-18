@@ -26,6 +26,7 @@ import RefreshTokenContextProvider from "./store/RefreshTokenContext";
 import ConfirmPostScreen from "./screens/ConfirmPostScreen";
 import PostDetailScreen from "./screens/PostDetailScreen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import ReportScreen from "./screens/ReportScreen";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -261,6 +262,14 @@ function AuthenticatedStack() {
         component={PersonalProfileScreen}
         options={{
           headerTitle: "Personal Profile",
+          headerTitleAlign: "center",
+        }}
+      />
+
+      <Stack.Screen
+        name="Report"
+        component={ReportScreen}
+        options={{
           headerTitleAlign: "center",
         }}
       />

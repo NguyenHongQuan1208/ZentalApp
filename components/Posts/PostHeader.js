@@ -16,7 +16,7 @@ function PostHeader({
   postId,
   onPrivacyChange,
   onPostDelete,
-  showOptions = true, // Thêm prop này
+  showOptions = true,
 }) {
   const navigation = useNavigation();
   const [isUsernamePressed, setIsUsernamePressed] = useState(false);
@@ -38,7 +38,9 @@ function PostHeader({
 
   const handleAvatarPress = () => {
     if (!noPressEffect && user?.uid) {
-      navigation.navigate("PersonalProfile", { userId: user.uid });
+      navigation.navigate("PersonalProfile", {
+        userId: user.uid,
+      });
     }
   };
 
@@ -65,7 +67,10 @@ function PostHeader({
 
     switch (option) {
       case "Report Post":
-        // Handle report post logic
+        navigation.navigate("Report", {
+          postId: postId,
+          headerTitle: "Report Post",
+        });
         break;
       case "Change Post to Private":
         try {
