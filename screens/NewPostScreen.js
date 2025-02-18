@@ -94,6 +94,7 @@ function NewPosts({ navigation }) {
           size={22}
           color={GlobalColors.pureWhite}
           style={{ marginRight: 10 }}
+          onPress={() => navigation.navigate("Search", { showInput: true })}
         />
       ),
     });
