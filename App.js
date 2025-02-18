@@ -27,6 +27,7 @@ import ConfirmPostScreen from "./screens/ConfirmPostScreen";
 import PostDetailScreen from "./screens/PostDetailScreen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import ReportScreen from "./screens/ReportScreen";
+import SearchScreen from "./screens/SearchScreen";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -273,6 +274,8 @@ function AuthenticatedStack() {
           headerTitleAlign: "center",
         }}
       />
+
+      <Stack.Screen name="Search" component={SearchScreen} />
     </Stack.Navigator>
   );
 }
