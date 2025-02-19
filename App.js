@@ -15,7 +15,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import IconButton from "./components/ui/IconButton";
 import TaskScreen from "./screens/TaskScreen";
 import NewPosts from "./screens/NewPostScreen";
-import ChatScreen from "./screens/ChatScreen";
+import ChatsScreen from "./screens/ChatsScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import TaskNoteScreen from "./screens/TaskNoteScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -81,7 +81,7 @@ function AppOverview() {
 
       <BottomTabs.Screen
         name="Chats"
-        component={ChatScreen}
+        component={ChatsScreen}
         options={{
           title: "Start Chatting",
           tabBarLabel: "Chats",
