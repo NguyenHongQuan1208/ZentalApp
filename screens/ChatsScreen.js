@@ -1,25 +1,32 @@
-// ChatsScreen.js
 import React, { useContext, useEffect, useState } from "react";
-import { View, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Text,
+} from "react-native";
 import ChatItem from "../components/Chat/ChatItem";
-import { getAllChatLists } from "../util/chat-list-data.http";
 import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
+import { getAllUsers } from "../util/user-info-http";
+import { createChatList, checkChatExists } from "../util/chat-list-data.http"; // Thêm hàm checkChatExists
+import { GlobalColors } from "../constants/GlobalColors";
 
-const ChatsScreen = () => {
+const ChatsScreen = ({ navigation }) => {
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
   const token = authCtx.token;
   const refreshToken = refreshCtx.refreshToken;
-  const [userId, setUserId] = useState("");
 
-  const [chatData, setChatData] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState("");
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchUserData() {
+    async function fetchCurrentUserData() {
       try {
         const authResponse = await getUserDataWithRetry(
           token,
@@ -27,36 +34,53 @@ const ChatsScreen = () => {
           authCtx,
           refreshCtx
         );
-        setUserId(authResponse.localId);
+        setCurrentUserId(authResponse.localId);
       } catch (error) {
         console.error("Error fetching user data:", error);
         authCtx.logout();
       }
     }
-    fetchUserData();
+    fetchCurrentUserData();
   }, [token, refreshToken, authCtx, refreshCtx]);
 
   useEffect(() => {
-    const fetchChatLists = async () => {
-      if (!userId) return;
-      try {
-        const data = await getAllChatLists(userId);
-        setChatData(data);
-      } catch (err) {
-        console.error("Error fetching chat lists:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+    if (currentUserId) {
+      async function fetchUsers() {
+        try {
+          const users = await getAllUsers();
+          const otherUsers = users.filter((user) => user.id !== currentUserId);
+          setFilteredUsers(otherUsers);
+        } catch (error) {
+          console.error("Error fetching all users:", error);
+          setError("Could not fetch users.");
+        } finally {
+          setLoading(false);
+        }
       }
-    };
+      fetchUsers();
+    }
+  }, [currentUserId]);
 
-    fetchChatLists();
-  }, [userId]);
+  const handleChatItemClick = async (user) => {
+    try {
+      const chatExists = await checkChatExists(currentUserId, user.uid); // Kiểm tra cuộc trò chuyện tồn tại
+      if (chatExists) {
+        console.log(`Chat already exists with user ID: ${user.uid}`);
+        // navigation.navigate("SingleChatScreen");
+      } else {
+        await createChatList(currentUserId, user.uid);
+        // navigation.navigate("SingleChatScreen");
+      }
+    } catch (error) {
+      console.error("Error handling chat item click:", error);
+    }
+  };
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={GlobalColors.primaryColor} />
+        <Text>Loading chats...</Text>
       </View>
     );
   }
@@ -72,15 +96,10 @@ const ChatsScreen = () => {
   return (
     <View style={styles.container}>
       <FlatList
-        data={chatData}
-        keyExtractor={(item) => item.otherUserId}
+        data={filteredUsers}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <ChatItem
-            userId={item.otherUserId}
-            lastMessage={item.lastMessage}
-            lastMessageTime={item.lastMessageTime}
-            unreadCount={item.unreadCount}
-          />
+          <ChatItem user={item} onPress={() => handleChatItemClick(item)} />
         )}
       />
     </View>
