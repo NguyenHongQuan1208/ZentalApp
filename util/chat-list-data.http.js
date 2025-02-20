@@ -3,26 +3,41 @@ import axios from "axios";
 const BACKEND_URL =
   "https://zentalapp-default-rtdb.asia-southeast1.firebasedatabase.app";
 
-export const createChatList = async (currentUserId, otherUserId) => {
-  const roomId = generateRoomId(); // Generate a unique room ID
+// Function to create a chat list and return the room ID
+export const createChatList = async (currentUserId, otherUserId, roomId) => {
+  // Generate a unique room ID if not provided
+  const generatedRoomId = roomId || generateRoomId();
 
   const chatData = {
     lastMsg: "",
     lastMsgTime: "",
     unreadCount: 0,
-    roomId: roomId,
+    roomId: generatedRoomId,
   };
 
   try {
+    // Create chat list for the current user
     await axios.put(
       `${BACKEND_URL}/chatlist/${currentUserId}/${otherUserId}.json`,
       chatData
     );
+
+    // Create chat list for the other user with the same room ID
+    await axios.put(
+      `${BACKEND_URL}/chatlist/${otherUserId}/${currentUserId}.json`,
+      {
+        ...chatData, // Use the same chat data
+        roomId: generatedRoomId, // Ensure the same roomId is used
+      }
+    );
+
+    return generatedRoomId; // Return the generated or provided room ID
   } catch (error) {
     console.error(
       `Error creating chat list for user ID: ${otherUserId}`,
       error
     );
+    throw new Error("Failed to create chat list"); // Throw an error to handle it in the calling function
   }
 };
 
@@ -33,16 +48,29 @@ const generateRoomId = () => {
   return `${timestamp}-${randomNum}`; // Combine them to create a unique ID
 };
 
+// Function to check if a chat exists
 export const checkChatExists = async (currentUserId, otherUserId) => {
   try {
     const response = await axios.get(
       `${BACKEND_URL}/chatlist/${currentUserId}/${otherUserId}.json`
     );
 
-    // Kiểm tra xem dữ liệu có tồn tại không
-    return response.data !== null; // Nếu không có dữ liệu, trả về false
+    // Check if data exists
+    return response.data !== null; // If no data, return false
   } catch (error) {
     console.error("Error checking chat existence:", error);
-    return false; // Nếu có lỗi, coi như cuộc trò chuyện không tồn tại
+    return false; // If there's an error, consider the chat as not existing
+  }
+};
+
+export const getRoomId = async (currentUserId, otherUserId) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}/chatlist/${currentUserId}/${otherUserId}.json`
+    );
+    return response.data.roomId; // Assuming the roomId is stored in the data
+  } catch (error) {
+    console.error("Error fetching room ID:", error);
+    throw new Error("Failed to fetch room ID");
   }
 };

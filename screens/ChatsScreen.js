@@ -11,7 +11,11 @@ import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import { getAllUsers } from "../util/user-info-http";
-import { createChatList, checkChatExists } from "../util/chat-list-data.http"; // Thêm hàm checkChatExists
+import {
+  createChatList,
+  checkChatExists,
+  getRoomId,
+} from "../util/chat-list-data.http";
 import { GlobalColors } from "../constants/GlobalColors";
 
 const ChatsScreen = ({ navigation }) => {
@@ -63,14 +67,28 @@ const ChatsScreen = ({ navigation }) => {
 
   const handleChatItemClick = async (user) => {
     try {
-      const chatExists = await checkChatExists(currentUserId, user.uid); // Kiểm tra cuộc trò chuyện tồn tại
+      const chatExists = await checkChatExists(currentUserId, user.uid);
+      const reverseChatExists = await checkChatExists(user.uid, currentUserId); // Check the reverse as well
+
+      let roomId;
+
       if (chatExists) {
-        console.log(`Chat already exists with user ID: ${user.uid}`);
-        // navigation.navigate("SingleChatScreen");
+        // If chat exists for the current user, get the room ID
+        roomId = await getRoomId(currentUserId, user.uid);
+      } else if (reverseChatExists) {
+        // If chat exists for the other user, get the room ID
+        roomId = await getRoomId(user.uid, currentUserId);
       } else {
-        await createChatList(currentUserId, user.uid);
-        // navigation.navigate("SingleChatScreen");
+        // If no chat exists, create a new chat list
+        roomId = await createChatList(currentUserId, user.uid); // This will create for both users
       }
+
+      // Navigate to the chat screen with the room ID
+      navigation.navigate("SingleChat", {
+        currentUserId,
+        otherUserId: user.uid,
+        roomId,
+      });
     } catch (error) {
       console.error("Error handling chat item click:", error);
     }

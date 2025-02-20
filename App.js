@@ -28,6 +28,7 @@ import PostDetailScreen from "./screens/PostDetailScreen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import ReportScreen from "./screens/ReportScreen";
 import SearchScreen from "./screens/SearchScreen";
+import SingleChatScreen from "./screens/SingleChatScreen";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -274,6 +275,8 @@ function AuthenticatedStack() {
           headerTitleAlign: "center",
         }}
       />
+
+      <Stack.Screen name="SingleChat" component={SingleChatScreen} />
 
       <Stack.Screen name="Search" component={SearchScreen} />
     </Stack.Navigator>
