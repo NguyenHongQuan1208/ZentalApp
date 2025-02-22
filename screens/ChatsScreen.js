@@ -68,19 +68,16 @@ const ChatsScreen = ({ navigation }) => {
   const handleChatItemClick = async (user) => {
     try {
       const chatExists = await checkChatExists(currentUserId, user.uid);
-      const reverseChatExists = await checkChatExists(user.uid, currentUserId); // Check the reverse as well
+      const reverseChatExists = await checkChatExists(user.uid, currentUserId);
 
       let roomId;
 
       if (chatExists) {
-        // If chat exists for the current user, get the room ID
         roomId = await getRoomId(currentUserId, user.uid);
       } else if (reverseChatExists) {
-        // If chat exists for the other user, get the room ID
         roomId = await getRoomId(user.uid, currentUserId);
       } else {
-        // If no chat exists, create a new chat list
-        roomId = await createChatList(currentUserId, user.uid); // This will create for both users
+        roomId = await createChatList(currentUserId, user.uid);
       }
 
       // Navigate to the chat screen with the room ID
@@ -117,7 +114,13 @@ const ChatsScreen = ({ navigation }) => {
         data={filteredUsers}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <ChatItem user={item} onPress={() => handleChatItemClick(item)} />
+          <ChatItem
+            user={item}
+            lastMsg={item.lastMsg || "No messages yet."} // Default message if none exists
+            lastMsgTime={item.lastMsgTime || "Just now"} // Default time if none exists
+            currentUserId={currentUserId}
+            onPress={() => handleChatItemClick(item)}
+          />
         )}
       />
     </View>

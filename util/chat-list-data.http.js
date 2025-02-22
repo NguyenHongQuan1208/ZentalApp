@@ -74,3 +74,22 @@ export const getRoomId = async (currentUserId, otherUserId) => {
     throw new Error("Failed to fetch room ID");
   }
 };
+
+// Function to get the unread count based on currentUserId and otherUserId
+export const getUnreadCount = async (currentUserId, otherUserId) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}/chatlist/${currentUserId}/${otherUserId}.json`
+    );
+
+    // Check if data exists and return the unreadCount
+    if (response.data) {
+      return response.data.unreadCount; // Return the unread count
+    } else {
+      return 0; // If no data exists, return 0
+    }
+  } catch (error) {
+    console.error("Error fetching unread count:", error);
+    throw new Error("Failed to fetch unread count");
+  }
+};
