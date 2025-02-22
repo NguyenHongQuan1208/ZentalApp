@@ -84,7 +84,6 @@ function AppOverview() {
         name="Chats"
         component={ChatsScreen}
         options={{
-          title: "Start Chatting",
           tabBarLabel: "Chats",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubbles" size={size} color={color} />

@@ -5,7 +5,14 @@ import { getUnreadCount } from "../../util/chat-list-data.http";
 import { GlobalColors } from "../../constants/GlobalColors";
 import useRealtimeUser from "../../hooks/useRealtimeUser";
 
-const ChatItem = ({ user, lastMsg, lastMsgTime, currentUserId, onPress }) => {
+const ChatItem = ({
+  user,
+  lastMsg,
+  lastMsgTime,
+  currentUserId,
+  onPress,
+  style,
+}) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [username, setUsername] = useState(user?.username);
   const [photoUrl, setPhotoUrl] = useState(user?.photoUrl);
@@ -41,7 +48,11 @@ const ChatItem = ({ user, lastMsg, lastMsgTime, currentUserId, onPress }) => {
   return (
     <Pressable
       onPress={handlePress}
-      style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.container,
+        pressed && styles.pressed,
+        style,
+      ]}
     >
       <View style={styles.avatarColumn}>
         <Avatar photoUrl={photoUrl} size={50} />
@@ -79,7 +90,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 10,
     marginHorizontal: 10,
-    marginVertical: 6,
+    marginVertical: 3,
     shadowColor: GlobalColors.primaryBlack,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,

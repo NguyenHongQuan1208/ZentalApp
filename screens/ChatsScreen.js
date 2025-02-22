@@ -1,11 +1,13 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import {
   View,
   FlatList,
   StyleSheet,
   ActivityIndicator,
   Text,
+  TextInput,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import ChatItem from "../components/Chat/ChatItem";
 import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
@@ -17,6 +19,7 @@ import {
   getRoomId,
 } from "../util/chat-list-data.http";
 import { GlobalColors } from "../constants/GlobalColors";
+import { debounce } from "lodash";
 
 const ChatsScreen = ({ navigation }) => {
   const authCtx = useContext(AuthContext);
@@ -25,9 +28,11 @@ const ChatsScreen = ({ navigation }) => {
   const refreshToken = refreshCtx.refreshToken;
 
   const [currentUserId, setCurrentUserId] = useState("");
+  const [allUsers, setAllUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     async function fetchCurrentUserData() {
@@ -53,6 +58,7 @@ const ChatsScreen = ({ navigation }) => {
         try {
           const users = await getAllUsers();
           const otherUsers = users.filter((user) => user.id !== currentUserId);
+          setAllUsers(otherUsers);
           setFilteredUsers(otherUsers);
         } catch (error) {
           console.error("Error fetching all users:", error);
@@ -65,31 +71,78 @@ const ChatsScreen = ({ navigation }) => {
     }
   }, [currentUserId]);
 
-  const handleChatItemClick = async (user) => {
-    try {
-      const chatExists = await checkChatExists(currentUserId, user.uid);
-      const reverseChatExists = await checkChatExists(user.uid, currentUserId);
-
-      let roomId;
-
-      if (chatExists) {
-        roomId = await getRoomId(currentUserId, user.uid);
-      } else if (reverseChatExists) {
-        roomId = await getRoomId(user.uid, currentUserId);
+  const debouncedSearch = useCallback(
+    debounce((query) => {
+      if (query) {
+        const filtered = allUsers.filter((user) =>
+          user.username.toLowerCase().includes(query.toLowerCase())
+        );
+        setFilteredUsers(filtered);
       } else {
-        roomId = await createChatList(currentUserId, user.uid);
+        setFilteredUsers(allUsers);
       }
+    }, 300),
+    [allUsers]
+  );
 
-      // Navigate to the chat screen with the room ID
-      navigation.navigate("SingleChat", {
-        currentUserId,
-        otherUserId: user.uid,
-        roomId,
-      });
-    } catch (error) {
-      console.error("Error handling chat item click:", error);
-    }
-  };
+  useEffect(() => {
+    debouncedSearch(searchQuery);
+  }, [searchQuery, debouncedSearch]);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: () => (
+        <View style={styles.searchContainer}>
+          <Ionicons
+            name="search"
+            size={20}
+            color={GlobalColors.primaryColor}
+            style={styles.icon}
+          />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+      ),
+      contenStyle: {
+        backgroundColor: GlobalColors.primaryWhite,
+      },
+    });
+  }, [navigation, searchQuery]);
+
+  const handleChatItemClick = useCallback(
+    async (user) => {
+      try {
+        const chatExists = await checkChatExists(currentUserId, user.uid);
+        const reverseChatExists = await checkChatExists(
+          user.uid,
+          currentUserId
+        );
+
+        let roomId;
+
+        if (chatExists) {
+          roomId = await getRoomId(currentUserId, user.uid);
+        } else if (reverseChatExists) {
+          roomId = await getRoomId(user.uid, currentUserId);
+        } else {
+          roomId = await createChatList(currentUserId, user.uid);
+        }
+
+        navigation.navigate("SingleChat", {
+          currentUserId,
+          otherUserId: user.uid,
+          roomId,
+        });
+      } catch (error) {
+        console.error("Error handling chat item click:", error);
+      }
+    },
+    [currentUserId, navigation]
+  );
 
   if (loading) {
     return (
@@ -113,15 +166,19 @@ const ChatsScreen = ({ navigation }) => {
       <FlatList
         data={filteredUsers}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <ChatItem
             user={item}
-            lastMsg={item.lastMsg || "No messages yet."} // Default message if none exists
-            lastMsgTime={item.lastMsgTime || "Just now"} // Default time if none exists
+            lastMsg={item.lastMsg || "No messages yet."}
+            lastMsgTime={item.lastMsgTime || "Just now"}
             currentUserId={currentUserId}
             onPress={() => handleChatItemClick(item)}
+            style={index === 0 ? { marginTop: 6 } : {}}
           />
         )}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
       />
     </View>
   );
@@ -130,7 +187,28 @@ const ChatsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    borderRadius: 15,
+    overflow: "hidden",
+    backgroundColor: GlobalColors.pureWhite,
+    marginBottom: 3,
+  },
+  icon: {
+    padding: 10,
+    backgroundColor: GlobalColors.pureWhite,
+  },
+  searchInput: {
+    height: 40,
+    width: "80%",
+    flexGrow: 1,
+    borderColor: "transparent",
+    paddingHorizontal: 15,
+    fontSize: 16,
+    color: "#333",
   },
   loadingContainer: {
     flex: 1,
@@ -147,4 +225,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ChatsScreen;
+export default React.memo(ChatsScreen);
