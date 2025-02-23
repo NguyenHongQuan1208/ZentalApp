@@ -104,6 +104,7 @@ const styles = StyleSheet.create({
   nameColumn: {
     flex: 2,
     justifyContent: "center",
+    marginLeft: -24,
   },
   infoColumn: {
     flex: 1,
