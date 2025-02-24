@@ -48,6 +48,32 @@ const generateRoomId = () => {
   return `${timestamp}-${randomNum}`; // Combine them to create a unique ID
 };
 
+export const updateChatList = async (
+  currentUserId,
+  otherUserId,
+  chatlistData
+) => {
+  try {
+    // Cập nhật chat list cho người dùng hiện tại
+    await axios.patch(
+      `${BACKEND_URL}/chatlist/${currentUserId}/${otherUserId}.json`,
+      chatlistData
+    );
+
+    // Cập nhật chat list cho người dùng khác
+    await axios.patch(
+      `${BACKEND_URL}/chatlist/${otherUserId}/${currentUserId}.json`,
+      chatlistData
+    );
+  } catch (error) {
+    console.error(
+      `Error updating chat list for user ID: ${otherUserId}`,
+      error
+    );
+    throw new Error("Failed to update chat list"); // Ném lỗi để xử lý ở hàm gọi
+  }
+};
+
 // Function to check if a chat exists
 export const checkChatExists = async (currentUserId, otherUserId) => {
   try {

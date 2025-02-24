@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Text,
   TextInput,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ChatItem from "../components/Chat/ChatItem";
@@ -17,9 +18,11 @@ import {
   createChatList,
   checkChatExists,
   getRoomId,
-} from "../util/chat-list-data.http";
+} from "../util/chat-list-data-http";
 import { GlobalColors } from "../constants/GlobalColors";
 import { debounce } from "lodash";
+
+const { width } = Dimensions.get("window"); // Get window width
 
 const ChatsScreen = ({ navigation }) => {
   const authCtx = useContext(AuthContext);
@@ -107,7 +110,7 @@ const ChatsScreen = ({ navigation }) => {
           />
         </View>
       ),
-      contenStyle: {
+      contentStyle: {
         backgroundColor: GlobalColors.primaryWhite,
       },
     });
@@ -191,7 +194,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1,
+    width: 320, // Set width to match SearchScreen
     borderRadius: 15,
     overflow: "hidden",
     backgroundColor: GlobalColors.pureWhite,
@@ -203,7 +206,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     height: 40,
-    width: "80%",
+    width: "90%",
     flexGrow: 1,
     borderColor: "transparent",
     paddingHorizontal: 15,

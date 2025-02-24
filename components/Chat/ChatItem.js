@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import Avatar from "../Profile/Avatar";
-import { getUnreadCount } from "../../util/chat-list-data.http";
+import { getUnreadCount } from "../../util/chat-list-data-http";
 import { GlobalColors } from "../../constants/GlobalColors";
 import useRealtimeUser from "../../hooks/useRealtimeUser";
 
