@@ -1,31 +1,36 @@
 import React, { useEffect, useState } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   ImageBackground,
   FlatList,
-  TextInput,
-  TouchableOpacity,
+  Dimensions,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from "react-native";
 import { getUser } from "../util/user-info-http";
 import { GlobalColors } from "../constants/GlobalColors";
-import { Ionicons } from "@expo/vector-icons";
 import HeaderTitle from "../components/Chat/HeaderTitle";
 import { sendMessage } from "../util/message-data-http";
-import { updateChatList } from "../util/chat-list-data-http"; // Import hàm updateChatList
+import { updateChatList } from "../util/chat-list-data-http";
+import useRealtimeChat from "../hooks/useRealtimeChat";
+import MessageItem from "../components/Chat/MessageItem";
+import ChatInput from "../components/Chat/ChatInput";
 
 const SingleChatScreen = ({ route, navigation }) => {
   const { currentUserId, otherUserId, roomId } = route.params;
   const [msgInput, setMsgInput] = useState("");
-  const [disabled, setdisabled] = useState(false);
+  const [disabled, setDisabled] = useState(false);
+  const [allChat, setAllChat] = useState([]);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const flatListRef = React.useRef();
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await getUser(otherUserId);
-
         navigation.setOptions({
           headerTitle: () => (
             <HeaderTitle
@@ -44,17 +49,43 @@ const SingleChatScreen = ({ route, navigation }) => {
     };
 
     fetchUser();
+
+    const keyboardWillShowListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+      }
+    );
+    const keyboardWillHideListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      keyboardWillShowListener.remove();
+      keyboardWillHideListener.remove();
+    };
   }, [otherUserId, navigation]);
 
-  const msgvalid = (txt) => txt && txt.replace(/\s/g, "").length;
+  useRealtimeChat(roomId, setAllChat);
+
+  useEffect(() => {
+    if (allChat.length > 0 && flatListRef.current) {
+      flatListRef.current.scrollToEnd({ animated: true });
+    }
+  }, [allChat]);
+
+  const msgValid = (txt) => txt && txt.trim().length > 0;
 
   const sendMsg = async () => {
-    if (msgInput === "" || !msgvalid(msgInput)) {
+    if (msgInput === "" || !msgValid(msgInput)) {
       Alert.alert("Input Error", "Please enter a valid message.");
       return;
     }
 
-    setdisabled(true);
+    setDisabled(true);
 
     const msgData = {
       from: currentUserId,
@@ -70,20 +101,14 @@ const SingleChatScreen = ({ route, navigation }) => {
     };
 
     try {
-      // Gửi tin nhắn
       const messageResponse = await sendMessage(roomId, msgData);
-
-      // Kiểm tra phản hồi từ API
       if (!messageResponse) {
         throw new Error(
           "Failed to send message: " +
             (messageResponse?.error || "Unknown error")
         );
       }
-
       await updateChatList(otherUserId, currentUserId, chatListUpdate);
-
-      // Xóa nội dung tin nhắn trong input
       setMsgInput("");
     } catch (error) {
       Alert.alert(
@@ -92,32 +117,45 @@ const SingleChatScreen = ({ route, navigation }) => {
       );
       console.error("Send message error:", error);
     } finally {
-      setdisabled(false);
+      setDisabled(false);
     }
   };
 
+  const renderMessageItem = ({ item }) => (
+    <MessageItem message={item} currentUserId={currentUserId} />
+  );
+
   return (
-    <ImageBackground
-      source={require("../assets/Background.jpg")}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Type a message"
-          placeholderTextColor={GlobalColors.primaryBlack}
-          value={msgInput}
-          onChangeText={setMsgInput}
+      <ImageBackground
+        source={require("../assets/Background.jpg")}
+        style={styles.container}
+      >
+        <FlatList
+          ref={flatListRef}
+          data={allChat}
+          renderItem={renderMessageItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: keyboardHeight + 60 },
+          ]}
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: true })
+          }
         />
-        <TouchableOpacity onPress={sendMsg} disabled={disabled}>
-          <Ionicons
-            name="paper-plane"
-            size={24}
-            color={GlobalColors.primaryBlack}
-          />
-        </TouchableOpacity>
-      </View>
-    </ImageBackground>
+        <ChatInput
+          msgInput={msgInput}
+          setMsgInput={setMsgInput}
+          sendMsg={sendMsg}
+          disabled={disabled}
+        />
+      </ImageBackground>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -127,21 +165,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 10,
-    paddingBottom: 80,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 10,
-    backgroundColor: GlobalColors.white,
-  },
-  textInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: GlobalColors.primaryBlack,
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    marginRight: 10,
   },
 });
 
