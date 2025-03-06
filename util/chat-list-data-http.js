@@ -54,13 +54,13 @@ export const updateChatList = async (
   chatlistData
 ) => {
   try {
-    // Cập nhật chat list cho người dùng hiện tại
+    // Update chat list for the current user
     await axios.patch(
       `${BACKEND_URL}/chatlist/${currentUserId}/${otherUserId}.json`,
       chatlistData
     );
 
-    // Cập nhật chat list cho người dùng khác
+    // Update chat list for the other user
     await axios.patch(
       `${BACKEND_URL}/chatlist/${otherUserId}/${currentUserId}.json`,
       chatlistData
@@ -70,7 +70,7 @@ export const updateChatList = async (
       `Error updating chat list for user ID: ${otherUserId}`,
       error
     );
-    throw new Error("Failed to update chat list"); // Ném lỗi để xử lý ở hàm gọi
+    throw new Error("Failed to update chat list"); // Throw an error to handle it in the calling function
   }
 };
 
@@ -117,5 +117,39 @@ export const getUnreadCount = async (currentUserId, otherUserId) => {
   } catch (error) {
     console.error("Error fetching unread count:", error);
     throw new Error("Failed to fetch unread count");
+  }
+};
+
+// Function to increment the unread count for a chat
+export const incrementUnreadCount = async (currentUserId, otherUserId) => {
+  try {
+    const chatListRef = `${BACKEND_URL}/chatlist/${otherUserId}/${currentUserId}.json`;
+
+    // Fetch the current chat list entry for the other user
+    const response = await axios.get(chatListRef);
+    const chatData = response.data;
+
+    if (chatData) {
+      // Increment the unread count
+      const newUnreadCount = (chatData.unreadCount || 0) + 1;
+
+      // Update the chat list with the new unread count
+      await axios.put(chatListRef, {
+        ...chatData,
+        unreadCount: newUnreadCount,
+      });
+    } else {
+      // If no entry exists, create a new one
+      const newChatListEntry = {
+        lastMsg: "",
+        lastMsgTime: new Date().toISOString(),
+        unreadCount: 1, // First message, so unread count starts at 1
+        roomId: "", // You can set this to an appropriate value if needed
+      };
+
+      await axios.put(chatListRef, newChatListEntry);
+    }
+  } catch (error) {
+    console.error("Error updating unread count:", error);
   }
 };

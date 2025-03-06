@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
-  View,
   StyleSheet,
   ImageBackground,
   FlatList,
-  Dimensions,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -14,7 +12,10 @@ import { getUser } from "../util/user-info-http";
 import { GlobalColors } from "../constants/GlobalColors";
 import HeaderTitle from "../components/Chat/HeaderTitle";
 import { sendMessage } from "../util/message-data-http";
-import { updateChatList } from "../util/chat-list-data-http";
+import {
+  updateChatList,
+  incrementUnreadCount,
+} from "../util/chat-list-data-http";
 import useRealtimeChat from "../hooks/useRealtimeChat";
 import MessageItem from "../components/Chat/MessageItem";
 import ChatInput from "../components/Chat/ChatInput";
@@ -79,8 +80,8 @@ const SingleChatScreen = ({ route, navigation }) => {
 
   const msgValid = (txt) => txt && txt.trim().length > 0;
 
-  const sendMsg = async () => {
-    if (msgInput === "" || !msgValid(msgInput)) {
+  const sendMsg = useCallback(async () => {
+    if (!msgValid(msgInput)) {
       Alert.alert("Input Error", "Please enter a valid message.");
       return;
     }
@@ -101,14 +102,19 @@ const SingleChatScreen = ({ route, navigation }) => {
     };
 
     try {
+      // Send the message
       const messageResponse = await sendMessage(roomId, msgData);
       if (!messageResponse) {
-        throw new Error(
-          "Failed to send message: " +
-            (messageResponse?.error || "Unknown error")
-        );
+        throw new Error("Failed to send message.");
       }
+
+      // Update the chat list for the other user
       await updateChatList(otherUserId, currentUserId, chatListUpdate);
+
+      // Increment unread count for the other user
+      await incrementUnreadCount(currentUserId, otherUserId);
+
+      // Clear the message input
       setMsgInput("");
     } catch (error) {
       Alert.alert(
@@ -119,7 +125,7 @@ const SingleChatScreen = ({ route, navigation }) => {
     } finally {
       setDisabled(false);
     }
-  };
+  }, [msgInput, currentUserId, otherUserId, roomId]);
 
   const renderMessageItem = ({ item }) => (
     <MessageItem message={item} currentUserId={currentUserId} />

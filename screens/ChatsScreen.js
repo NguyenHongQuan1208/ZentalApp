@@ -172,8 +172,6 @@ const ChatsScreen = ({ navigation }) => {
         renderItem={({ item, index }) => (
           <ChatItem
             user={item}
-            lastMsg={item.lastMsg || "No messages yet."}
-            lastMsgTime={item.lastMsgTime || "Just now"}
             currentUserId={currentUserId}
             onPress={() => handleChatItemClick(item)}
             style={index === 0 ? { marginTop: 6 } : {}}

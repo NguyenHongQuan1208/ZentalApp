@@ -1,21 +1,18 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import { getDatabase, ref, onValue } from "firebase/database"; // Import Firebase Realtime Database
 import Avatar from "../Profile/Avatar";
-import { getUnreadCount } from "../../util/chat-list-data-http";
+import { getUnreadCount, updateChatList } from "../../util/chat-list-data-http"; // Import updateChatList
 import { GlobalColors } from "../../constants/GlobalColors";
 import useRealtimeUser from "../../hooks/useRealtimeUser";
+import { formatDistanceToNowStrict, parseISO } from "date-fns"; // Import date-fns
 
-const ChatItem = ({
-  user,
-  lastMsg,
-  lastMsgTime,
-  currentUserId,
-  onPress,
-  style,
-}) => {
+const ChatItem = ({ user, currentUserId, onPress, style }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [username, setUsername] = useState(user?.username);
   const [photoUrl, setPhotoUrl] = useState(user?.photoUrl);
+  const [lastMsg, setLastMsg] = useState(null); // Initially null
+  const [lastMsgTime, setLastMsgTime] = useState(null); // Initially null
   const userId = user?.uid;
 
   // Fetch unread count when the component mounts or when `currentUserId` or `user.uid` changes
@@ -40,10 +37,44 @@ const ChatItem = ({
     }
   });
 
+  // Listen for real-time updates to `lastMsg` and `lastMsgTime` in Firebase
+  useEffect(() => {
+    const db = getDatabase();
+    const chatRef = ref(db, `/chatlist/${currentUserId}/${userId}`);
+
+    const unsubscribe = onValue(chatRef, (snapshot) => {
+      const chatData = snapshot.val();
+      if (chatData) {
+        setLastMsg(chatData.lastMsg || null); // If no message, set to null
+        setLastMsgTime(chatData.lastMsgTime || null); // If no time, set to null
+        setUnreadCount(chatData.unreadCount || 0);
+      }
+    });
+
+    // Cleanup the listener when the component unmounts
+    return () => unsubscribe();
+  }, [currentUserId, userId]);
+
+  // Function to reset unread count
+  const resetUnreadCount = async () => {
+    try {
+      await updateChatList(currentUserId, userId, { unreadCount: 0 });
+      setUnreadCount(0); // Update local state
+    } catch (error) {
+      console.error("Error resetting unread count:", error);
+    }
+  };
+
   // Memoize the onPress handler to avoid unnecessary re-renders
   const handlePress = useCallback(() => {
-    onPress();
-  }, [onPress]);
+    resetUnreadCount(); // Reset unread count when chat item is pressed
+    onPress(); // Call the onPress function passed as a prop
+  }, [onPress, resetUnreadCount]);
+
+  // Format `lastMsgTime` using date-fns
+  const formattedLastMsgTime = lastMsgTime
+    ? formatDistanceToNowStrict(parseISO(lastMsgTime)) // Format time if available
+    : "just now"; // If no time, display "just now"
 
   return (
     <Pressable
@@ -62,14 +93,22 @@ const ChatItem = ({
         <Text style={styles.userName} numberOfLines={1}>
           {username}
         </Text>
-        <Text style={styles.lastMessage} numberOfLines={1} ellipsizeMode="tail">
-          {lastMsg}
+        <Text
+          style={[
+            styles.lastMessage,
+            unreadCount > 0 && styles.boldLastMessage, // Apply bold style if unreadCount > 0
+          ]}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {lastMsg || "No message yet"}{" "}
+          {/* If no message, display "No message yet" */}
         </Text>
       </View>
 
       <View style={styles.infoColumn}>
         <View style={styles.timeUnreadContainer}>
-          <Text style={styles.time}>{lastMsgTime}</Text>
+          <Text style={styles.time}>{formattedLastMsgTime}</Text>
           {unreadCount > 0 && (
             <View style={styles.unreadBadge}>
               <Text style={styles.unreadText}>{unreadCount}</Text>
@@ -143,6 +182,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: GlobalColors.inActivetabBarColor,
     marginTop: 2,
+  },
+  boldLastMessage: {
+    fontWeight: "bold",
   },
   pressed: {
     opacity: 0.5,
