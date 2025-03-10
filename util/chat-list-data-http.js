@@ -74,6 +74,17 @@ export const updateChatList = async (
   }
 };
 
+export const resetUnreadCount = async (currentUserId, otherUserId) => {
+  const chatListRef = `${BACKEND_URL}/chatlist/${currentUserId}/${otherUserId}.json`;
+
+  try {
+    // Reset unread count for the current user
+    await axios.patch(chatListRef, { unreadCount: 0 });
+  } catch (error) {
+    console.error("Error resetting unread count:", error);
+    throw new Error("Failed to reset unread count"); // Throw an error to handle it in the calling function
+  }
+};
 // Function to check if a chat exists
 export const checkChatExists = async (currentUserId, otherUserId) => {
   try {

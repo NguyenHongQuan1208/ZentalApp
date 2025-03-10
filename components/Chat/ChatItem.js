@@ -2,7 +2,10 @@ import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { getDatabase, ref, onValue } from "firebase/database"; // Import Firebase Realtime Database
 import Avatar from "../Profile/Avatar";
-import { getUnreadCount, updateChatList } from "../../util/chat-list-data-http"; // Import updateChatList
+import {
+  getUnreadCount,
+  resetUnreadCount,
+} from "../../util/chat-list-data-http"; // Import updateChatList
 import { GlobalColors } from "../../constants/GlobalColors";
 import useRealtimeUser from "../../hooks/useRealtimeUser";
 import { formatDistanceToNowStrict, parseISO } from "date-fns"; // Import date-fns
@@ -55,19 +58,9 @@ const ChatItem = ({ user, currentUserId, onPress, style }) => {
     return () => unsubscribe();
   }, [currentUserId, userId]);
 
-  // Function to reset unread count
-  const resetUnreadCount = async () => {
-    try {
-      await updateChatList(currentUserId, userId, { unreadCount: 0 });
-      setUnreadCount(0); // Update local state
-    } catch (error) {
-      console.error("Error resetting unread count:", error);
-    }
-  };
-
   // Memoize the onPress handler to avoid unnecessary re-renders
   const handlePress = useCallback(() => {
-    resetUnreadCount(); // Reset unread count when chat item is pressed
+    resetUnreadCount(currentUserId, userId); // Reset unread count when chat item is pressed
     onPress(); // Call the onPress function passed as a prop
   }, [onPress, resetUnreadCount]);
 
