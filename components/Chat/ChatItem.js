@@ -5,6 +5,7 @@ import Avatar from "../Profile/Avatar";
 import {
   getUnreadCount,
   resetUnreadCount,
+  updateUserActiveStatus,
 } from "../../util/chat-list-data-http"; // Import updateChatList
 import { GlobalColors } from "../../constants/GlobalColors";
 import useRealtimeUser from "../../hooks/useRealtimeUser";
@@ -58,11 +59,20 @@ const ChatItem = ({ user, currentUserId, onPress, style }) => {
     return () => unsubscribe();
   }, [currentUserId, userId]);
 
-  // Memoize the onPress handler to avoid unnecessary re-renders
-  const handlePress = useCallback(() => {
-    resetUnreadCount(currentUserId, userId); // Reset unread count when chat item is pressed
-    onPress(); // Call the onPress function passed as a prop
-  }, [onPress, resetUnreadCount]);
+  const handlePress = useCallback(async () => {
+    // Gọi onPress được truyền vào
+    await onPress();
+
+    // Cập nhật trạng thái người dùng hoạt động
+    try {
+      await updateUserActiveStatus(currentUserId, userId, true); // Cập nhật trạng thái hoạt động
+    } catch (error) {
+      console.error("Error updating user active status:", error);
+    }
+
+    // Reset unread count
+    resetUnreadCount(currentUserId, userId);
+  }, [onPress, currentUserId, userId]);
 
   // Format `lastMsgTime` using date-fns
   const formattedLastMsgTime = lastMsgTime

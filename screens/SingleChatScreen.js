@@ -15,10 +15,13 @@ import { sendMessage } from "../util/message-data-http";
 import {
   updateChatList,
   incrementUnreadCount,
+  updateUserActiveStatus,
+  getChatListData,
 } from "../util/chat-list-data-http";
 import useRealtimeChat from "../hooks/useRealtimeChat";
 import MessageItem from "../components/Chat/MessageItem";
 import ChatInput from "../components/Chat/ChatInput";
+import { useFocusEffect } from "@react-navigation/native";
 
 const SingleChatScreen = ({ route, navigation }) => {
   const { currentUserId, otherUserId, roomId } = route.params;
@@ -108,11 +111,16 @@ const SingleChatScreen = ({ route, navigation }) => {
         throw new Error("Failed to send message.");
       }
 
+      // Fetch the chat list data to check the other user's active status
+      const chatListData = await getChatListData(otherUserId, currentUserId);
+
       // Update the chat list for the other user
       await updateChatList(otherUserId, currentUserId, chatListUpdate);
 
-      // Increment unread count for the other user
-      await incrementUnreadCount(currentUserId, otherUserId);
+      // Increment unread count only if the other user is not active
+      if (chatListData && !chatListData.userActive) {
+        await incrementUnreadCount(currentUserId, otherUserId);
+      }
 
       // Clear the message input
       setMsgInput("");
@@ -129,6 +137,17 @@ const SingleChatScreen = ({ route, navigation }) => {
 
   const renderMessageItem = ({ item }) => (
     <MessageItem message={item} currentUserId={currentUserId} />
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      updateUserActiveStatus(currentUserId, otherUserId, true);
+
+      return () => {
+        // Set the user as inactive when the screen is unfocused
+        updateUserActiveStatus(currentUserId, otherUserId, false);
+      };
+    }, [currentUserId, otherUserId])
   );
 
   return (

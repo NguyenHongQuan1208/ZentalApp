@@ -8,27 +8,33 @@ export const createChatList = async (currentUserId, otherUserId, roomId) => {
   // Generate a unique room ID if not provided
   const generatedRoomId = roomId || generateRoomId();
 
-  const chatData = {
+  const chatDataForCurrentUser = {
     lastMsg: "",
     lastMsgTime: "",
     unreadCount: 0,
+    userActive: true, // Người tạo chat sẽ active
+    roomId: generatedRoomId,
+  };
+
+  const chatDataForOtherUser = {
+    lastMsg: "",
+    lastMsgTime: "",
+    unreadCount: 0,
+    userActive: false, // Người còn lại sẽ inactive
     roomId: generatedRoomId,
   };
 
   try {
-    // Create chat list for the current user
+    // Gửi dữ liệu cho currentUser
     await axios.put(
       `${BACKEND_URL}/chatlist/${currentUserId}/${otherUserId}.json`,
-      chatData
+      chatDataForCurrentUser
     );
 
-    // Create chat list for the other user with the same room ID
+    // Gửi dữ liệu cho otherUser
     await axios.put(
       `${BACKEND_URL}/chatlist/${otherUserId}/${currentUserId}.json`,
-      {
-        ...chatData, // Use the same chat data
-        roomId: generatedRoomId, // Ensure the same roomId is used
-      }
+      chatDataForOtherUser
     );
 
     return generatedRoomId; // Return the generated or provided room ID
@@ -38,6 +44,21 @@ export const createChatList = async (currentUserId, otherUserId, roomId) => {
       error
     );
     throw new Error("Failed to create chat list"); // Throw an error to handle it in the calling function
+  }
+};
+
+export const getChatListData = async (currentUserId, otherUserId) => {
+  try {
+    // Fetch the chat list data for the current user and the other user
+    const response = await axios.get(
+      `${BACKEND_URL}/chatlist/${currentUserId}/${otherUserId}.json`
+    );
+
+    // Return the chat data if it exists, otherwise return null
+    return response.data ? response.data : null;
+  } catch (error) {
+    console.error("Error fetching chat list data:", error);
+    throw new Error("Failed to fetch chat list data"); // Throw an error to handle it in the calling function
   }
 };
 
@@ -71,6 +92,31 @@ export const updateChatList = async (
       error
     );
     throw new Error("Failed to update chat list"); // Throw an error to handle it in the calling function
+  }
+};
+
+export const updateUserActiveStatus = async (
+  currentUserId,
+  otherUserId,
+  isActive // This parameter determines the active status (true or false)
+) => {
+  try {
+    // Create the data to update for the current user
+    const currentUserDataUpdate = {
+      userActive: isActive, // Set userActive to the value of isActive
+    };
+
+    // Update current user's active status
+    await axios.patch(
+      `${BACKEND_URL}/chatlist/${currentUserId}/${otherUserId}.json`,
+      currentUserDataUpdate
+    );
+  } catch (error) {
+    console.error(
+      `Error updating user active status for user ID: ${currentUserId}`,
+      error
+    );
+    throw new Error("Failed to update user active status"); // Throw an error to handle it in the calling function
   }
 };
 
