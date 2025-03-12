@@ -27,6 +27,11 @@ import {
 } from "react-native-gesture-handler";
 import PostGridItem from "../components/Posts/PostGridItem";
 import FollowButton from "../components/PersonalProfile/FollowButton";
+import {
+  followUser,
+  unfollowUser,
+  checkIfFollowing,
+} from "../util/follow-http";
 
 const PersonalProfileScreen = ({ route, navigation }) => {
   const authCtx = useContext(AuthContext);
@@ -112,8 +117,33 @@ const PersonalProfileScreen = ({ route, navigation }) => {
   }, [token, refreshToken, authCtx, refreshCtx]);
 
   // Fetch initial follow status
-  const fetchFollowStatus = useCallback(async () => {}, [isFollowing, userId]);
-  function toggleFollow() {}
+  const fetchFollowStatus = useCallback(async () => {
+    if (!currentUserId || !userId) return;
+
+    try {
+      const isFollowingUser = await checkIfFollowing(currentUserId, userId);
+      setIsFollowing(isFollowingUser);
+    } catch (error) {
+      console.error("Error checking follow status: ", error);
+    }
+  }, [currentUserId, userId]);
+
+  // Toggle follow/unfollow
+  const toggleFollow = useCallback(async () => {
+    if (!currentUserId || !userId) return;
+
+    try {
+      if (isFollowing) {
+        await unfollowUser(currentUserId, userId);
+        setIsFollowing(false);
+      } else {
+        await followUser(currentUserId, userId);
+        setIsFollowing(true);
+      }
+    } catch (error) {
+      console.error("Error toggling follow status: ", error);
+    }
+  }, [currentUserId, userId, isFollowing]);
 
   useEffect(() => {
     fetchCurrentUserData();
@@ -131,8 +161,9 @@ const PersonalProfileScreen = ({ route, navigation }) => {
       setSelectedFilter(
         currentUserId === userId ? "All Posts" : "Public Posts"
       );
+      fetchFollowStatus();
     }
-  }, [currentUserId, userId]);
+  }, [currentUserId, userId, fetchFollowStatus]);
 
   const handleUserDataChange = useCallback((userData) => {
     setUserData({
