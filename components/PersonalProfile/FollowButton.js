@@ -1,37 +1,39 @@
 import React from "react";
-import { Pressable, Text, StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 import { GlobalColors } from "../../constants/GlobalColors";
 
-const FollowButton = ({ title, onPress }) => {
+const FollowButton = ({ isFollowing, onToggleFollow }) => {
   return (
     <Pressable
-      style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+      style={({ pressed }) => [
+        styles.followButton,
+        pressed && styles.buttonPressed,
+      ]}
       android_ripple={{ color: "#ccc" }}
-      onPress={onPress}
+      onPress={onToggleFollow}
     >
-      <Text style={styles.buttonText}>{title}</Text>
+      <Ionicons
+        name={isFollowing ? "checkmark-circle-outline" : "add"}
+        size={20} // Adjusted size for consistency with FilterButton
+        color={GlobalColors.pureWhite}
+      />
     </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
-  button: {
+  followButton: {
     backgroundColor: GlobalColors.primaryColor,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    padding: 5,
     borderRadius: 5,
-    flex: 1,
-    marginHorizontal: 3,
     alignItems: "center",
     justifyContent: "center",
+    width: 40,
+    marginLeft: 3,
   },
   buttonPressed: {
     opacity: 0.7,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
   },
 });
 

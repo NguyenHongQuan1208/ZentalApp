@@ -14,7 +14,7 @@ import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import IconButton from "../components/ui/IconButton";
-import FollowButton from "../components/PersonalProfile/FollowButton";
+import CheckFollowButton from "../components/PersonalProfile/CheckFollowButton";
 import FilterButton from "../components/PersonalProfile/FilterButton";
 import OptionsModal from "../components/ui/OptionsModal";
 import { getAllPosts } from "../util/posts-data-http";
@@ -26,6 +26,7 @@ import {
   PanGestureHandler,
 } from "react-native-gesture-handler";
 import PostGridItem from "../components/Posts/PostGridItem";
+import FollowButton from "../components/PersonalProfile/FollowButton";
 
 const PersonalProfileScreen = ({ route, navigation }) => {
   const authCtx = useContext(AuthContext);
@@ -48,7 +49,9 @@ const PersonalProfileScreen = ({ route, navigation }) => {
   const [selectedFilter, setSelectedFilter] = useState("Public Posts");
   const [viewMode, setViewMode] = useState("grid");
   const [loadingFilter, setLoadingFilter] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(false); // Follow state
 
+  // Fetch user data
   const fetchUserData = useCallback(async (userId) => {
     if (!userId) return setError("No user ID provided.");
     try {
@@ -64,6 +67,7 @@ const PersonalProfileScreen = ({ route, navigation }) => {
     }
   }, []);
 
+  // Fetch posts
   const fetchPosts = useCallback(async () => {
     try {
       const allPosts = await getAllPosts();
@@ -89,6 +93,7 @@ const PersonalProfileScreen = ({ route, navigation }) => {
     }
   }, [userId, selectedFilter]);
 
+  // Fetch current user data
   const fetchCurrentUserData = useCallback(async () => {
     try {
       const authResponse = await getUserDataWithRetry(
@@ -105,6 +110,10 @@ const PersonalProfileScreen = ({ route, navigation }) => {
       setLoading(false);
     }
   }, [token, refreshToken, authCtx, refreshCtx]);
+
+  // Fetch initial follow status
+  const fetchFollowStatus = useCallback(async () => {}, [isFollowing, userId]);
+  function toggleFollow() {}
 
   useEffect(() => {
     fetchCurrentUserData();
@@ -230,15 +239,22 @@ const PersonalProfileScreen = ({ route, navigation }) => {
       <View style={styles.headerContainer}>
         <UserProfileHeader {...userData} />
         <View style={styles.buttonsContainer}>
-          <FollowButton
+          <CheckFollowButton
             title="Following"
             onPress={() => console.log("Following pressed")}
           />
-          <FollowButton
+          <CheckFollowButton
             title="Follower"
             onPress={() => console.log("Follower pressed")}
           />
-          {currentUserId === userId && <FilterButton onPress={openModal} />}
+          {currentUserId === userId ? (
+            <FilterButton onPress={openModal} />
+          ) : (
+            <FollowButton
+              isFollowing={isFollowing}
+              onToggleFollow={toggleFollow}
+            />
+          )}
         </View>
       </View>
       <ToggleViewMode

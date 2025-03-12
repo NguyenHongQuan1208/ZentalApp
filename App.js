@@ -61,7 +61,7 @@ function AppOverview() {
         component={TaskScreen}
         options={{
           title: "Today Tasks",
-          tabBarLabel: "Task",
+          tabBarLabel: "Tasks",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="sunny" size={size} color={color} />
           ),
