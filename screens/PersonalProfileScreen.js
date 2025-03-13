@@ -14,24 +14,21 @@ import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import IconButton from "../components/ui/IconButton";
-import CheckFollowButton from "../components/PersonalProfile/CheckFollowButton";
-import FilterButton from "../components/PersonalProfile/FilterButton";
 import OptionsModal from "../components/ui/OptionsModal";
 import { getAllPosts } from "../util/posts-data-http";
 import Post from "../components/Posts/Post";
-import UserProfileHeader from "../components/PersonalProfile/UserProfileHeader";
 import ToggleViewMode from "../components/PersonalProfile/ToggleViewMode";
 import {
   GestureHandlerRootView,
   PanGestureHandler,
 } from "react-native-gesture-handler";
 import PostGridItem from "../components/Posts/PostGridItem";
-import FollowButton from "../components/PersonalProfile/FollowButton";
 import {
   followUser,
   unfollowUser,
   checkIfFollowing,
 } from "../util/follow-http";
+import ProfileHeader from "../components/PersonalProfile/ProfileHeader";
 
 const PersonalProfileScreen = ({ route, navigation }) => {
   const authCtx = useContext(AuthContext);
@@ -40,7 +37,6 @@ const PersonalProfileScreen = ({ route, navigation }) => {
   const { refreshToken } = refreshCtx;
 
   const [currentUserId, setCurrentUserId] = useState("");
-  const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [userData, setUserData] = useState({
     userName: "",
@@ -53,8 +49,10 @@ const PersonalProfileScreen = ({ route, navigation }) => {
   const [error, setError] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState("Public Posts");
   const [viewMode, setViewMode] = useState("grid");
+  const [loading, setLoading] = useState(true);
   const [loadingFilter, setLoadingFilter] = useState(true);
-  const [isFollowing, setIsFollowing] = useState(false); // Follow state
+  const [loadingFollowStatus, setLoadingFollowStatus] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   // Fetch user data
   const fetchUserData = useCallback(async (userId) => {
@@ -120,14 +118,17 @@ const PersonalProfileScreen = ({ route, navigation }) => {
   const fetchFollowStatus = useCallback(async () => {
     if (!currentUserId || !userId) return;
 
+    setLoadingFollowStatus(true); // Start loading
+
     try {
       const isFollowingUser = await checkIfFollowing(currentUserId, userId);
       setIsFollowing(isFollowingUser);
     } catch (error) {
       console.error("Error checking follow status: ", error);
+    } finally {
+      setLoadingFollowStatus(false); // End loading
     }
   }, [currentUserId, userId]);
-
   // Toggle follow/unfollow
   const toggleFollow = useCallback(async () => {
     if (!currentUserId || !userId) return;
@@ -267,27 +268,15 @@ const PersonalProfileScreen = ({ route, navigation }) => {
 
   const ListHeaderComponent = () => (
     <>
-      <View style={styles.headerContainer}>
-        <UserProfileHeader {...userData} />
-        <View style={styles.buttonsContainer}>
-          <CheckFollowButton
-            title="Following"
-            onPress={() => console.log("Following pressed")}
-          />
-          <CheckFollowButton
-            title="Follower"
-            onPress={() => console.log("Follower pressed")}
-          />
-          {currentUserId === userId ? (
-            <FilterButton onPress={openModal} />
-          ) : (
-            <FollowButton
-              isFollowing={isFollowing}
-              onToggleFollow={toggleFollow}
-            />
-          )}
-        </View>
-      </View>
+      <ProfileHeader
+        userData={userData}
+        currentUserId={currentUserId}
+        userId={userId}
+        isFollowing={isFollowing}
+        toggleFollow={toggleFollow}
+        openModal={openModal}
+        viewMode={viewMode}
+      />
       <ToggleViewMode
         viewMode={viewMode}
         setViewMode={setViewMode}
@@ -310,7 +299,7 @@ const PersonalProfileScreen = ({ route, navigation }) => {
     <GestureHandlerRootView style={styles.container}>
       <PanGestureHandler activeOffsetX={[-10, 10]} onGestureEvent={onSwipe}>
         <View style={styles.container}>
-          {loading || loadingFilter ? (
+          {loading || loadingFilter || loadingFollowStatus ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator
                 size="large"
@@ -363,17 +352,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: GlobalColors.primaryWhite,
-  },
-  headerContainer: {
-    backgroundColor: GlobalColors.pureWhite,
-    paddingBottom: 12,
-  },
-  buttonsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    paddingHorizontal: 20,
-    marginTop: -10,
   },
   postsContainer: {
     flex: 1,

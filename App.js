@@ -77,6 +77,7 @@ function AppOverview() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="paper-plane" size={size} color={color} />
           ),
+          headerTitleAlign: "center",
         }}
       />
 

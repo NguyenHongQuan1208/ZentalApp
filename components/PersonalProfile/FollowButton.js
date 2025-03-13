@@ -1,30 +1,64 @@
-import React from "react";
-import { Pressable, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { Pressable, StyleSheet, Alert } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { GlobalColors } from "../../constants/GlobalColors";
+import ConfirmationDialog from "./ConfirmationDialog";
 
 const FollowButton = ({ isFollowing, onToggleFollow }) => {
+  const [dialogVisible, setDialogVisible] = useState(false);
+
+  const handlePress = () => {
+    setDialogVisible(true);
+  };
+
+  const handleConfirm = () => {
+    onToggleFollow();
+    setDialogVisible(false);
+  };
+
+  const handleCancel = () => {
+    setDialogVisible(false);
+  };
+
   return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.followButton,
-        pressed && styles.buttonPressed,
-      ]}
-      android_ripple={{ color: "#ccc" }}
-      onPress={onToggleFollow}
-    >
-      <Ionicons
-        name={isFollowing ? "checkmark-circle-outline" : "add"}
-        size={20} // Adjusted size for consistency with FilterButton
-        color={GlobalColors.pureWhite}
+    <>
+      <Pressable
+        style={({ pressed }) => [
+          styles.followButton,
+          pressed && styles.buttonPressed,
+          {
+            backgroundColor: isFollowing
+              ? GlobalColors.error500
+              : GlobalColors.primaryColor,
+          },
+        ]}
+        android_ripple={{ color: "#ccc" }}
+        onPress={handlePress}
+      >
+        <Ionicons
+          name={
+            isFollowing ? "close-circle-outline" : "checkmark-circle-outline"
+          }
+          size={20}
+          color={GlobalColors.pureWhite}
+        />
+      </Pressable>
+
+      <ConfirmationDialog
+        visible={dialogVisible}
+        title={isFollowing ? "Confirm Unfollow" : "Confirm Follow"}
+        message={`Are you sure you want to ${
+          isFollowing ? "unfollow" : "follow"
+        } this user?`}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
       />
-    </Pressable>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   followButton: {
-    backgroundColor: GlobalColors.primaryColor,
     padding: 5,
     borderRadius: 5,
     alignItems: "center",
