@@ -19,12 +19,20 @@ const ProfileHeader = ({
 
   // Hàm điều hướng đến danh sách người theo dõi
   const navigateToFollowingList = () => {
-    navigation.navigate("FollowList", { userId, type: "following" });
+    navigation.navigate("FollowList", {
+      userId,
+      type: "following",
+      currentUserId,
+    });
   };
 
   // Hàm điều hướng đến danh sách người theo dõi
   const navigateToFollowersList = () => {
-    navigation.navigate("FollowList", { userId, type: "followers" });
+    navigation.navigate("FollowList", {
+      userId,
+      type: "followers",
+      currentUserId,
+    });
   };
 
   return (

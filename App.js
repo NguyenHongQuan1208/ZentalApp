@@ -281,7 +281,15 @@ function AuthenticatedStack() {
 
       <Stack.Screen name="Search" component={SearchScreen} />
 
-      <Stack.Screen name="FollowList" component={FollowListScreen} />
+      <Stack.Screen
+        name="FollowList"
+        component={FollowListScreen}
+        options={{
+          contentStyle: {
+            backgroundColor: GlobalColors.pureWhite,
+          },
+        }}
+      />
     </Stack.Navigator>
   );
 }

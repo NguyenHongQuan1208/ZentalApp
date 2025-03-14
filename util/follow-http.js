@@ -85,3 +85,13 @@ export const getFollowers = async (userId) => {
     throw error; // Ném lỗi để xử lý ở nơi gọi hàm
   }
 };
+
+// Hàm hủy theo dõi khi có người theo dõi bạn
+export const handleFollowRequest = async (followerId, yourId) => {
+  try {
+    // Gọi hàm hủy theo dõi mà không cần kiểm tra
+    await unfollowUser(followerId, yourId);
+  } catch (error) {
+    console.error("Error handling follow request: ", error);
+  }
+};
