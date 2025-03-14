@@ -29,6 +29,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import ReportScreen from "./screens/ReportScreen";
 import SearchScreen from "./screens/SearchScreen";
 import SingleChatScreen from "./screens/SingleChatScreen";
+import FollowListScreen from "./screens/FollowListScreen";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -279,6 +280,8 @@ function AuthenticatedStack() {
       <Stack.Screen name="SingleChat" component={SingleChatScreen} />
 
       <Stack.Screen name="Search" component={SearchScreen} />
+
+      <Stack.Screen name="FollowList" component={FollowListScreen} />
     </Stack.Navigator>
   );
 }

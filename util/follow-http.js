@@ -51,3 +51,37 @@ export const checkIfFollowing = async (followerId, followingId) => {
     throw error; // Ném lỗi để xử lý ở nơi gọi hàm
   }
 };
+
+// Hàm lấy danh sách người dùng mà một người dùng đang theo dõi
+export const getFollowing = async (userId) => {
+  try {
+    const snapshot = await get(ref(database, `follows/${userId}/following`));
+    if (snapshot.exists()) {
+      // Chuyển đổi dữ liệu thành mảng
+      return Object.keys(snapshot.val()).map((followingId) => ({
+        id: followingId, // ID của người dùng đang theo dõi
+      }));
+    }
+    return []; // Trả về mảng rỗng nếu không có ai được theo dõi
+  } catch (error) {
+    console.error("Error fetching following list: ", error);
+    throw error; // Ném lỗi để xử lý ở nơi gọi hàm
+  }
+};
+
+// Hàm lấy danh sách người dùng đang theo dõi một người dùng
+export const getFollowers = async (userId) => {
+  try {
+    const snapshot = await get(ref(database, `follows/${userId}/followers`));
+    if (snapshot.exists()) {
+      // Chuyển đổi dữ liệu thành mảng
+      return Object.keys(snapshot.val()).map((followerId) => ({
+        id: followerId, // ID của người theo dõi
+      }));
+    }
+    return []; // Trả về mảng rỗng nếu không có người theo dõi
+  } catch (error) {
+    console.error("Error fetching followers list: ", error);
+    throw error; // Ném lỗi để xử lý ở nơi gọi hàm
+  }
+};

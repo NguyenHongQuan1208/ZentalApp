@@ -1,5 +1,6 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
+import { useNavigation } from "@react-navigation/native"; // Nhập useNavigation
 import UserProfileHeader from "./UserProfileHeader";
 import CheckFollowButton from "./CheckFollowButton";
 import FilterButton from "./FilterButton";
@@ -14,17 +15,29 @@ const ProfileHeader = ({
   toggleFollow,
   openModal,
 }) => {
+  const navigation = useNavigation(); // Lấy đối tượng navigation
+
+  // Hàm điều hướng đến danh sách người theo dõi
+  const navigateToFollowingList = () => {
+    navigation.navigate("FollowList", { userId, type: "following" });
+  };
+
+  // Hàm điều hướng đến danh sách người theo dõi
+  const navigateToFollowersList = () => {
+    navigation.navigate("FollowList", { userId, type: "followers" });
+  };
+
   return (
     <View style={styles.headerContainer}>
       <UserProfileHeader {...userData} />
       <View style={styles.buttonsContainer}>
         <CheckFollowButton
           title="Following"
-          onPress={() => console.log("Following pressed")}
+          onPress={navigateToFollowingList} // Điều hướng đến danh sách người đang theo dõi
         />
         <CheckFollowButton
-          title="Follower"
-          onPress={() => console.log("Follower pressed")}
+          title="Followers"
+          onPress={navigateToFollowersList} // Điều hướng đến danh sách người theo dõi
         />
         {currentUserId === userId ? (
           <FilterButton onPress={openModal} />
