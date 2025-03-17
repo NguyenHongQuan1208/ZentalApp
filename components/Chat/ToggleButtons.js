@@ -9,23 +9,6 @@ const ToggleButtons = ({ activeTab, onToggle }) => {
         <TouchableOpacity
           style={[
             styles.toggleButton,
-            activeTab === "All" && styles.activeButton,
-            { borderRightWidth: 1, borderRightColor: GlobalColors.lightGray },
-          ]}
-          onPress={() => onToggle("All")}
-        >
-          <Text
-            style={[
-              styles.toggleButtonText,
-              activeTab === "All" && styles.activeButtonText,
-            ]}
-          >
-            All Users
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.toggleButton,
             activeTab === "Recent" && styles.activeButton,
             { borderRightWidth: 1, borderRightColor: GlobalColors.lightGray },
           ]}

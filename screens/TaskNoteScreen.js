@@ -41,7 +41,7 @@ function TaskNoteScreen({ route, navigation }) {
   const [isFocused, setIsFocused] = useState(false);
   const [file, setFile] = useState();
   const [imageUri, setImageUri] = useState(null);
-  const [defaultImageUri, setDefaultImageUri] = useState(null); // Thêm state cho ảnh mặc định
+  const [defaultImageUri, setDefaultImageUri] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const authCtx = useContext(AuthContext);
@@ -168,7 +168,7 @@ function TaskNoteScreen({ route, navigation }) {
   };
 
   const handleDeletePhoto = () => {
-    setImageUri(defaultImageUri); // Set imageUri thành defaultImageUri khi xóa ảnh
+    setImageUri(defaultImageUri);
     setIsModalVisible(false);
   };
 

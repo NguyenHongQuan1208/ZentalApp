@@ -4,9 +4,8 @@ import {
   ImageBackground,
   FlatList,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   Keyboard,
+  View,
 } from "react-native";
 import { getUser } from "../util/user-info-http";
 import { GlobalColors } from "../constants/GlobalColors";
@@ -54,22 +53,22 @@ const SingleChatScreen = ({ route, navigation }) => {
 
     fetchUser();
 
-    const keyboardWillShowListener = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
       (e) => {
         setKeyboardHeight(e.endCoordinates.height);
       }
     );
-    const keyboardWillHideListener = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
       () => {
         setKeyboardHeight(0);
       }
     );
 
     return () => {
-      keyboardWillShowListener.remove();
-      keyboardWillHideListener.remove();
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
     };
   }, [otherUserId, navigation]);
 
@@ -105,24 +104,18 @@ const SingleChatScreen = ({ route, navigation }) => {
     };
 
     try {
-      // Send the message
       const messageResponse = await sendMessage(roomId, msgData);
       if (!messageResponse) {
         throw new Error("Failed to send message.");
       }
 
-      // Fetch the chat list data to check the other user's active status
       const chatListData = await getChatListData(otherUserId, currentUserId);
-
-      // Update the chat list for the other user
       await updateChatList(otherUserId, currentUserId, chatListUpdate);
 
-      // Increment unread count only if the other user is not active
       if (chatListData && !chatListData.userActive) {
         await incrementUnreadCount(currentUserId, otherUserId);
       }
 
-      // Clear the message input
       setMsgInput("");
     } catch (error) {
       Alert.alert(
@@ -144,18 +137,13 @@ const SingleChatScreen = ({ route, navigation }) => {
       updateUserActiveStatus(currentUserId, otherUserId, true);
 
       return () => {
-        // Set the user as inactive when the screen is unfocused
         updateUserActiveStatus(currentUserId, otherUserId, false);
       };
     }, [currentUserId, otherUserId])
   );
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-    >
+    <View style={styles.container}>
       <ImageBackground
         source={require("../assets/Background.jpg")}
         style={styles.container}
@@ -172,6 +160,7 @@ const SingleChatScreen = ({ route, navigation }) => {
           onContentSizeChange={() =>
             flatListRef.current?.scrollToEnd({ animated: true })
           }
+          onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
         />
         <ChatInput
           msgInput={msgInput}
@@ -180,7 +169,7 @@ const SingleChatScreen = ({ route, navigation }) => {
           disabled={disabled}
         />
       </ImageBackground>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 

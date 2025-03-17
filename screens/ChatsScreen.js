@@ -18,7 +18,7 @@ import {
   createChatList,
   checkChatExists,
   getRoomId,
-  getChatList, // Function to fetch chat data
+  getChatList,
 } from "../util/chat-list-data-http";
 import { GlobalColors } from "../constants/GlobalColors";
 import { debounce } from "lodash";
@@ -42,7 +42,7 @@ const ChatsScreen = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState("Recent");
   const [followingUsers, setFollowingUsers] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [chatList, setChatList] = useState([]); // State to hold chat data
+  const [chatList, setChatList] = useState([]);
 
   useEffect(() => {
     async function fetchCurrentUserData() {
@@ -79,7 +79,7 @@ const ChatsScreen = ({ navigation }) => {
 
       // Fetch chat data
       getChatList(currentUserId, (chats) => {
-        setChatList(chats); // Set chat list using the callback
+        setChatList(chats);
       });
     } catch (error) {
       console.error("Error fetching all users:", error);
@@ -105,9 +105,7 @@ const ChatsScreen = ({ navigation }) => {
         setFilteredUsers(
           activeTab === "Following"
             ? allUsers.filter((user) => followingUsers.includes(user.id))
-            : activeTab === "Recent"
-            ? getRecentUsers() // Call the function to get recent users
-            : allUsers
+            : getRecentUsers()
         );
       }
     }, 300),
@@ -178,7 +176,7 @@ const ChatsScreen = ({ navigation }) => {
     chatList.forEach((chat) => {
       const otherUserId =
         chat.userId === currentUserId ? chat.otherUserId : chat.userId;
-      lastMessageTimes[otherUserId] = chat.lastMsgTime; // Assuming chat has lastMsgTime
+      lastMessageTimes[otherUserId] = chat.lastMsgTime;
     });
 
     const recentUsers = allUsers
@@ -201,8 +199,6 @@ const ChatsScreen = ({ navigation }) => {
     } else if (tab === "Recent") {
       const recentUsers = getRecentUsers();
       setFilteredUsers(recentUsers);
-    } else {
-      setFilteredUsers(allUsers);
     }
   };
 
@@ -240,7 +236,9 @@ const ChatsScreen = ({ navigation }) => {
         maxToRenderPerBatch={10}
         windowSize={5}
         ListHeaderComponent={
-          <ToggleButtons activeTab={activeTab} onToggle={handleToggleUsers} />
+          !searchQuery ? (
+            <ToggleButtons activeTab={activeTab} onToggle={handleToggleUsers} />
+          ) : null
         }
         ListEmptyComponent={
           <Text style={styles.emptyText}>No users found.</Text>
