@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ActivityIndicator,
   Pressable,
-  Alert, // Thêm Alert
 } from "react-native";
 import Avatar from "../Profile/Avatar";
 import { getUser } from "../../util/user-info-http";
@@ -13,14 +12,24 @@ import useRealtimeUser from "../../hooks/useRealtimeUser";
 import { GlobalColors } from "../../constants/GlobalColors";
 import { useNavigation } from "@react-navigation/native";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { handleFollowRequest } from "../../util/follow-http"; // Import hàm hủy theo dõi
+import { handleFollowRequest } from "../../util/follow-http";
+import ConfirmationDialog from "../PersonalProfile/ConfirmationDialog";
 
 const ProfileBar = React.memo(
-  ({ userId, onClose, style, type, currentUserId }) => {
+  ({
+    userId,
+    onClose,
+    style,
+    type,
+    currentUserId,
+    allowRemoveFollowers,
+    onUnfollow,
+  }) => {
     const [photoUrl, setPhotoUrl] = useState(null);
     const [userName, setUserName] = useState("User Name");
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isDialogVisible, setIsDialogVisible] = useState(false);
     const navigation = useNavigation();
 
     useEffect(() => {
@@ -63,22 +72,24 @@ const ProfileBar = React.memo(
       }
     }, [navigation, userId, onClose]);
 
+    const showConfirmationDialog = () => {
+      setIsDialogVisible(true); // Show the confirmation dialog
+    };
+
     const handleRemovePress = () => {
-      Alert.alert(
-        "Confirm Unfollow",
-        `Are you sure you want to remove ${userName} from your followers list?`,
-        [
-          {
-            text: "Cancel",
-            style: "cancel",
-          },
-          {
-            text: "Yes",
-            onPress: () => handleFollowRequest(userId, currentUserId), // Gọi hàm hủy theo dõi
-          },
-        ],
-        { cancelable: true }
-      );
+      showConfirmationDialog(); // Show the dialog instead of Alert
+    };
+
+    const handleConfirmUnfollow = () => {
+      handleFollowRequest(userId, currentUserId);
+      if (onUnfollow) {
+        onUnfollow(userId); // Call onUnfollow prop after confirming
+      }
+      setIsDialogVisible(false); // Close the dialog after confirming
+    };
+
+    const handleCancelUnfollow = () => {
+      setIsDialogVisible(false); // Close the dialog if canceled
     };
 
     if (isLoading) {
@@ -94,26 +105,39 @@ const ProfileBar = React.memo(
     }
 
     return (
-      <Pressable
-        onPress={handleProfilePress}
-        style={({ pressed }) => [
-          styles.pressable,
-          { opacity: pressed ? 0.7 : 1 },
-          style,
-        ]}
-        accessible={true}
-        accessibilityLabel={`View profile of ${userName}`}
-      >
-        <View style={styles.container}>
-          <Avatar photoUrl={photoUrl} size={40} />
-          <Text style={styles.userName}>{userName}</Text>
-          {type === "followers" && ( // Kiểm tra type
-            <Pressable onPress={handleRemovePress} style={styles.closeIcon}>
-              <Ionicons name="close-circle-outline" size={20} color="red" />
-            </Pressable>
-          )}
-        </View>
-      </Pressable>
+      <>
+        <Pressable
+          onPress={handleProfilePress}
+          style={({ pressed }) => [
+            styles.pressable,
+            { opacity: pressed ? 0.7 : 1 },
+            style,
+          ]}
+          accessible={true}
+          accessibilityLabel={`View profile of ${userName}`}
+        >
+          <View style={styles.container}>
+            <Avatar photoUrl={photoUrl} size={40} />
+            <Text style={styles.userName}>{userName}</Text>
+            {type === "followers" && allowRemoveFollowers && (
+              <Pressable onPress={handleRemovePress} style={styles.closeIcon}>
+                <Ionicons name="close-circle-outline" size={20} color="red" />
+              </Pressable>
+            )}
+          </View>
+        </Pressable>
+
+        {/* Confirmation Dialog */}
+        <ConfirmationDialog
+          visible={isDialogVisible}
+          title="Confirm Unfollow"
+          message={`Are you sure you want to remove ${userName} from your followers list?`}
+          onConfirm={handleConfirmUnfollow}
+          onCancel={handleCancelUnfollow}
+          confirmText="Yes"
+          cancelText="Cancel"
+        />
+      </>
     );
   }
 );
@@ -141,7 +165,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#333",
-    flex: 1, // Để đẩy biểu tượng "X" sang bên phải
+    flex: 1,
   },
   loadingContainer: {
     padding: 12,
@@ -156,7 +180,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   closeIcon: {
-    marginLeft: 12, // Khoảng cách giữa tên người dùng và biểu tượng "X"
+    marginLeft: 12,
     justifyContent: "center",
     alignItems: "center",
   },

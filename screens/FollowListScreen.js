@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
 import { getFollowing, getFollowers } from "../util/follow-http";
 import ProfileBar from "../components/Posts/ProfileBar";
+import Ionicons from "react-native-vector-icons/Ionicons"; // Thêm biểu tượng
 
 const FollowListScreen = ({ route, navigation }) => {
   const { type, userId, currentUserId } = route.params;
@@ -39,6 +40,24 @@ const FollowListScreen = ({ route, navigation }) => {
     fetchData();
   }, [type, userId, navigation]); // Ensure navigation is in the dependency array
 
+  const handleUnfollow = useCallback(
+    (userIdToRemove) => {
+      setListData((prevList) => {
+        const updatedList = prevList.filter(
+          (item) => item.id !== userIdToRemove
+        );
+        // Cập nhật tiêu đề sau khi danh sách đã thay đổi
+        navigation.setOptions({
+          headerTitle: `${updatedList.length} ${
+            type === "following" ? "Following" : "Followers"
+          }`,
+        });
+        return updatedList;
+      });
+    },
+    [navigation, type]
+  );
+
   const renderItem = useCallback(
     ({ item, index }) => (
       <ProfileBar
@@ -46,9 +65,18 @@ const FollowListScreen = ({ route, navigation }) => {
         style={index === 0 ? styles.firstItem : {}}
         type={type}
         currentUserId={currentUserId}
+        allowRemoveFollowers={userId === currentUserId}
+        onUnfollow={() => handleUnfollow(item.id)} // Truyền hàm handleUnfollow
       />
     ),
-    []
+    [type, currentUserId, userId, handleUnfollow]
+  );
+
+  const ListEmptyComponent = () => (
+    <View style={styles.emptyContainer}>
+      <Ionicons name="people-outline" size={50} color="#ccc" />
+      <Text style={styles.emptyText}>No users found.</Text>
+    </View>
   );
 
   if (loading) {
@@ -73,7 +101,7 @@ const FollowListScreen = ({ route, navigation }) => {
         data={listData}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
-        ListEmptyComponent={<Text>No users found.</Text>}
+        ListEmptyComponent={ListEmptyComponent} // Sử dụng ListEmptyComponent đã tạo
         initialNumToRender={10} // Adjust based on your needs
         windowSize={21} // Adjust based on your needs
         removeClippedSubviews={true}
@@ -99,6 +127,18 @@ const styles = StyleSheet.create({
   },
   firstItem: {
     marginTop: 4,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+    marginTop: 10,
   },
 });
 
