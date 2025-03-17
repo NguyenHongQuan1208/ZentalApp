@@ -21,8 +21,9 @@ import {
 } from "../util/chat-list-data-http";
 import { GlobalColors } from "../constants/GlobalColors";
 import { debounce } from "lodash";
+import ToggleButtons from "../components/Chat/ToggleButtons";
 
-const { width } = Dimensions.get("window"); // Get window width
+const { width } = Dimensions.get("window");
 
 const ChatsScreen = ({ navigation }) => {
   const authCtx = useContext(AuthContext);
@@ -36,6 +37,7 @@ const ChatsScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showFollowing, setShowFollowing] = useState(false);
 
   useEffect(() => {
     async function fetchCurrentUserData() {
@@ -82,10 +84,10 @@ const ChatsScreen = ({ navigation }) => {
         );
         setFilteredUsers(filtered);
       } else {
-        setFilteredUsers(allUsers);
+        setFilteredUsers(showFollowing ? filteredUsers : allUsers);
       }
     }, 300),
-    [allUsers]
+    [allUsers, showFollowing, filteredUsers]
   );
 
   useEffect(() => {
@@ -147,6 +149,15 @@ const ChatsScreen = ({ navigation }) => {
     [currentUserId, navigation]
   );
 
+  const handleToggleUsers = (isFollowing) => {
+    setShowFollowing(isFollowing);
+    if (isFollowing) {
+      // Logic to filter following users can be added here
+    } else {
+      setFilteredUsers(allUsers);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -180,6 +191,15 @@ const ChatsScreen = ({ navigation }) => {
         initialNumToRender={10}
         maxToRenderPerBatch={10}
         windowSize={5}
+        ListHeaderComponent={
+          <ToggleButtons
+            showFollowing={showFollowing}
+            onToggle={handleToggleUsers}
+          />
+        }
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No users found.</Text>
+        }
       />
     </View>
   );
@@ -188,24 +208,24 @@ const ChatsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: GlobalColors.primaryWhite,
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    width: 320, // Set width to match SearchScreen
+    width: "100%",
     borderRadius: 15,
     overflow: "hidden",
     backgroundColor: GlobalColors.pureWhite,
     marginBottom: 3,
+    paddingHorizontal: 10,
   },
   icon: {
     padding: 10,
-    backgroundColor: GlobalColors.pureWhite,
   },
   searchInput: {
     height: 40,
-    width: "90%",
-    flexGrow: 1,
+    width: "100%",
     borderColor: "transparent",
     paddingHorizontal: 15,
     fontSize: 16,
@@ -223,6 +243,12 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "red",
+  },
+  emptyText: {
+    textAlign: "center",
+    fontSize: 18,
+    color: "#777",
+    marginTop: 20,
   },
 });
 
