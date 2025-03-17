@@ -2,35 +2,55 @@ import React from "react";
 import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
 
-const ToggleButtons = ({ showFollowing, onToggle }) => {
+const ToggleButtons = ({ activeTab, onToggle }) => {
   return (
     <View style={styles.toggleContainer}>
       <View style={styles.toggleWrapper}>
         <TouchableOpacity
           style={[
             styles.toggleButton,
-            !showFollowing && styles.activeButton,
+            activeTab === "All" && styles.activeButton,
             { borderRightWidth: 1, borderRightColor: GlobalColors.lightGray },
           ]}
-          onPress={() => onToggle(false)}
+          onPress={() => onToggle("All")}
         >
           <Text
             style={[
               styles.toggleButtonText,
-              !showFollowing && styles.activeButtonText,
+              activeTab === "All" && styles.activeButtonText,
             ]}
           >
             All Users
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.toggleButton, showFollowing && styles.activeButton]}
-          onPress={() => onToggle(true)}
+          style={[
+            styles.toggleButton,
+            activeTab === "Recent" && styles.activeButton,
+            { borderRightWidth: 1, borderRightColor: GlobalColors.lightGray },
+          ]}
+          onPress={() => onToggle("Recent")}
         >
           <Text
             style={[
               styles.toggleButtonText,
-              showFollowing && styles.activeButtonText,
+              activeTab === "Recent" && styles.activeButtonText,
+            ]}
+          >
+            Recently
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.toggleButton,
+            activeTab === "Following" && styles.activeButton,
+          ]}
+          onPress={() => onToggle("Following")}
+        >
+          <Text
+            style={[
+              styles.toggleButtonText,
+              activeTab === "Following" && styles.activeButtonText,
             ]}
           >
             Following Users

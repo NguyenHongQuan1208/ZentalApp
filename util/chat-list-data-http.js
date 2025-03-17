@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getDatabase, ref, onValue } from "firebase/database";
 
 const BACKEND_URL =
   "https://zentalapp-default-rtdb.asia-southeast1.firebasedatabase.app";
@@ -59,6 +60,34 @@ export const getChatListData = async (currentUserId, otherUserId) => {
   } catch (error) {
     console.error("Error fetching chat list data:", error);
     throw new Error("Failed to fetch chat list data"); // Throw an error to handle it in the calling function
+  }
+};
+
+export const getChatUsers = async (currentUserId) => {
+  try {
+    // Fetch all chat entries for the current user
+    const response = await axios.get(
+      `${BACKEND_URL}/chatlist/${currentUserId}.json`
+    );
+
+    const chatEntries = response.data;
+
+    if (!chatEntries) {
+      return []; // No chat entries found
+    }
+
+    // Extract user IDs where lastMsg is not empty
+    const chattedUserIds = Object.keys(chatEntries).filter((otherUserId) => {
+      return (
+        chatEntries[otherUserId].lastMsg &&
+        chatEntries[otherUserId].lastMsg.trim() !== ""
+      );
+    });
+
+    return chattedUserIds; // Return the list of user IDs you have chatted with
+  } catch (error) {
+    console.error("Error fetching chat users:", error);
+    throw new Error("Failed to fetch chat users"); // Handle error appropriately
   }
 };
 
@@ -209,4 +238,38 @@ export const incrementUnreadCount = async (currentUserId, otherUserId) => {
   } catch (error) {
     console.error("Error updating unread count:", error);
   }
+};
+
+export const getChatList = (currentUserId, callback) => {
+  const db = getDatabase();
+  const chatListRef = ref(db, `chatlist/${currentUserId}`);
+
+  // Ensure callback is a function before calling
+  if (typeof callback !== "function") {
+    console.error("Callback is not a function");
+    return;
+  }
+
+  onValue(
+    chatListRef,
+    (snapshot) => {
+      const chatEntries = snapshot.val();
+      if (!chatEntries) {
+        callback([]); // No chat entries found
+        return;
+      }
+
+      // Transforming chat entries into a usable format
+      const formattedChatList = Object.keys(chatEntries).map((otherUserId) => ({
+        userId: otherUserId,
+        ...chatEntries[otherUserId],
+      }));
+
+      callback(formattedChatList); // Return the formatted chat list
+    },
+    (error) => {
+      console.error("Error fetching chat list:", error);
+      callback([]); // Return an empty array on error
+    }
+  );
 };
