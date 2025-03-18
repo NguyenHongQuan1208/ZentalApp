@@ -14,7 +14,7 @@ import {
 import { GlobalColors } from "../constants/GlobalColors";
 import { getAllUsers } from "../util/user-info-http";
 import ProfileBar from "../components/Posts/ProfileBar";
-import SearchInput from "../components/Search/SearchInput"; // Import the new SearchInput component
+import SearchInput from "../components/Search/SearchInput";
 
 function SearchScreen({ navigation, route }) {
   const [searchValue, setSearchValue] = useState("");
@@ -31,7 +31,6 @@ function SearchScreen({ navigation, route }) {
         setUsers(fetchedUsers);
       } catch (error) {
         console.error("Error fetching users:", error);
-        // Add user feedback for error
       } finally {
         setIsLoading(false);
       }
@@ -41,7 +40,7 @@ function SearchScreen({ navigation, route }) {
   }, []);
 
   const filteredUsers = useMemo(() => {
-    if (!searchValue) return users;
+    if (!searchValue) return [];
     const lowerSearchValue = searchValue.toLowerCase();
     return users.filter(
       (user) =>
@@ -112,14 +111,18 @@ function SearchScreen({ navigation, route }) {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.innerContainer}>
-          <FlatList
-            data={filteredUsers}
-            keyExtractor={(item) => item.id.toString()} // Ensure unique string id
-            renderItem={renderItem}
-            ListEmptyComponent={<Text>No users found.</Text>}
-            initialNumToRender={10} // Adjust based on your needs
-            windowSize={5} // Adjust based on your needs
-          />
+          {searchValue ? (
+            <FlatList
+              data={filteredUsers}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderItem}
+              ListEmptyComponent={<Text>No users found.</Text>}
+              initialNumToRender={10}
+              windowSize={5}
+            />
+          ) : (
+            <Text>No users to display. Please enter a search term.</Text>
+          )}
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
