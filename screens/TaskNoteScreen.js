@@ -7,6 +7,8 @@ import {
   Alert,
   ScrollView,
   Dimensions,
+  Keyboard,
+  Platform,
 } from "react-native";
 import PhotoOptionsModal from "../components/Profile/PhotoOptionsModal";
 import LongButton from "../components/ui/LongButton";
@@ -43,6 +45,7 @@ function TaskNoteScreen({ route, navigation }) {
   const [imageUri, setImageUri] = useState(null);
   const [defaultImageUri, setDefaultImageUri] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
@@ -298,6 +301,30 @@ function TaskNoteScreen({ route, navigation }) {
     }
   };
 
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        if (Platform.OS === "android") {
+          setIsKeyboardVisible(true);
+        }
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        if (Platform.OS === "android") {
+          setIsKeyboardVisible(false);
+        }
+      }
+    );
+
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -350,22 +377,24 @@ function TaskNoteScreen({ route, navigation }) {
         />
       </ScrollView>
 
-      <View style={styles.footer}>
-        <View style={styles.footerOverlay}>
-          <LongButton
-            style={[
-              styles.longButton,
-              { backgroundColor: GlobalColors.inActivetabBarColor },
-            ]}
-            onPress={handlePledgeToDoIt}
-          >
-            PLEDGE TO DO IT
-          </LongButton>
-          <LongButton style={styles.longButton} onPress={handlePost}>
-            I'VE DONE IT, POST
-          </LongButton>
+      {!isKeyboardVisible && (
+        <View style={styles.footer}>
+          <View style={styles.footerOverlay}>
+            <LongButton
+              style={[
+                styles.longButton,
+                { backgroundColor: GlobalColors.inActivetabBarColor },
+              ]}
+              onPress={handlePledgeToDoIt}
+            >
+              PLEDGE TO DO IT
+            </LongButton>
+            <LongButton style={styles.longButton} onPress={handlePost}>
+              I'VE DONE IT, POST
+            </LongButton>
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 }
