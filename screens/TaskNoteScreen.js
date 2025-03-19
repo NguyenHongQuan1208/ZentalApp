@@ -27,7 +27,7 @@ import { AuthContext } from "../store/auth-context";
 import { supabase } from "../store/supabaseClient";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
-import { fetchImageBySectionId } from "../util/section-default-image-http";
+import { fetchDefaultImageUriBySectionId } from "../util/section-default-image-http";
 
 const { width, height } = Dimensions.get("window");
 const aspectRatio = height / width;
@@ -98,7 +98,9 @@ function TaskNoteScreen({ route, navigation }) {
       if (!sectionId) return;
 
       try {
-        const defaultImageUri = await fetchImageBySectionId(sectionId);
+        const defaultImageUri = await fetchDefaultImageUriBySectionId(
+          sectionId
+        );
         if (defaultImageUri) {
           setDefaultImageUri(defaultImageUri);
           setImageUri((prevUri) => prevUri || defaultImageUri);

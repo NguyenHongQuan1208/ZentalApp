@@ -1,33 +1,22 @@
 import axios from "axios";
 
-// URL của Firebase Realtime Database
+// URL of Firebase Realtime Database
 const BACKEND_URL =
   "https://zentalapp-default-rtdb.asia-southeast1.firebasedatabase.app";
 
-// Hàm lấy ảnh theo sectionId
-export async function fetchImageBySectionId(sectionId) {
+// Function to fetch the defaultImageUri by section ID
+export const fetchDefaultImageUriBySectionId = async (sectionId) => {
   try {
-    // Truy vấn dữ liệu từ Firebase Realtime Database với axios
-    const response = await axios.get(`${BACKEND_URL}/sectionDefaultImage.json`);
+    // Construct the URL for fetching the section data
+    const url = `${BACKEND_URL}/taskSections/${sectionId}.json`; // Adjust the path as needed
 
-    if (response.data) {
-      // Duyệt qua các ảnh và tìm ảnh có sectionId khớp
-      const image = Object.values(response.data).find(
-        (item) => item.sectionId === sectionId
-      );
+    // Make the GET request to fetch the section data
+    const response = await axios.get(url);
 
-      if (image) {
-        return image.imageUri; // Trả về URI của ảnh
-      } else {
-        console.log(`No image found for sectionId: ${sectionId}`);
-        return null;
-      }
-    } else {
-      console.log("No images available in the database.");
-      return null;
-    }
+    // Return the defaultImageUri
+    return response.data.defaultImageUri;
   } catch (error) {
-    console.error("Error fetching image by sectionId:", error.message || error);
-    return null;
+    console.error("Error fetching defaultImageUri:", error);
+    throw error; // Rethrow the error for further handling if necessary
   }
-}
+};
