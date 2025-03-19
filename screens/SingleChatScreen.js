@@ -6,6 +6,7 @@ import {
   Alert,
   Keyboard,
   View,
+  TouchableOpacity, // Import TouchableOpacity
 } from "react-native";
 import { getUser } from "../util/user-info-http";
 import { GlobalColors } from "../constants/GlobalColors";
@@ -36,10 +37,16 @@ const SingleChatScreen = ({ route, navigation }) => {
         const userData = await getUser(otherUserId);
         navigation.setOptions({
           headerTitle: () => (
-            <HeaderTitle
-              photoUrl={userData.photoUrl}
-              username={userData.username}
-            />
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("ChatProfile", { otherUserId })
+              }
+            >
+              <HeaderTitle
+                photoUrl={userData.photoUrl}
+                username={userData.username}
+              />
+            </TouchableOpacity>
           ),
           headerTitleAlign: "left",
           headerStyle: {

@@ -30,6 +30,7 @@ import ReportScreen from "./screens/ReportScreen";
 import SearchScreen from "./screens/SearchScreen";
 import SingleChatScreen from "./screens/SingleChatScreen";
 import FollowListScreen from "./screens/FollowListScreen";
+import ChatProfileScreen from "./screens/ChatProfileScreen";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -278,6 +279,8 @@ function AuthenticatedStack() {
       />
 
       <Stack.Screen name="SingleChat" component={SingleChatScreen} />
+
+      <Stack.Screen name="ChatProfile" component={ChatProfileScreen} />
 
       <Stack.Screen name="Search" component={SearchScreen} />
 

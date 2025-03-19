@@ -7,6 +7,7 @@ import {
   Text,
   TextInput,
   Dimensions,
+  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ChatItem from "../components/Chat/ChatItem";
@@ -72,10 +73,20 @@ const ChatsScreen = ({ navigation }) => {
       const users = await getAllUsers();
       const otherUsers = users.filter((user) => user.id !== currentUserId);
       setAllUsers(otherUsers);
-      setFilteredUsers(otherUsers);
 
+      // Fetch following users
       const following = await getFollowing(currentUserId);
       setFollowingUsers(following.map((user) => user.id));
+
+      // Filter users based on the active tab
+      if (activeTab === "Following") {
+        const filteredFollowing = otherUsers.filter((user) =>
+          followingUsers.includes(user.id)
+        );
+        setFilteredUsers(filteredFollowing);
+      } else {
+        setFilteredUsers(getRecentUsers());
+      }
 
       // Fetch chat data
       getChatList(currentUserId, (chats) => {
@@ -245,6 +256,14 @@ const ChatsScreen = ({ navigation }) => {
         }
         refreshing={refreshing}
         onRefresh={fetchUsers}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={fetchUsers}
+            colors={[GlobalColors.primaryColor]}
+            tintColor={GlobalColors.primaryColor} // Change the tint color here
+          />
+        }
       />
     </View>
   );
