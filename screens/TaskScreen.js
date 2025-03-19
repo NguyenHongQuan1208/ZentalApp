@@ -1,5 +1,10 @@
-import { FlatList, StyleSheet, View } from "react-native";
-import { TASK_SECTIONS } from "../data/dummy-data";
+import {
+  FlatList,
+  StyleSheet,
+  View,
+  ActivityIndicator,
+  Text,
+} from "react-native";
 import SectionGridTile from "../components/TaskSection/SectionGridTile";
 import { GlobalColors } from "../constants/GlobalColors";
 import { useState, useContext, useEffect } from "react";
@@ -7,6 +12,7 @@ import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import useRealtimePosts from "../hooks/useRealtimePosts"; // Import custom hook
+import getAllTaskSections from "../util/task-section-http";
 
 function TaskScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
@@ -15,11 +21,28 @@ function TaskScreen({ navigation }) {
   const refreshToken = refreshCtx.refreshToken;
 
   const [userId, setUserId] = useState("");
+  const [taskSections, setTaskSections] = useState([]); // State for task sections
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
 
-  // Sử dụng hook `useRealtimePosts` để quản lý trạng thái các section
-  const taskSections = useRealtimePosts(userId, TASK_SECTIONS);
+  // Fetch task sections from API
+  useEffect(() => {
+    async function fetchTaskSections() {
+      try {
+        const sections = await getAllTaskSections(); // Call your API function
+        setTaskSections(sections); // Set the fetched sections
+      } catch (error) {
+        setError(error.message);
+        console.error("Error fetching task sections:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  // Lấy userId sau khi đăng nhập
+    fetchTaskSections();
+  }, []); // Empty dependency array to run only once on mount
+
+  // Get userId after login
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -38,6 +61,9 @@ function TaskScreen({ navigation }) {
     }
     fetchUserData();
   }, [token, refreshToken, authCtx, refreshCtx]);
+
+  // Use the custom hook to manage the state of sections
+  const updatedSections = useRealtimePosts(userId, taskSections);
 
   const renderSectionItem = ({ item }) => {
     const {
@@ -85,10 +111,22 @@ function TaskScreen({ navigation }) {
     );
   };
 
+  if (loading) {
+    return <ActivityIndicator size="large" color={GlobalColors.primaryColor} />;
+  }
+
+  if (error) {
+    return (
+      <View>
+        <Text>Error: {error}</Text>
+      </View>
+    ); // Display error message
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
-        data={taskSections}
+        data={updatedSections}
         keyExtractor={(section) => section.id}
         renderItem={renderSectionItem}
         numColumns={3}
