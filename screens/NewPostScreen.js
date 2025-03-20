@@ -8,12 +8,14 @@ import {
   RefreshControl,
 } from "react-native";
 import { getAllPosts } from "../util/posts-data-http";
+import { getFollowing } from "../util/follow-http";
 import { GlobalColors } from "../constants/GlobalColors";
 import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import Post from "../components/Posts/Post";
 import { Ionicons } from "@expo/vector-icons";
+import ToggleButtons from "../components/Chat/ToggleButtons";
 
 function NewPosts({ navigation }) {
   const authCtx = useContext(AuthContext);
@@ -26,6 +28,8 @@ function NewPosts({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
+  const [followingUsers, setFollowingUsers] = useState([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -45,6 +49,22 @@ function NewPosts({ navigation }) {
     fetchUserData();
   }, [token, refreshToken, authCtx, refreshCtx]);
 
+  // Fetch following users
+  const fetchFollowingUsers = useCallback(async () => {
+    if (currentUserId) {
+      try {
+        const following = await getFollowing(currentUserId);
+        setFollowingUsers(following.map((user) => user.id));
+      } catch (error) {
+        console.error("Error fetching following users: ", error);
+      }
+    }
+  }, [currentUserId]);
+
+  useEffect(() => {
+    fetchFollowingUsers();
+  }, [currentUserId]);
+
   const fetchPosts = useCallback(async () => {
     try {
       setError(null);
@@ -55,9 +75,15 @@ function NewPosts({ navigation }) {
         (post) => post.status === 1 && post.publicStatus === 1
       );
 
-      const sortedPosts = filteredPosts.sort((a, b) => {
-        return new Date(b.createdAt) - new Date(a.createdAt); // Mới nhất lên đầu
-      });
+      // Filter posts based on active tab
+      const sortedPosts = filteredPosts
+        .filter((post) => {
+          if (activeTab === "following") {
+            return followingUsers.includes(post.uid); // Only include posts from followed users
+          }
+          return true; // For "all" tab, include all posts
+        })
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Newest first
 
       setPosts(sortedPosts);
     } catch (err) {
@@ -67,7 +93,7 @@ function NewPosts({ navigation }) {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [activeTab, followingUsers]);
 
   useEffect(() => {
     fetchPosts();
@@ -75,7 +101,8 @@ function NewPosts({ navigation }) {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchPosts();
+    await fetchFollowingUsers(); // Refresh the following users
+    await fetchPosts(); // Then fetch the posts
   };
 
   const onPrivacyChange = useCallback(() => {
@@ -101,16 +128,29 @@ function NewPosts({ navigation }) {
   }, [navigation]);
 
   const renderPost = useCallback(
-    ({ item }) => (
+    ({ item, index }) => (
       <Post
         item={item}
         currentUserId={currentUserId}
         onPrivacyChange={onPrivacyChange}
         onPostDelete={onPostDelete}
+        style={index === 0 ? { marginTop: 14 } : {}}
       />
     ),
     [currentUserId, onPrivacyChange, onPostDelete]
   );
+
+  // Define toggle options
+  const toggleOptions = [
+    { value: "all", label: "For You" },
+    { value: "following", label: "Following" },
+  ];
+
+  // Handle toggle button press
+  const handleToggle = (value) => {
+    setActiveTab(value); // Set the active tab
+    fetchPosts(); // Fetch posts based on the new active tab
+  };
 
   if (loading) {
     return (
@@ -139,7 +179,6 @@ function NewPosts({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>New Posts</Text>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id?.toString()}
@@ -155,6 +194,13 @@ function NewPosts({ navigation }) {
             tintColor={GlobalColors.primaryColor}
           />
         }
+        ListHeaderComponent={
+          <ToggleButtons
+            activeTab={activeTab}
+            onToggle={handleToggle}
+            options={toggleOptions}
+          />
+        }
       />
     </View>
   );
@@ -167,13 +213,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: GlobalColors.primaryWhite,
     paddingHorizontal: 16,
-    paddingTop: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: GlobalColors.primaryColor,
-    marginBottom: 10,
   },
   loadingContainer: {
     flex: 1,

@@ -230,6 +230,11 @@ const ChatsScreen = ({ navigation }) => {
     );
   }
 
+  const toggleOptions = [
+    { value: "Recent", label: "Recently" },
+    { value: "Following", label: "Following Users" },
+  ];
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -248,7 +253,11 @@ const ChatsScreen = ({ navigation }) => {
         windowSize={5}
         ListHeaderComponent={
           !searchQuery ? (
-            <ToggleButtons activeTab={activeTab} onToggle={handleToggleUsers} />
+            <ToggleButtons
+              activeTab={activeTab}
+              onToggle={handleToggleUsers}
+              options={toggleOptions}
+            />
           ) : null
         }
         ListEmptyComponent={

@@ -12,7 +12,14 @@ import CommentButton from "../../components/Posts/CommentButton";
 import useRealtimeComments from "../../hooks/useRealtimeComments";
 
 const Post = memo(
-  ({ item, currentUserId, noPressEffect, onPrivacyChange, onPostDelete }) => {
+  ({
+    item,
+    currentUserId,
+    noPressEffect,
+    onPrivacyChange,
+    onPostDelete,
+    style,
+  }) => {
     const navigation = useNavigation();
     const postId = item?.id;
     const userId = item?.uid || "";
@@ -70,7 +77,7 @@ const Post = memo(
     }
 
     return (
-      <Pressable onPress={navigateHandler}>
+      <Pressable onPress={navigateHandler} style={style}>
         <View style={styles.postContainer}>
           <PostHeader
             user={user}

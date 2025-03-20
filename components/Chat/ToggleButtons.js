@@ -2,43 +2,33 @@ import React from "react";
 import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
 
-const ToggleButtons = ({ activeTab, onToggle }) => {
+const ToggleButtons = ({ activeTab, onToggle, options }) => {
   return (
     <View style={styles.toggleContainer}>
       <View style={styles.toggleWrapper}>
-        <TouchableOpacity
-          style={[
-            styles.toggleButton,
-            activeTab === "Recent" && styles.activeButton,
-            { borderRightWidth: 1, borderRightColor: GlobalColors.lightGray },
-          ]}
-          onPress={() => onToggle("Recent")}
-        >
-          <Text
+        {options.map((option) => (
+          <TouchableOpacity
+            key={option.value}
             style={[
-              styles.toggleButtonText,
-              activeTab === "Recent" && styles.activeButtonText,
+              styles.toggleButton,
+              activeTab === option.value && styles.activeButton,
+              option.value !== options[0].value && {
+                borderLeftWidth: 1,
+                borderLeftColor: GlobalColors.lightGray,
+              },
             ]}
+            onPress={() => onToggle(option.value)}
           >
-            Recently
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.toggleButton,
-            activeTab === "Following" && styles.activeButton,
-          ]}
-          onPress={() => onToggle("Following")}
-        >
-          <Text
-            style={[
-              styles.toggleButtonText,
-              activeTab === "Following" && styles.activeButtonText,
-            ]}
-          >
-            Following Users
-          </Text>
-        </TouchableOpacity>
+            <Text
+              style={[
+                styles.toggleButtonText,
+                activeTab === option.value && styles.activeButtonText,
+              ]}
+            >
+              {option.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
     </View>
   );

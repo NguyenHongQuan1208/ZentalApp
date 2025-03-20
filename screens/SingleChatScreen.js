@@ -37,16 +37,13 @@ const SingleChatScreen = ({ route, navigation }) => {
         const userData = await getUser(otherUserId);
         navigation.setOptions({
           headerTitle: () => (
-            <TouchableOpacity
+            <HeaderTitle
+              photoUrl={userData.photoUrl}
+              username={userData.username}
               onPress={() =>
                 navigation.navigate("ChatProfile", { otherUserId })
               }
-            >
-              <HeaderTitle
-                photoUrl={userData.photoUrl}
-                username={userData.username}
-              />
-            </TouchableOpacity>
+            />
           ),
           headerTitleAlign: "left",
           headerStyle: {

@@ -1,11 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { Pressable, Text, StyleSheet, Image, View } from "react-native";
 import Avatar from "../Profile/Avatar";
 import { GlobalColors } from "../../constants/GlobalColors";
 
-const HeaderTitle = ({ photoUrl, username }) => {
+const HeaderTitle = ({ photoUrl, username, onPress }) => {
   return (
-    <View style={styles.headerContainer}>
+    <Pressable style={styles.headerContainer} onPress={onPress}>
       {photoUrl ? (
         <View style={styles.avatarWrapper}>
           <Avatar photoUrl={photoUrl} size={36} key={photoUrl} />
@@ -17,7 +17,7 @@ const HeaderTitle = ({ photoUrl, username }) => {
         />
       )}
       <Text style={styles.headerTitle}>{username}</Text>
-    </View>
+    </Pressable>
   );
 };
 
