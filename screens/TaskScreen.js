@@ -13,6 +13,7 @@ import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import useRealtimePosts from "../hooks/useRealtimePosts"; // Import custom hook
 import getAllTaskSections from "../util/task-section-http";
+import CarouselComponent from "../components/TaskSection/CaroselComponent";
 
 function TaskScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
@@ -130,6 +131,7 @@ function TaskScreen({ navigation }) {
         keyExtractor={(section) => section.id}
         renderItem={renderSectionItem}
         numColumns={3}
+        ListHeaderComponent={<CarouselComponent />} // Set CarouselComponent as header
       />
     </View>
   );
