@@ -1,23 +1,15 @@
-import React, { memo, useEffect, useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Pressable,
-  ActivityIndicator,
-} from "react-native";
+import React, { memo } from "react";
+import { StyleSheet, Text, View, Pressable } from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { useNavigation } from "@react-navigation/native";
 import PostHeader from "../../components/Posts/PostHeader";
 import PostContent from "../../components/Posts/PostContent";
 import PostImage from "../../components/Posts/PostImage";
+import useUser from "../../hooks/useUser";
 import LikeButton from "../../components/Posts/LikeButton";
 import CommentButton from "../../components/Posts/CommentButton";
-import useUser from "../../hooks/useUser";
 import useRealtimeComments from "../../hooks/useRealtimeComments";
-import getAllTaskSections from "../../util/task-section-http";
-import LoadingPlaceholder from "./LoadingPlaceholder";
 
 const Post = memo(
   ({ item, currentUserId, noPressEffect, onPrivacyChange, onPostDelete }) => {
@@ -26,35 +18,11 @@ const Post = memo(
     const userId = item?.uid || "";
     const imageUri = item?.imageUri || "";
     const sectionId = item?.sectionId || "";
+    const sectionColor = item?.sectionColor || "";
     const publicStatus = item?.publicStatus;
 
-    // State for user data and task sections
-    const { user, error: userError, loading: userLoading } = useUser(userId);
-    const { comments, error: commentsError } = useRealtimeComments(postId);
-    const [taskSections, setTaskSections] = useState([]);
-    const [loadingSections, setLoadingSections] = useState(true);
-    const [fetchError, setFetchError] = useState(null);
-
-    // Fetch task sections from API
-    useEffect(() => {
-      const fetchTaskSections = async () => {
-        try {
-          const sections = await getAllTaskSections();
-          setTaskSections(sections);
-        } catch (error) {
-          console.error("Error fetching task sections:", error);
-          setFetchError(error.message);
-        } finally {
-          setLoadingSections(false);
-        }
-      };
-
-      fetchTaskSections();
-    }, []);
-
-    const sectionColor =
-      taskSections.find((section) => section.id === sectionId)?.color ||
-      GlobalColors.primaryBlack;
+    const { user, error } = useUser(userId);
+    const { comments } = useRealtimeComments(postId);
 
     const timeAgo = item?.createdAt
       ? formatDistanceToNowStrict(parseISO(item.createdAt), {
@@ -62,71 +30,41 @@ const Post = memo(
         })
       : "Unknown time";
 
-    const commentCount = comments?.length || 0;
+    const commentCount = comments ? comments.length : 0; // Calculate comment count
 
-    const navigateHandler = () => {
+    function navigateHandler() {
       navigation.navigate("PostDetail", {
-        postId,
-        userId,
-        imageUri,
-        sectionId,
-        sectionColor,
-        timeAgo,
-        currentUserId,
-        publicStatus,
+        postId: postId,
+        userId: userId,
+        imageUri: imageUri,
+        sectionId: sectionId,
+        sectionColor: sectionColor,
+        timeAgo: timeAgo,
+        currentUserId: currentUserId,
+        publicStatus: publicStatus,
         shouldFocusComment: false,
       });
-    };
-
-    const handleCommentPress = (event) => {
-      event.stopPropagation();
-      navigation.navigate("PostDetail", {
-        postId,
-        userId,
-        imageUri,
-        sectionId,
-        sectionColor,
-        timeAgo,
-        currentUserId,
-        publicStatus,
-        shouldFocusComment: true,
-      });
-    };
-
-    // Loading and error handling
-    if (userLoading) {
-      return (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={GlobalColors.primary} />
-          <Text style={styles.loadingText}>Loading user data...</Text>
-        </View>
-      );
     }
 
-    if (userError) {
+    function handleCommentPress(event) {
+      event.stopPropagation();
+      navigation.navigate("PostDetail", {
+        postId: postId,
+        userId: userId,
+        imageUri: imageUri,
+        sectionId: sectionId,
+        sectionColor: sectionColor,
+        timeAgo: timeAgo,
+        currentUserId: currentUserId,
+        publicStatus: publicStatus,
+        shouldFocusComment: true,
+      });
+    }
+
+    if (error) {
       return (
         <View style={styles.errorContainer}>
           <Text>Error fetching user data.</Text>
-        </View>
-      );
-    }
-
-    if (loadingSections) {
-      return <LoadingPlaceholder />;
-    }
-
-    if (fetchError) {
-      return (
-        <View style={styles.errorContainer}>
-          <Text>Error fetching task sections: {fetchError}</Text>
-        </View>
-      );
-    }
-
-    if (commentsError) {
-      return (
-        <View style={styles.errorContainer}>
-          <Text>Error fetching comments.</Text>
         </View>
       );
     }
@@ -144,11 +82,17 @@ const Post = memo(
             onPrivacyChange={onPrivacyChange}
             onPostDelete={onPostDelete}
           />
+
           <Text style={[styles.title, { color: sectionColor }]}>
             {item?.title || "No title"}
           </Text>
+
           <PostContent content={item?.content} />
-          {imageUri && <PostImage imageUri={imageUri} />}
+
+          {typeof imageUri === "string" && imageUri.trim() !== "" && (
+            <PostImage imageUri={imageUri} />
+          )}
+
           <View style={styles.actionRow}>
             <LikeButton postId={postId} currentUserId={currentUserId} />
             <CommentButton
@@ -187,16 +131,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: GlobalColors.primary,
   },
 });
 

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { Pressable, Dimensions, StyleSheet, View, Alert } from "react-native";
-import { TASK_SECTIONS } from "../../data/dummy-data";
 import { GlobalColors } from "../../constants/GlobalColors";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import PostImage from "./PostImage";
@@ -18,14 +17,11 @@ function PostGridItem({ item, currentUserId, onPrivacyChange, onPostDelete }) {
   const userId = item?.uid || "";
   const imageUri = item?.imageUri || "";
   const sectionId = item?.sectionId || "";
+  const sectionColor = item?.sectionColor || "";
   const publicStatus = item?.publicStatus;
 
   const [isSelected, setIsSelected] = useState(false);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
-
-  const sectionColor =
-    TASK_SECTIONS.find((section) => section.id === sectionId)?.color ||
-    GlobalColors.primaryBlack;
 
   const timeAgo = item?.createdAt
     ? formatDistanceToNowStrict(parseISO(item.createdAt), { addSuffix: false })

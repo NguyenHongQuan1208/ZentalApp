@@ -22,6 +22,7 @@ function ConfirmPostScreen({ navigation, route }) {
   const content = route.params.content;
   const imageUri = route.params.imageUri;
   const sectionId = route.params.sectionId;
+  const sectionColor = route.params.sectionColor;
   const title = route.params.title;
   const uid = route.params.uid;
   const icon = route.params.icon;
@@ -97,6 +98,7 @@ function ConfirmPostScreen({ navigation, route }) {
           content,
           imageUri,
           sectionId,
+          sectionColor,
           status: 1,
           title,
           uid,

@@ -257,6 +257,7 @@ function TaskNoteScreen({ route, navigation }) {
 
       const postData = {
         content: textInputValue,
+        sectionColor: color,
         imageUri: publicUrl,
         sectionId: sectionId,
         status: 0,
@@ -292,6 +293,7 @@ function TaskNoteScreen({ route, navigation }) {
         content: textInputValue,
         imageUri: publicUrl,
         sectionId: sectionId,
+        sectionColor: color,
         title: target,
         uid: uid,
         icon: icon,
