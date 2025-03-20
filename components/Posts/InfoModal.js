@@ -17,7 +17,7 @@ import {
   Dimensions,
 } from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
-import ProfileBar from "./ProfileBar";
+import LikeCommentProfileBar from "./LikeCommentProfileBar";
 
 const { height: screenHeight } = Dimensions.get("window");
 
@@ -86,7 +86,7 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
   }, [closeModal, isClosing]);
 
   const renderItem = useCallback(
-    ({ item }) => <ProfileBar userId={item} onClose={closeModal} />,
+    ({ item }) => <LikeCommentProfileBar userId={item} onClose={closeModal} />,
     [closeModal]
   );
 
