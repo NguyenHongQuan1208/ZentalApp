@@ -126,11 +126,9 @@ function TaskScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Carousel at the top */}
       <View style={styles.carouselContainer}>
         <CarouselComponent />
       </View>
-      {/* FlatList centered vertically in the remaining space */}
       <View style={styles.flatListContainer}>
         <FlatList
           data={updatedSections}
