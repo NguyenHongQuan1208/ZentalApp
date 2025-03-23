@@ -62,7 +62,7 @@ function AppOverview() {
         name="Task"
         component={TaskScreen}
         options={{
-          title: "Today Tasks",
+          title: "Instant Tasks",
           tabBarLabel: "Tasks",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="sunny" size={size} color={color} />
@@ -246,6 +246,7 @@ function AuthenticatedStack() {
         name="PostDetail"
         component={PostDetailScreen}
         options={{
+          headerTitle: "Post Detail",
           contentStyle: {
             backgroundColor: GlobalColors.pureWhite,
           },

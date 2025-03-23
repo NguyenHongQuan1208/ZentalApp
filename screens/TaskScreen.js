@@ -5,7 +5,7 @@ import {
   ActivityIndicator,
   Text,
 } from "react-native";
-import SectionGridTile from "../components/TaskSection/SectionGridTile";
+import SectionGridTitle from "../components/TaskSection/SectionGridTitle";
 import { GlobalColors } from "../constants/GlobalColors";
 import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../store/auth-context";
@@ -102,7 +102,7 @@ function TaskScreen({ navigation }) {
     };
 
     return (
-      <SectionGridTile
+      <SectionGridTitle
         title={title}
         color={color}
         icon={icon}
@@ -126,13 +126,20 @@ function TaskScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={updatedSections}
-        keyExtractor={(section) => section.id}
-        renderItem={renderSectionItem}
-        numColumns={3}
-        ListHeaderComponent={<CarouselComponent />} // Set CarouselComponent as header
-      />
+      {/* Carousel at the top */}
+      <View style={styles.carouselContainer}>
+        <CarouselComponent />
+      </View>
+      {/* FlatList centered vertically in the remaining space */}
+      <View style={styles.flatListContainer}>
+        <FlatList
+          data={updatedSections}
+          keyExtractor={(section) => section.id}
+          renderItem={renderSectionItem}
+          numColumns={3}
+          scrollEnabled={false}
+        />
+      </View>
     </View>
   );
 }
@@ -143,5 +150,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: GlobalColors.primaryWhite,
+  },
+  carouselContainer: {
+    flex: 1,
+  },
+  flatListContainer: {
+    flex: 1,
+    justifyContent: "center",
+    marginTop: -70,
   },
 });
