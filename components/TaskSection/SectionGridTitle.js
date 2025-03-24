@@ -14,12 +14,11 @@ function SectionGridTitle({ title, color, onPress, icon, hasDraft }) {
       >
         <View style={[styles.iconWrapper, { backgroundColor: color }]}>
           <Ionicons name={icon} size={35} color="white" />
-          {/* Reduced icon size */}
           {hasDraft && (
             <View style={styles.draftIcon}>
               <Ionicons
                 name="pencil"
-                size={14} // Reduced draft icon size
+                size={14}
                 color={GlobalColors.thirdColor}
               />
             </View>

@@ -149,8 +149,7 @@ const SlideComponent = () => {
               <Text style={styles.slogan}>{item.slogan}</Text>
               <StartButton
                 onPress={() => console.log(`Starting ${item.name}`)}
-              />{" "}
-              {/* Use StartButton */}
+              />
             </View>
           </View>
         ))}

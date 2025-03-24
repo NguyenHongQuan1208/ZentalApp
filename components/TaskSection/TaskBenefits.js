@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { GlobalColors } from "../../constants/GlobalColors";
 
 function TaskBenefits({ benefits, color }) {
   return (
@@ -31,7 +32,7 @@ const styles = StyleSheet.create({
   },
   contentText: {
     fontSize: 14,
-    color: "white",
+    color: GlobalColors.primaryBlack,
   },
   benefitContainer: {
     flexDirection: "row", // Đặt icon và text trên cùng một hàng

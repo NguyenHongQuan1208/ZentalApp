@@ -121,7 +121,7 @@ function TaskScreen({ navigation }) {
       <View>
         <Text>Error: {error}</Text>
       </View>
-    ); // Display error message
+    );
   }
 
   return (
