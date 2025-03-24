@@ -8,6 +8,7 @@ import {
   TextInput,
   Dimensions,
   RefreshControl,
+  ImageBackground,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ChatItem from "../components/Chat/ChatItem";
@@ -236,49 +237,63 @@ const ChatsScreen = ({ navigation }) => {
   ];
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={filteredUsers}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item, index }) => (
-          <ChatItem
-            user={item}
-            currentUserId={currentUserId}
-            onPress={() => handleChatItemClick(item)}
-            style={index === 0 ? { marginTop: 6 } : {}}
-          />
-        )}
-        initialNumToRender={10}
-        maxToRenderPerBatch={10}
-        windowSize={5}
-        ListHeaderComponent={
-          !searchQuery ? (
-            <ToggleButtons
-              activeTab={activeTab}
-              onToggle={handleToggleUsers}
-              options={toggleOptions}
+    <ImageBackground
+      source={require("../assets/Background.jpg")} // Adjust the path as necessary
+      style={styles.background}
+    >
+      <View style={styles.overlay}>
+        <FlatList
+          data={filteredUsers}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item, index }) => (
+            <ChatItem
+              user={item}
+              currentUserId={currentUserId}
+              onPress={() => handleChatItemClick(item)}
+              style={index === 0 ? { marginTop: 6 } : {}}
             />
-          ) : null
-        }
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No users found.</Text>
-        }
-        refreshing={refreshing}
-        onRefresh={fetchUsers}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={fetchUsers}
-            colors={[GlobalColors.primaryColor]}
-            tintColor={GlobalColors.primaryColor} // Change the tint color here
-          />
-        }
-      />
-    </View>
+          )}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          ListHeaderComponent={
+            !searchQuery ? (
+              <ToggleButtons
+                activeTab={activeTab}
+                onToggle={handleToggleUsers}
+                options={toggleOptions}
+              />
+            ) : null
+          }
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No users found.</Text>
+          }
+          refreshing={refreshing}
+          onRefresh={fetchUsers}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={fetchUsers}
+              colors={[GlobalColors.primaryColor]}
+              tintColor={GlobalColors.primaryColor} // Change the tint color here
+            />
+          }
+        />
+      </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(255, 255, 255, 0.5)", // White overlay with opacity
+  },
   container: {
     flex: 1,
     backgroundColor: GlobalColors.primaryWhite,

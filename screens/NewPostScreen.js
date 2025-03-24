@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  ImageBackground,
 } from "react-native";
 import { getAllPosts } from "../util/posts-data-http";
 import { getFollowing } from "../util/follow-http";
@@ -178,41 +179,56 @@ function NewPosts({ navigation }) {
   }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id?.toString()}
-        renderItem={renderPost}
-        initialNumToRender={10}
-        maxToRenderPerBatch={10}
-        windowSize={21}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[GlobalColors.primaryColor]}
-            tintColor={GlobalColors.primaryColor}
+    <ImageBackground
+      source={require("../assets/Background.jpg")} // Adjust the path as necessary
+      style={styles.background}
+    >
+      <View style={styles.overlay}>
+        <View style={styles.innerContainer}>
+          <FlatList
+            data={posts}
+            keyExtractor={(item) => item.id?.toString()}
+            renderItem={renderPost}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={21}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={[GlobalColors.primaryColor]}
+                tintColor={GlobalColors.primaryColor}
+              />
+            }
+            ListHeaderComponent={
+              <ToggleButtons
+                activeTab={activeTab}
+                onToggle={handleToggle}
+                options={toggleOptions}
+              />
+            }
           />
-        }
-        ListHeaderComponent={
-          <ToggleButtons
-            activeTab={activeTab}
-            onToggle={handleToggle}
-            options={toggleOptions}
-          />
-        }
-      />
-    </View>
+        </View>
+      </View>
+    </ImageBackground>
   );
 }
 
 export default NewPosts;
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
-    backgroundColor: GlobalColors.primaryWhite,
-    paddingHorizontal: 16,
+    width: "100%",
+    height: "100%",
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(255, 255, 255, 0.8)", // White overlay with opacity
+  },
+  innerContainer: {
+    flex: 1,
+    paddingHorizontal: 16, // Retain the original padding
   },
   loadingContainer: {
     flex: 1,

@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   contentText: {
-    fontSize: 14,
+    fontSize: 15,
     color: GlobalColors.primaryBlack,
   },
   benefitContainer: {

@@ -31,6 +31,8 @@ import SearchScreen from "./screens/SearchScreen";
 import SingleChatScreen from "./screens/SingleChatScreen";
 import FollowListScreen from "./screens/FollowListScreen";
 import ChatProfileScreen from "./screens/ChatProfileScreen";
+import InstructionScreen from "./screens/InstructionScreen";
+import BalloonGame from "./screens/BalloonGame";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -223,7 +225,6 @@ function AuthenticatedStack() {
           headerTitleAlign: "center",
         }}
       />
-
       <Stack.Screen
         name="TaskNote"
         component={TaskNoteScreen}
@@ -232,7 +233,6 @@ function AuthenticatedStack() {
           headerTitleAlign: "center",
         }}
       />
-
       <Stack.Screen
         name="ConfirmPost"
         component={ConfirmPostScreen}
@@ -241,7 +241,6 @@ function AuthenticatedStack() {
           headerTitleAlign: "center",
         }}
       />
-
       <Stack.Screen
         name="PostDetail"
         component={PostDetailScreen}
@@ -252,7 +251,6 @@ function AuthenticatedStack() {
           },
         }}
       />
-
       <Stack.Screen
         name="EditProfile"
         component={EditProfileScreen}
@@ -261,7 +259,6 @@ function AuthenticatedStack() {
           headerTitleAlign: "center",
         }}
       />
-
       <Stack.Screen
         name="PersonalProfile"
         component={PersonalProfileScreen}
@@ -270,7 +267,6 @@ function AuthenticatedStack() {
           headerTitleAlign: "center",
         }}
       />
-
       <Stack.Screen
         name="Report"
         component={ReportScreen}
@@ -278,13 +274,9 @@ function AuthenticatedStack() {
           headerTitleAlign: "center",
         }}
       />
-
       <Stack.Screen name="SingleChat" component={SingleChatScreen} />
-
       <Stack.Screen name="ChatProfile" component={ChatProfileScreen} />
-
       <Stack.Screen name="Search" component={SearchScreen} />
-
       <Stack.Screen
         name="FollowList"
         component={FollowListScreen}
@@ -292,6 +284,21 @@ function AuthenticatedStack() {
           contentStyle: {
             backgroundColor: GlobalColors.pureWhite,
           },
+        }}
+      />
+      <Stack.Screen
+        name="Instruction"
+        component={InstructionScreen}
+        options={{
+          headerTitle: "Instructions",
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="Uplift"
+        component={BalloonGame}
+        options={{
+          headerShown: false,
         }}
       />
     </Stack.Navigator>

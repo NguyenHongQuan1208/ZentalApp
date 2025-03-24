@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import StartButton from "./StartButton";
+import { useNavigation } from "@react-navigation/native";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -20,6 +21,13 @@ const slideData = [
     name: "Uplift",
     color: "#BC6A0B",
     slogan: "The power of the positive",
+    instructions:
+      "Where your focus goes, your energy flows. Boost your mood and broaden your thoughts with Uplift— a game designed to help you stay on the lookout for the positive in your surroundings. Notice how shifting your awareness inside of a game might just affect what you focus on outside of it.",
+    benefits: [
+      "Train your mind for positivity",
+      "Lift your mood",
+      "Shift your focus away from negative thinking",
+    ],
     slideImg:
       "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Slider/uplift.jpg",
   },
@@ -29,6 +37,13 @@ const slideData = [
     name: "Negative Knockout",
     color: "#D500A9",
     slogan: "Wipe out your worries",
+    instructions:
+      "In this game, you'll visually eliminate negative thoughts and work toward a more positive mindset.\nOn the next screen, pick a few words to describe your negative thoughts and feelings, or add your own. Then, aim your slingshot at those words to get rid of them!",
+    benefits: [
+      "Reduce the impact of your negative thoughts",
+      "Stop ruminating on your worries",
+      "Feel empowered to control your thoughts",
+    ],
     slideImg:
       "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Slider/negative-knockout.jpg",
   },
@@ -38,6 +53,13 @@ const slideData = [
     name: "Breather",
     color: "#A4BE00",
     slogan: "Reduce Stress and find calm",
+    instructions:
+      "Consider Breather your instant stress reliever: it trains you to control your breathing to activate your body's natural \"calm\" response. It monitors your heart-rate variability (HRV) through your finger on the phone's camera, so make sure you sit straight but comfortably, and rest your hands on a table or your lap as you hold your phone.",
+    benefits: [
+      "Feel calmer in the moment",
+      "Reduce stress",
+      "Learn to control your breathing",
+    ],
     slideImg:
       "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Slider/breather.jpg",
   },
@@ -47,12 +69,18 @@ const slideData = [
     name: "Serenity Scene",
     color: "#D500A9",
     slogan: "Find a moment of peace",
+    instructions:
+      "Looking to dial down your anxiety? Our guided relaxation and meditation tracks can help reduce stress.\nChoose a nature scene to put your mind at ease. Set the session time and decide whether you want a guided session, ambient sounds, or both.",
+    benefits: [
+      "Reduce anxiety and stress",
+      "Ease mental fatigue",
+      "Feel more relaxed",
+    ],
     slideImg:
       "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Slider/senerity-scence.jpg",
   },
 ];
 
-// Add the last slide to the beginning and the first slide to the end of the array
 const extendedSlideData = [
   slideData[slideData.length - 1],
   ...slideData,
@@ -63,6 +91,7 @@ const SlideComponent = () => {
   const scrollViewRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(1);
   const scrollX = useRef(new Animated.Value(0)).current;
+  const navigation = useNavigation(); // Initialize the navigation hook
 
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -124,6 +153,18 @@ const SlideComponent = () => {
     goToSlide(nextIndex);
   };
 
+  const handleStartPress = () => {
+    const currentSlide = extendedSlideData[currentIndex];
+    navigation.navigate("Instruction", {
+      icon: currentSlide.icon,
+      name: currentSlide.name,
+      color: currentSlide.color,
+      slogan: currentSlide.slogan,
+      instructions: currentSlide.instructions,
+      benefits: currentSlide.benefits,
+    });
+  };
+
   return (
     <View style={styles.container}>
       <Animated.ScrollView
@@ -148,7 +189,7 @@ const SlideComponent = () => {
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.slogan}>{item.slogan}</Text>
               <StartButton
-                onPress={() => console.log(`Starting ${item.name}`)}
+                onPress={handleStartPress} // Updated onPress handler
               />
             </View>
           </View>
