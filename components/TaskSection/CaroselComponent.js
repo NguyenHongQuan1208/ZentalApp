@@ -89,7 +89,7 @@ const extendedSlideData = [
 
 const SlideComponent = () => {
   const scrollViewRef = useRef(null);
-  const [currentIndex, setCurrentIndex] = useState(1);
+  const [currentIndex, setCurrentIndex] = useState(0); // Set initial index to 0
   const scrollX = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation(); // Initialize the navigation hook
 
@@ -176,7 +176,7 @@ const SlideComponent = () => {
         onScroll={handleScroll}
         onMomentumScrollEnd={handleScrollEnd}
         scrollEventThrottle={16}
-        initialScrollIndex={1}
+        initialScrollIndex={0} // Set initial scroll index to 0
       >
         {extendedSlideData.map((item, index) => (
           <View key={index} style={styles.slide}>
