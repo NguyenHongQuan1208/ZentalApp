@@ -147,11 +147,7 @@ const BalloonGame = ({ navigation }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Ionicons
-            name="chevron-back"
-            size={30}
-            color={GlobalColors.secondaryColor}
-          />
+          <Ionicons name="chevron-back" size={30} />
         </TouchableOpacity>
         <TouchableOpacity onPress={togglePause} style={styles.pauseButton}>
           <Ionicons

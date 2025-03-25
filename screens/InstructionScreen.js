@@ -14,12 +14,22 @@ function InstructionScreen({ route }) {
   const navigation = useNavigation(); // Initialize the navigation hook
 
   const handleStartPress = () => {
-    // Check if the name is "Uplift" and navigate accordingly
-    if (name === "Uplift") {
-      navigation.navigate("Uplift"); // Navigate to Uplift screen
-    } else {
-      // Handle navigation for other screens if needed
-      // Example: navigation.navigate("OtherScreen", { params });
+    switch (name) {
+      case "Uplift":
+        navigation.navigate("Uplift"); // Navigate to Uplift screen
+        break;
+      case "Negative Knockout":
+      // navigation.navigate("NegativeKnockout"); // Navigate to Negative Knockout screen
+      // break;
+      case "Breather":
+        navigation.navigate("Breather"); // Navigate to Breather screen
+        break;
+      case "Serenity Scene":
+      // navigation.navigate("SerenityScene"); // Navigate to Serenity Scene screen
+      // break;
+      default:
+        console.warn("No matching screen found for:", name);
+        break;
     }
   };
 
