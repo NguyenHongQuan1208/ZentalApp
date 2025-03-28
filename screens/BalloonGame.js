@@ -8,6 +8,7 @@ import {
   Dimensions,
   Animated,
   ImageBackground,
+  Vibration, // Thêm Vibration
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { GlobalColors } from "../constants/GlobalColors";
@@ -15,8 +16,53 @@ import GameModal from "../components/BalloonGame/GameModal";
 
 const { width, height } = Dimensions.get("window");
 
-const positiveWords = ["Hope", "Love", "Joy", "Peace", "Strong", "Happy"];
-const negativeWords = ["Fear", "Sad", "Angry", "Hate", "Weak", "Pain"];
+const positiveWords = [
+  "Hope",
+  "Love",
+  "Joy",
+  "Peace",
+  "Strong",
+  "Happy",
+  "Kind",
+  "Good",
+  "Brave",
+  "Free",
+  "Wise",
+  "True",
+  "Calm",
+  "Shine",
+  "Bold",
+  "Glow",
+  "Play",
+  "Lift",
+  "Rise",
+  "Trust",
+  "Heal",
+];
+
+const negativeWords = [
+  "Fear",
+  "Sad",
+  "Angry",
+  "Hate",
+  "Weak",
+  "Pain",
+  "Loss",
+  "Dull",
+  "Cold",
+  "Sick",
+  "Dark",
+  "Tear",
+  "Fail",
+  "Hurt",
+  "Broke",
+  "Worn",
+  "Sour",
+  "Grim",
+  "Bash",
+  "Gloom",
+  "Foul",
+];
 
 const BalloonGame = ({ navigation }) => {
   const [score, setScore] = useState(0);
@@ -27,6 +73,7 @@ const BalloonGame = ({ navigation }) => {
   const [isGameOver, setIsGameOver] = useState(false);
 
   const animations = useRef(new Map()).current;
+  const explodeAnimations = useRef(new Map()).current; // Thêm để quản lý animation nổ
 
   const spawnBalloon = () => {
     if (isPaused || !isGameStarted) return;
@@ -42,6 +89,7 @@ const BalloonGame = ({ navigation }) => {
       isPositive,
       x: Math.random() * (width - 120),
       y: new Animated.Value(height),
+      scale: new Animated.Value(1), // Thêm scale để tạo hiệu ứng nổ
     };
 
     setBalloons((prev) => [...prev, balloon]);
@@ -64,14 +112,39 @@ const BalloonGame = ({ navigation }) => {
   const handleBalloonPress = (balloon) => {
     if (isPaused || !isGameStarted) return;
 
-    if (balloon.isPositive) {
-      setScore((prev) => prev + 1);
-    } else {
-      setLives((prev) => prev - 1);
-    }
     animations.get(balloon.id)?.stop();
-    setBalloons((prev) => prev.filter((b) => b.id !== balloon.id));
-    animations.delete(balloon.id);
+
+    if (balloon.isPositive) {
+      // Hiệu ứng cho balloon tích cực
+      setScore((prev) => prev + 1);
+      setBalloons((prev) => prev.filter((b) => b.id !== balloon.id));
+      animations.delete(balloon.id);
+    } else {
+      // Hiệu ứng cho balloon tiêu cực
+      setLives((prev) => prev - 1);
+      Vibration.vibrate(200); // Rung trong 200ms
+
+      // Animation nổ: phóng to rồi mờ dần
+      const explodeAnimation = Animated.sequence([
+        Animated.timing(balloon.scale, {
+          toValue: 1.5, // Phóng to
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(balloon.scale, {
+          toValue: 0, // Thu nhỏ và biến mất
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]);
+
+      explodeAnimations.set(balloon.id, explodeAnimation);
+      explodeAnimation.start(() => {
+        setBalloons((prev) => prev.filter((b) => b.id !== balloon.id));
+        animations.delete(balloon.id);
+        explodeAnimations.delete(balloon.id);
+      });
+    }
   };
 
   useEffect(() => {
@@ -83,14 +156,11 @@ const BalloonGame = ({ navigation }) => {
     setIsPaused((prev) => {
       const newPausedState = !prev;
       if (newPausedState) {
-        // Khi pause, dừng tất cả animation
         animations.forEach((anim) => anim.stop());
       } else {
-        // Khi resume, tiếp tục animation từ vị trí hiện tại
         balloons.forEach((balloon) => {
           const currentY = balloon.y.__getValue();
           if (currentY > -180) {
-            // Chỉ tiếp tục nếu balloon chưa ra khỏi màn hình
             const remainingDistance = -180 - currentY;
             const remainingTime = (remainingDistance / (height + 180)) * 5000;
 
@@ -121,14 +191,15 @@ const BalloonGame = ({ navigation }) => {
     setLives(3);
     setBalloons([]);
     setIsPaused(false);
-    animations.clear(); // Xóa tất cả animation khi bắt đầu lại
+    animations.clear();
+    explodeAnimations.clear();
   };
 
   const handleGameOver = () => {
     setIsGameOver(true);
     setIsGameStarted(false);
     setIsPaused(true);
-    animations.forEach((anim) => anim.stop()); // Dừng tất cả animation khi game over
+    animations.forEach((anim) => anim.stop());
   };
 
   useEffect(() => {
@@ -171,7 +242,11 @@ const BalloonGame = ({ navigation }) => {
           style={[
             styles.balloonContainer,
             {
-              transform: [{ translateX: balloon.x }, { translateY: balloon.y }],
+              transform: [
+                { translateX: balloon.x },
+                { translateY: balloon.y },
+                { scale: balloon.scale }, // Thêm scale cho hiệu ứng nổ
+              ],
             },
           ]}
         >
@@ -249,14 +324,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   score: {
-    fontSize: 22, // Tăng kích thước chữ
+    fontSize: 22,
     fontWeight: "bold",
-    color: "#2E7D32", // Màu xanh lá đậm cho Score
-    backgroundColor: "rgba(255, 255, 255, 0.9)", // Nền trắng mờ
-    paddingVertical: 5, // Padding dọc
-    paddingHorizontal: 15, // Padding ngang
-    borderRadius: 10, // Bo góc
-    overflow: "hidden", // Đảm bảo bo góc không bị cắt
+    color: "#2E7D32",
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.3,
@@ -264,14 +339,14 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   lives: {
-    fontSize: 22, // Tăng kích thước chữ
+    fontSize: 22,
     fontWeight: "bold",
-    color: "#D32F2F", // Màu đỏ đậm cho Lives
-    backgroundColor: "rgba(255, 255, 255, 0.9)", // Nền trắng mờ
-    paddingVertical: 5, // Padding dọc
-    paddingHorizontal: 15, // Padding ngang
-    borderRadius: 10, // Bo góc
-    overflow: "hidden", // Đảm bảo bo góc không bị cắt
+    color: "#D32F2F",
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.3,

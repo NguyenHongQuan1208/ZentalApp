@@ -34,6 +34,7 @@ import ChatProfileScreen from "./screens/ChatProfileScreen";
 import InstructionScreen from "./screens/InstructionScreen";
 import BalloonGame from "./screens/BalloonGame";
 import Breather from "./screens/Breather";
+import SerenitySceneScreen from "./screens/SerenitySceneScreen";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -122,7 +123,7 @@ function AuthStack() {
       screenOptions={{
         headerStyle: { backgroundColor: GlobalColors.primaryColor },
         headerTintColor: "white",
-        contentStyle: { backgroundColor: GlobalColors.primaryGrey },
+        contentStyle: { backgroundColor: GlobalColors.primaryWhite },
       }}
     >
       <Stack.Screen
@@ -306,6 +307,14 @@ function AuthenticatedStack() {
       <Stack.Screen
         name="Breather"
         component={Breather}
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="SerenityScene"
+        component={SerenitySceneScreen}
         options={{
           headerShown: false,
         }}

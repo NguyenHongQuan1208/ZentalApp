@@ -25,8 +25,8 @@ function InstructionScreen({ route }) {
         navigation.navigate("Breather"); // Navigate to Breather screen
         break;
       case "Serenity Scene":
-      // navigation.navigate("SerenityScene"); // Navigate to Serenity Scene screen
-      // break;
+        navigation.navigate("SerenityScene"); // Navigate to Serenity Scene screen
+        break;
       default:
         console.warn("No matching screen found for:", name);
         break;
