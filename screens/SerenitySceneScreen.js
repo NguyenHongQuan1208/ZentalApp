@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { GlobalColors } from "../constants/GlobalColors";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -10,19 +9,19 @@ const videoScenes = [
         id: "1",
         title: "Ocean Waves",
         thumbnail: "/placeholder.svg?height=200&width=300",
-        videoUri: "https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4",
+        videoUri: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Video/OceanWaves.mp4",
     },
     {
         id: "2",
         title: "Forest Stream",
         thumbnail: "/placeholder.svg?height=200&width=300",
-        videoUri: "https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4",
+        videoUri: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Video/ForestStream.mp4",
     },
     {
         id: "3",
         title: "Mountain View",
         thumbnail: "/placeholder.svg?height=200&width=300",
-        videoUri: "https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4",
+        videoUri: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Video/MountainView.mp4",
     },
     {
         id: "4",
@@ -34,23 +33,22 @@ const videoScenes = [
         id: "5",
         title: "Rainy Window",
         thumbnail: "/placeholder.svg?height=200&width=300",
-        videoUri: "https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4",
+        videoUri: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Video/RainyWindow.mp4",
     },
     {
         id: "6",
         title: "Fireplace",
         thumbnail: "/placeholder.svg?height=200&width=300",
-        videoUri: "https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4",
+        videoUri: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Video/Fireplace.mp4",
     },
 ];
 
 // Duration options in minutes
 const durationOptions = [2, 5, 10];
 
-export default function SerenitySceneScreen() {
+export default function SerenitySceneScreen({ navigation }) {
     const [selectedVideoId, setSelectedVideoId] = useState(null);
     const [selectedDuration, setSelectedDuration] = useState(null);
-    const navigation = useNavigation();
 
     const handleVideoSelect = (videoId) => {
         setSelectedVideoId(videoId);
@@ -63,7 +61,7 @@ export default function SerenitySceneScreen() {
     const handleStartPress = () => {
         if (selectedVideoId && selectedDuration) {
             const selectedScene = videoScenes.find(scene => scene.id === selectedVideoId);
-            navigation.navigate("VideoPlayerScreen", {
+            navigation.navigate("VideoPlayer", {
                 videoUri: selectedScene.videoUri,
                 duration: selectedDuration * 60,
             });

@@ -110,13 +110,13 @@ const Breather = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Video
-        source={require("../assets/relax-ocean.mp4")}
+        source={{ uri: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Breather/relax-ocean.mp4" }}
         ref={videoRef}
         style={StyleSheet.absoluteFill}
         resizeMode="cover"
         isLooping={true}
         shouldPlay={isPlaying}
-        isMuted={true}
+        isMuted={false}
       />
 
       <LinearGradient
@@ -179,8 +179,8 @@ const Breather = ({ navigation }) => {
           {phase === "Inhale"
             ? "Breathe in deeply..."
             : phase === "Hold"
-            ? "Hold your breath..."
-            : "Release slowly..."}
+              ? "Hold your breath..."
+              : "Release slowly..."}
         </Text>
 
         <TouchableOpacity

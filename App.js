@@ -35,6 +35,7 @@ import InstructionScreen from "./screens/InstructionScreen";
 import BalloonGame from "./screens/BalloonGame";
 import Breather from "./screens/Breather";
 import SerenitySceneScreen from "./screens/SerenitySceneScreen";
+import VideoPlayerScreen from "./screens/VideoPlayerScreen";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -319,6 +320,13 @@ function AuthenticatedStack() {
           headerShown: false,
         }}
       />
+
+      <Stack.Screen
+        name="VideoPlayer"
+        component={VideoPlayerScreen}
+        options={{
+          headerShown: false,
+        }} />
     </Stack.Navigator>
   );
 }
