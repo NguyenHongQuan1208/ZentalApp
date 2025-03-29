@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 18,
     fontWeight: "bold",
-    color: GlobalColors.primaryBlack,
+    color: GlobalColors.pureWhite,
     flex: 1,
   },
 });

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from "react-native";
 import { Video, ResizeMode } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
+import BackButton from "../components/ui/BackButton";
 
 export default function VideoPlayerScreen({ route, navigation }) {
     const { videoUri, duration } = route.params;
@@ -84,9 +85,7 @@ export default function VideoPlayerScreen({ route, navigation }) {
             />
 
             <View style={styles.overlay}>
-                <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-                    <Ionicons name="chevron-back" color="white" size={24} />
-                </TouchableOpacity>
+                <BackButton onPress={handleBackPress} />
 
                 <View style={styles.controlsContainer}>
                     <TouchableOpacity onPress={togglePlayPause} style={styles.controlButton}>

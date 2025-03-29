@@ -18,8 +18,8 @@ export default LongButton;
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 6,
-    paddingVertical: 6,
+    borderRadius: 20,
+    paddingVertical: 8,
     paddingHorizontal: 12,
     width: "90%",
     backgroundColor: GlobalColors.primaryColor,

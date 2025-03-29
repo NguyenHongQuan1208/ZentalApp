@@ -36,6 +36,7 @@ import BalloonGame from "./screens/BalloonGame";
 import Breather from "./screens/Breather";
 import SerenitySceneScreen from "./screens/SerenitySceneScreen";
 import VideoPlayerScreen from "./screens/VideoPlayerScreen";
+import NegativeKnockout from "./screens/NegativeKnockout";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -48,8 +49,8 @@ function AppOverview() {
         headerTintColor: "white",
         headerTitleAlign: "center",
         tabBarStyle: { backgroundColor: GlobalColors.primaryColor },
-        tabBarActiveTintColor: GlobalColors.primaryBlack,
-        tabBarInactiveTintColor: GlobalColors.inActivetabBarColor,
+        tabBarActiveTintColor: GlobalColors.pureWhite,
+        tabBarInactiveTintColor: GlobalColors.lightGray,
       })}
     >
       <BottomTabs.Screen
@@ -168,6 +169,14 @@ function AuthStack() {
     </Stack.Navigator>
   );
 }
+function NegativeKnockoutStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="NegativeKnockout" component={NegativeKnockout} />
+    </Stack.Navigator>
+  );
+}
+
 
 function AuthenticatedStack() {
   const authCtx = useContext(AuthContext);
@@ -326,7 +335,17 @@ function AuthenticatedStack() {
         component={VideoPlayerScreen}
         options={{
           headerShown: false,
-        }} />
+        }}
+      />
+
+      {/* Add NegativeKnockoutStack as a Screen */}
+      <Stack.Screen
+        name="NegativeKnockoutStack"
+        component={NegativeKnockoutStack}
+        options={{
+          headerShown: false, // or true based on your requirement
+        }}
+      />
     </Stack.Navigator>
   );
 }

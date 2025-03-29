@@ -1,3 +1,4 @@
+// Breather.js
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
@@ -10,27 +11,24 @@ import {
 import { CountdownCircleTimer } from "react-native-countdown-circle-timer";
 import { Video } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons"; // Import Ionicons
+import BackButton from '../components/ui/BackButton'; // Import the BackButton component
 
 const { width } = Dimensions.get("window");
 const circleSize = width * 0.7;
 
 const Breather = ({ navigation }) => {
-  // Accept navigation as a prop
   const [isPlaying, setIsPlaying] = useState(false);
   const [phase, setPhase] = useState("Inhale");
   const [key, setKey] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const videoRef = useRef(null);
 
-  // Duration for each phase (seconds)
   const phases = {
     Inhale: 4,
     Hold: 4,
     Exhale: 6,
   };
 
-  // Animation setup
   useEffect(() => {
     if (isPlaying) {
       startFadeAnimation();
@@ -117,19 +115,17 @@ const Breather = ({ navigation }) => {
         isLooping={true}
         shouldPlay={isPlaying}
         isMuted={false}
+        volume={0.3}
       />
 
       <LinearGradient
         colors={["rgba(0,0,0,0.3)", "rgba(0,0,0,0.5)"]}
         style={StyleSheet.absoluteFill}
       />
-      {/* Back Button */}
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.goBack()} // Navigate back
-      >
-        <Ionicons name="chevron-back" size={30} />
-      </TouchableOpacity>
+
+      {/* Use the BackButton component */}
+      <BackButton onPress={() => navigation.goBack()} style={{ marginTop: 32, marginLeft: 16 }} />
+
       <View style={styles.content}>
         <Text style={styles.title}>Mindful Breathing</Text>
 
@@ -209,23 +205,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
-  },
-  backButton: {
-    position: "absolute", // Đặt vị trí tuyệt đối
-    top: 40, // Cách đỉnh màn hình 40px
-    left: 20, // Cách cạnh trái 20px
-    width: 50, // Định kích thước cố định
-    height: 50,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-    borderRadius: 25, // Bo tròn hoàn toàn
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 3, // Đảm bảo nút luôn ở trên cùng
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
   },
   title: {
     fontSize: 32,

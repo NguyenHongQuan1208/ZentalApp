@@ -3,6 +3,7 @@ import { StyleSheet, View } from "react-native";
 
 import Button from "../ui/Button";
 import Input from "./Input";
+import { GlobalColors } from "../../constants/GlobalColors";
 
 function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
   const [enteredEmail, setEnteredEmail] = useState("");

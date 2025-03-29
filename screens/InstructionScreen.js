@@ -19,8 +19,8 @@ function InstructionScreen({ route }) {
         navigation.navigate("Uplift"); // Navigate to Uplift screen
         break;
       case "Negative Knockout":
-      // navigation.navigate("NegativeKnockout"); // Navigate to Negative Knockout screen
-      // break;
+        navigation.navigate("NegativeKnockoutStack", { screen: "NegativeKnockout" }); // Navigate to Negative Knockout screen
+        break;
       case "Breather":
         navigation.navigate("Breather"); // Navigate to Breather screen
         break;

@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { GlobalColors } from "../../constants/GlobalColors";
 
 function FlatButton({ children, onPress }) {
   return (
@@ -25,6 +26,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     textAlign: "center",
-    color: "white",
+    color: GlobalColors.primaryColor,
   },
 });

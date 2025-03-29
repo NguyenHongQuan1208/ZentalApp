@@ -73,7 +73,7 @@ export default DecisionBox;
 const styles = StyleSheet.create({
   box: {
     padding: 8,
-    borderRadius: 10,
+    borderRadius: 20,
     margin: 16,
     alignItems: "center",
     shadowColor: "#000",
@@ -95,9 +95,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalContent: {
-    backgroundColor: GlobalColors.secondBlack,
+    backgroundColor: GlobalColors.pureWhite,
+    borderWidth: 2,
+    borderColor: GlobalColors.primaryColor,
     padding: 20,
-    borderRadius: 10,
+    borderRadius: 20,
     width: "80%",
     alignItems: "center",
     shadowColor: "#000",

@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     left: 40,
     fontSize: 18,
     fontWeight: "bold",
-    backgroundColor: GlobalColors.primaryColor,
+    backgroundColor: GlobalColors.secondColor,
     color: "black",
     textAlign: "center",
     textShadowColor: "white",

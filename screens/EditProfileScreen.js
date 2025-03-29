@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 18,
     fontWeight: "600",
-    color: GlobalColors.thirdColor,
+    color: GlobalColors.primaryColor,
     marginBottom: 8,
   },
   input: {
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   saveButton: {
-    backgroundColor: GlobalColors.thirdColor,
+    backgroundColor: GlobalColors.primaryColor,
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 10,

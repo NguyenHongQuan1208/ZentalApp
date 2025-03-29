@@ -1,5 +1,5 @@
 export const GlobalColors = {
-  primaryColor: "#A2DF7F",
+  primaryColor: "#04764E",
   secondColor: "#B4F78D",
   thirdColor: "#A4BE00",
   primaryWhite: "#F5F5F5",
