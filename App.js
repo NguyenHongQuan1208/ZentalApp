@@ -177,7 +177,6 @@ function NegativeKnockoutStack() {
   );
 }
 
-
 function AuthenticatedStack() {
   const authCtx = useContext(AuthContext);
   function logoutHandler() {
