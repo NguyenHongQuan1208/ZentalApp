@@ -1,136 +1,181 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from "react-native";
 import { GlobalColors } from "../constants/GlobalColors";
 import { Ionicons } from "@expo/vector-icons";
 
-// Sample video data
-const videoScenes = [
+// Constants
+const VIDEO_SCENES = [
     {
         id: "1",
         title: "Ocean Waves",
-        thumbnail: "/placeholder.svg?height=200&width=300",
+        thumbnail: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Thumbnail/ocean-waves.jpg",
         videoUri: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Video/OceanWaves.mp4",
     },
     {
         id: "2",
         title: "Forest Stream",
-        thumbnail: "/placeholder.svg?height=200&width=300",
+        thumbnail: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Thumbnail/forest-stream.jpg",
         videoUri: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Video/ForestStream.mp4",
     },
     {
         id: "3",
         title: "Mountain View",
-        thumbnail: "/placeholder.svg?height=200&width=300",
+        thumbnail: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Thumbnail/mountain-view.jpg",
         videoUri: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Video/MountainView.mp4",
     },
     {
         id: "4",
         title: "Sunset Beach",
-        thumbnail: "/placeholder.svg?height=200&width=300",
-        videoUri: "https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4",
+        thumbnail: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Thumbnail/sunset-beach.jpg",
+        videoUri: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Video/SunsetBeach.mp4",
     },
     {
         id: "5",
         title: "Rainy Window",
-        thumbnail: "/placeholder.svg?height=200&width=300",
+        thumbnail: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Thumbnail/rainy-window.jpg",
         videoUri: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Video/RainyWindow.mp4",
     },
     {
         id: "6",
         title: "Fireplace",
-        thumbnail: "/placeholder.svg?height=200&width=300",
+        thumbnail: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Thumbnail/fireplace.jpg",
         videoUri: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Serenity/Video/Fireplace.mp4",
     },
 ];
 
-// Duration options in minutes
-const durationOptions = [2, 5, 10];
+const DURATION_OPTIONS = [2, 5, 10];
 
 export default function SerenitySceneScreen({ navigation }) {
     const [selectedVideoId, setSelectedVideoId] = useState(null);
     const [selectedDuration, setSelectedDuration] = useState(null);
 
-    const handleVideoSelect = (videoId) => {
+    const { width } = Dimensions.get("window");
+    const itemWidth = useMemo(() => (width - 48) / 2, [width]);
+    const isStartDisabled = useMemo(() => !selectedVideoId || !selectedDuration, [selectedVideoId, selectedDuration]);
+
+    const handleVideoSelect = useCallback((videoId) => {
         setSelectedVideoId(videoId);
-    };
+    }, []);
 
-    const handleDurationSelect = (duration) => {
+    const handleDurationSelect = useCallback((duration) => {
         setSelectedDuration(duration);
-    };
+    }, []);
 
-    const handleStartPress = () => {
-        if (selectedVideoId && selectedDuration) {
-            const selectedScene = videoScenes.find(scene => scene.id === selectedVideoId);
+    const handleStartPress = useCallback(() => {
+        if (!isStartDisabled) {
+            const selectedScene = VIDEO_SCENES.find(scene => scene.id === selectedVideoId);
             navigation.navigate("VideoPlayer", {
                 videoUri: selectedScene.videoUri,
                 duration: selectedDuration * 60,
             });
         }
-    };
+    }, [isStartDisabled, selectedVideoId, selectedDuration, navigation]);
 
-    const handleGoBack = () => {
+    const handleGoBack = useCallback(() => {
         navigation.goBack();
-    };
-
-    const { width } = Dimensions.get("window");
-    const itemWidth = (width - 48) / 2;
+    }, [navigation]);
 
     return (
         <View style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-                {/* Back Button */}
-                <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
+            >
+                <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={handleGoBack}
+                    activeOpacity={0.7}
+                >
                     <Ionicons name="chevron-back" size={28} color={GlobalColors.primaryBlack} />
                 </TouchableOpacity>
 
                 <Text style={styles.title}>Choose a Serenity Scene</Text>
 
                 <View style={styles.thumbnailGrid}>
-                    {videoScenes.map((scene) => (
-                        <TouchableOpacity
+                    {VIDEO_SCENES.map((scene) => (
+                        <SceneThumbnail
                             key={scene.id}
-                            style={[
-                                styles.thumbnailContainer,
-                                { width: itemWidth },
-                                selectedVideoId === scene.id && styles.selectedThumbnail,
-                            ]}
-                            onPress={() => handleVideoSelect(scene.id)}
-                        >
-                            <Image source={{ uri: scene.thumbnail }} style={styles.thumbnail} />
-                            <Text style={styles.sceneTitle}>{scene.title}</Text>
-                        </TouchableOpacity>
+                            scene={scene}
+                            width={itemWidth}
+                            isSelected={selectedVideoId === scene.id}
+                            onSelect={handleVideoSelect}
+                        />
                     ))}
                 </View>
 
                 <Text style={styles.sectionTitle}>Select Duration</Text>
                 <View style={styles.durationContainer}>
-                    {durationOptions.map((duration) => (
-                        <TouchableOpacity
+                    {DURATION_OPTIONS.map((duration) => (
+                        <DurationOption
                             key={duration}
-                            style={[styles.durationOption, selectedDuration === duration && styles.selectedDuration]}
-                            onPress={() => handleDurationSelect(duration)}
-                        >
-                            <Text style={[styles.durationText, selectedDuration === duration && styles.selectedDurationText]}>
-                                {duration} min
-                            </Text>
-                        </TouchableOpacity>
+                            duration={duration}
+                            isSelected={selectedDuration === duration}
+                            onSelect={handleDurationSelect}
+                        />
                     ))}
                 </View>
             </ScrollView>
 
-            {/* Fixed Start Button at bottom */}
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                    style={[styles.startButton, (!selectedVideoId || !selectedDuration) && styles.disabledButton]}
-                    onPress={handleStartPress}
-                    disabled={!selectedVideoId || !selectedDuration}
-                >
-                    <Text style={styles.startButtonText}>Start</Text>
-                </TouchableOpacity>
-            </View>
+            <StartButton
+                onPress={handleStartPress}
+                disabled={isStartDisabled}
+            />
         </View>
     );
 }
+
+const SceneThumbnail = React.memo(({ scene, width, isSelected, onSelect }) => (
+    <TouchableOpacity
+        style={[
+            styles.thumbnailContainer,
+            { width },
+            isSelected && styles.selectedThumbnail,
+        ]}
+        onPress={() => onSelect(scene.id)}
+        activeOpacity={0.7}
+    >
+        <Image
+            source={{ uri: scene.thumbnail }}
+            style={styles.thumbnail}
+            resizeMode="cover"
+        />
+        <Text style={styles.sceneTitle}>{scene.title}</Text>
+    </TouchableOpacity>
+));
+
+const DurationOption = React.memo(({ duration, isSelected, onSelect }) => (
+    <TouchableOpacity
+        style={[
+            styles.durationOption,
+            isSelected && styles.selectedDuration,
+        ]}
+        onPress={() => onSelect(duration)}
+        activeOpacity={0.7}
+    >
+        <Text style={[
+            styles.durationText,
+            isSelected && styles.selectedDurationText
+        ]}>
+            {duration} min
+        </Text>
+    </TouchableOpacity>
+));
+
+const StartButton = React.memo(({ onPress, disabled }) => (
+    <View style={styles.buttonContainer}>
+        <TouchableOpacity
+            style={[
+                styles.startButton,
+                disabled && styles.disabledButton
+            ]}
+            onPress={onPress}
+            disabled={disabled}
+            activeOpacity={0.7}
+        >
+            <Text style={styles.startButtonText}>Start</Text>
+        </TouchableOpacity>
+    </View>
+));
 
 const styles = StyleSheet.create({
     container: {
@@ -140,11 +185,12 @@ const styles = StyleSheet.create({
     scrollContent: {
         padding: 16,
         paddingTop: 40,
-        paddingBottom: 100, // Extra padding to avoid button overlap
+        paddingBottom: 100,
     },
     backButton: {
         marginTop: 16,
         marginBottom: 10,
+        alignSelf: 'flex-start',
     },
     title: {
         fontSize: 24,
@@ -174,15 +220,18 @@ const styles = StyleSheet.create({
     thumbnail: {
         width: "100%",
         height: 120,
-        borderRadius: 6,
-        resizeMode: "cover",
     },
     sceneTitle: {
-        marginTop: 8,
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: 8,
         textAlign: "center",
         fontWeight: "500",
-        color: GlobalColors.primaryBlack,
+        color: GlobalColors.pureWhite,
         fontSize: 14,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     sectionTitle: {
         fontSize: 18,
@@ -206,12 +255,12 @@ const styles = StyleSheet.create({
     selectedDuration: {
         backgroundColor: GlobalColors.primaryColor,
     },
-    selectedDurationText: {
-        color: GlobalColors.pureWhite,
-    },
     durationText: {
         fontWeight: "500",
         color: GlobalColors.primaryBlack,
+    },
+    selectedDurationText: {
+        color: GlobalColors.pureWhite,
     },
     buttonContainer: {
         position: 'absolute',
@@ -225,7 +274,7 @@ const styles = StyleSheet.create({
     },
     startButton: {
         backgroundColor: GlobalColors.primaryColor,
-        padding: 10,
+        padding: 16,
         borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',

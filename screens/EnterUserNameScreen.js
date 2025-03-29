@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 24,
     fontWeight: "600",
-    color: GlobalColors.thirdColor,
+    color: GlobalColors.primaryColor,
     marginBottom: 12,
   },
   input: {
@@ -140,10 +140,10 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   button: {
-    backgroundColor: GlobalColors.thirdColor, // Button color
+    backgroundColor: GlobalColors.primaryColor, // Button color
     paddingVertical: 10,
     paddingHorizontal: 40,
-    borderRadius: 10,
+    borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
     width: "100%",

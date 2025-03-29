@@ -8,11 +8,12 @@ import {
   Dimensions,
   Animated,
   ImageBackground,
-  Vibration, // Thêm Vibration
+  Vibration,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { GlobalColors } from "../constants/GlobalColors";
 import GameModal from "../components/BalloonGame/GameModal";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
 
 const { width, height } = Dimensions.get("window");
 
@@ -66,6 +67,7 @@ const negativeWords = [
 
 const BalloonGame = ({ navigation }) => {
   const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(0); // State for high score
   const [lives, setLives] = useState(3);
   const [balloons, setBalloons] = useState([]);
   const [isPaused, setIsPaused] = useState(false);
@@ -73,7 +75,7 @@ const BalloonGame = ({ navigation }) => {
   const [isGameOver, setIsGameOver] = useState(false);
 
   const animations = useRef(new Map()).current;
-  const explodeAnimations = useRef(new Map()).current; // Thêm để quản lý animation nổ
+  const explodeAnimations = useRef(new Map()).current;
 
   const spawnBalloon = () => {
     if (isPaused || !isGameStarted) return;
@@ -89,7 +91,7 @@ const BalloonGame = ({ navigation }) => {
       isPositive,
       x: Math.random() * (width - 120),
       y: new Animated.Value(height),
-      scale: new Animated.Value(1), // Thêm scale để tạo hiệu ứng nổ
+      scale: new Animated.Value(1),
     };
 
     setBalloons((prev) => [...prev, balloon]);
@@ -115,24 +117,21 @@ const BalloonGame = ({ navigation }) => {
     animations.get(balloon.id)?.stop();
 
     if (balloon.isPositive) {
-      // Hiệu ứng cho balloon tích cực
       setScore((prev) => prev + 1);
       setBalloons((prev) => prev.filter((b) => b.id !== balloon.id));
       animations.delete(balloon.id);
     } else {
-      // Hiệu ứng cho balloon tiêu cực
       setLives((prev) => prev - 1);
-      Vibration.vibrate(200); // Rung trong 200ms
+      Vibration.vibrate(200);
 
-      // Animation nổ: phóng to rồi mờ dần
       const explodeAnimation = Animated.sequence([
         Animated.timing(balloon.scale, {
-          toValue: 1.5, // Phóng to
+          toValue: 1.5,
           duration: 150,
           useNativeDriver: true,
         }),
         Animated.timing(balloon.scale, {
-          toValue: 0, // Thu nhỏ và biến mất
+          toValue: 0,
           duration: 150,
           useNativeDriver: true,
         }),
@@ -200,7 +199,24 @@ const BalloonGame = ({ navigation }) => {
     setIsGameStarted(false);
     setIsPaused(true);
     animations.forEach((anim) => anim.stop());
+
+    // Check and update high score
+    if (score > highScore) {
+      setHighScore(score);
+      AsyncStorage.setItem("highScore", score.toString()); // Save new high score
+    }
   };
+
+  useEffect(() => {
+    const loadHighScore = async () => {
+      const storedHighScore = await AsyncStorage.getItem("highScore");
+      if (storedHighScore) {
+        setHighScore(parseInt(storedHighScore, 10));
+      }
+    };
+
+    loadHighScore();
+  }, []);
 
   useEffect(() => {
     if (lives <= 0) {
@@ -220,6 +236,7 @@ const BalloonGame = ({ navigation }) => {
         >
           <Ionicons name="chevron-back" size={30} />
         </TouchableOpacity>
+        <Text style={styles.highScore}>High Score: {highScore}</Text>
         <TouchableOpacity onPress={togglePause} style={styles.pauseButton}>
           <Ionicons
             name={isPaused ? "play" : "pause"}
@@ -232,6 +249,7 @@ const BalloonGame = ({ navigation }) => {
       <View style={styles.scoreBoard}>
         <View style={styles.scoreBoardTextContainer}>
           <Text style={styles.score}>Score: {score}</Text>
+
           <Text style={styles.lives}>Lives: {lives}</Text>
         </View>
       </View>
@@ -245,7 +263,7 @@ const BalloonGame = ({ navigation }) => {
               transform: [
                 { translateX: balloon.x },
                 { translateY: balloon.y },
-                { scale: balloon.scale }, // Thêm scale cho hiệu ứng nổ
+                { scale: balloon.scale },
               ],
             },
           ]}
@@ -327,6 +345,21 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     color: "#2E7D32",
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  highScore: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#FFD700", // Gold color for high score
     backgroundColor: "rgba(255, 255, 255, 0.9)",
     paddingVertical: 5,
     paddingHorizontal: 15,
