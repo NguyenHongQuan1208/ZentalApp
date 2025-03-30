@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, TextInput, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, TextInput, FlatList, Image, ScrollView } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-// Màu sắc chung
+// Color scheme
 const COLORS = {
     primary: '#6a1b9a',
     secondary: '#9c27b0',
@@ -25,18 +26,19 @@ const SelectionScreen = ({
 
     const handleAddCustomMonster = () => {
         if (selectedMonsters.length >= 5) {
-            Alert.alert("Giới hạn", "Chỉ được chọn tối đa 5 cảm xúc!");
+            Alert.alert("Limit", "You can only select up to 5 emotions!");
             return;
         }
 
         if (!customMonsterName.trim()) {
-            Alert.alert("Lỗi", "Vui lòng nhập tên cảm xúc!");
+            Alert.alert("Error", "Please enter an emotion name!");
             return;
         }
 
         const newMonster = {
             id: Date.now(),
-            name: customMonsterName.trim()
+            name: customMonsterName.trim(),
+            image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster-default.png"
         };
 
         onAddCustomMonster(newMonster);
@@ -45,6 +47,11 @@ const SelectionScreen = ({
 
     const renderSelectedItem = ({ item }) => (
         <View style={styles.selectedItem}>
+            <Image
+                source={{ uri: item.image }}
+                style={styles.selectedImage}
+                resizeMode="contain"
+            />
             <Text style={styles.selectedItemText}>{item.name}</Text>
             <TouchableOpacity
                 style={styles.removeButton}
@@ -57,71 +64,92 @@ const SelectionScreen = ({
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Chọn cảm xúc tiêu cực</Text>
-            <Text style={styles.subtitle}>Chọn 3-5 cảm xúc để loại bỏ</Text>
-
-            {/* Danh sách đã chọn */}
-            <View style={styles.selectedContainer}>
-                <Text style={styles.sectionTitle}>Đã chọn ({selectedMonsters.length}/5):</Text>
-                <FlatList
-                    horizontal
-                    data={selectedMonsters}
-                    renderItem={renderSelectedItem}
-                    keyExtractor={item => item.id.toString()}
-                    contentContainerStyle={styles.selectedList}
-                    showsHorizontalScrollIndicator={false}
-                />
-            </View>
-
-            {/* Thêm cảm xúc mới */}
-            <View style={styles.addContainer}>
-                <Text style={styles.sectionTitle}>Thêm cảm xúc mới:</Text>
-                <View style={styles.inputRow}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Nhập cảm xúc của bạn..."
-                        value={customMonsterName}
-                        onChangeText={setCustomMonsterName}
-                    />
-                    <TouchableOpacity
-                        style={styles.addButton}
-                        onPress={handleAddCustomMonster}
-                    >
-                        <Text style={styles.addButtonText}>Thêm</Text>
+            {/* Scrollable content */}
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+            >
+                {/* Header với nút back và tiêu đề */}
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                        <Ionicons name="chevron-back" size={24} color={COLORS.primary} />
                     </TouchableOpacity>
+                    <Text style={styles.title}>Select Negative Emotions</Text>
+                    <View style={styles.headerSpacer} />
                 </View>
-            </View>
 
-            {/* Danh sách cảm xúc mặc định */}
-            <View style={styles.defaultContainer}>
-                <Text style={styles.sectionTitle}>Cảm xúc mặc định:</Text>
-                <View style={styles.monsterGrid}>
-                    {monsters.map((monster) => (
+                {/* Selected emotions */}
+                <View style={styles.selectedContainer}>
+                    <Text style={styles.sectionTitle}>Selected ({selectedMonsters.length}/5):</Text>
+                    {selectedMonsters.length > 0 ? (
+                        <FlatList
+                            horizontal
+                            data={selectedMonsters}
+                            renderItem={renderSelectedItem}
+                            keyExtractor={item => item.id.toString()}
+                            contentContainerStyle={styles.selectedList}
+                            showsHorizontalScrollIndicator={false}
+                        />
+                    ) : (
+                        <Text style={styles.emptyText}>No emotions selected yet</Text>
+                    )}
+                </View>
+
+                {/* Add custom emotion */}
+                <View style={styles.addContainer}>
+                    <Text style={styles.sectionTitle}>Add custom emotion:</Text>
+                    <View style={styles.inputRow}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter emotion name..."
+                            value={customMonsterName}
+                            onChangeText={setCustomMonsterName}
+                        />
                         <TouchableOpacity
-                            key={monster.id}
-                            style={[
-                                styles.monsterCard,
-                                selectedMonsters.some(m => m.id === monster.id) && styles.selectedCard
-                            ]}
-                            onPress={() => onToggleMonster(monster)}
+                            style={styles.addButton}
+                            onPress={handleAddCustomMonster}
                         >
-                            <Text style={styles.monsterText}>{monster.name}</Text>
+                            <Text style={styles.addButtonText}>+</Text>
                         </TouchableOpacity>
-                    ))}
+                    </View>
                 </View>
-            </View>
 
-            {/* Nút điều khiển */}
-            <View style={styles.buttonContainer}>
+                {/* Default emotions */}
+                <View style={styles.defaultContainer}>
+                    <Text style={styles.sectionTitle}>Default emotions:</Text>
+                    <View style={styles.monsterGrid}>
+                        {monsters.map((monster) => (
+                            <TouchableOpacity
+                                key={monster.id}
+                                style={[
+                                    styles.monsterCard,
+                                    selectedMonsters.some(m => m.id === monster.id) && styles.selectedCard
+                                ]}
+                                onPress={() => onToggleMonster(monster)}
+                            >
+                                <Image
+                                    source={{ uri: monster.image }}
+                                    style={styles.monsterImage}
+                                    resizeMode="contain"
+                                />
+                                <Text style={styles.monsterText}>{monster.name}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+            </ScrollView>
+
+            {/* Fixed buttons at bottom */}
+            <View style={styles.fixedFooter}>
                 <TouchableOpacity style={styles.secondaryButton} onPress={onBack}>
-                    <Text style={styles.buttonText}>Quay lại</Text>
+                    <Text style={styles.buttonText}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.primaryButton, selectedMonsters.length < 3 && styles.disabledButton]}
                     onPress={onStartGame}
                     disabled={selectedMonsters.length < 3}
                 >
-                    <Text style={styles.buttonText}>Bắt đầu</Text>
+                    <Text style={styles.buttonText}>Start</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -132,19 +160,57 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.background,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border,
+        marginBottom: 8,
+    },
+    backButton: {
+        padding: 4,
+        paddingTop: -4,
+        marginLeft: -28,
+        marginRight: 16
+    },
+    title: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: COLORS.primary,
+        textAlign: 'center',
+        flex: 1,
+    },
+    headerSpacer: {
+        width: 40, // Cùng kích thước với back button để cân bằng
+    },
+    scrollView: {
+        flex: 1,
+    },
+    scrollContent: {
         padding: 20,
+        paddingTop: 10, // Giảm padding top vì đã có header
+        paddingBottom: 100,
+    },
+    fixedFooter: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        padding: 20,
+        backgroundColor: COLORS.background,
+        borderTopWidth: 1,
+        borderTopColor: COLORS.border,
     },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
         color: COLORS.primary,
         marginBottom: 5,
-        textAlign: 'center',
-    },
-    subtitle: {
-        fontSize: 16,
-        color: COLORS.text,
-        marginBottom: 20,
         textAlign: 'center',
     },
     sectionTitle: {
@@ -170,6 +236,11 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: COLORS.border,
     },
+    selectedImage: {
+        width: 30,
+        height: 30,
+        marginRight: 8,
+    },
     selectedItemText: {
         marginRight: 8,
         color: COLORS.text,
@@ -186,6 +257,10 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         lineHeight: 18,
+    },
+    emptyText: {
+        color: COLORS.text,
+        fontStyle: 'italic',
     },
     addContainer: {
         marginBottom: 20,
@@ -204,16 +279,17 @@ const styles = StyleSheet.create({
     },
     addButton: {
         backgroundColor: COLORS.secondary,
-        paddingHorizontal: 20,
+        width: 50,
         borderRadius: 8,
         justifyContent: 'center',
+        alignItems: 'center',
     },
     addButtonText: {
         color: '#fff',
         fontWeight: 'bold',
+        fontSize: 20,
     },
     defaultContainer: {
-        flex: 1,
         marginBottom: 20,
     },
     monsterGrid: {
@@ -229,19 +305,21 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         borderWidth: 1,
         borderColor: COLORS.border,
+        alignItems: 'center',
     },
     selectedCard: {
         borderColor: COLORS.selected,
         borderWidth: 2,
         backgroundColor: '#e3f2fd',
     },
+    monsterImage: {
+        width: 60,
+        height: 60,
+        marginBottom: 8,
+    },
     monsterText: {
         textAlign: 'center',
         color: COLORS.text,
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
     },
     primaryButton: {
         backgroundColor: COLORS.primary,

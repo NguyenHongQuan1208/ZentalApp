@@ -1,139 +1,236 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Animated, Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+const GAME_DURATION = 30000; // 30 giây
 
 const GameScreen = ({
     score,
-    remainingShots,
     monstersLeft,
-    projectilePosition,
-    panResponder,
-    isShooting,
-    onQuit
+    onQuit,
+    onHit,
+    onGameEnd
 }) => {
+    const [monsters, setMonsters] = useState([]);
+    const [timeLeft, setTimeLeft] = useState(30);
+    const spawnIntervalRef = useRef(null);
+    const gameTimerRef = useRef(null);
+    const crosshairPosition = width / 2;
+    const crosshairY = height / 2;
+    const crosshairWidth = 50;
+    const crosshairHeight = 50;
+
+    // Function to spawn monsters
+    const spawnMonster = () => {
+        if (monstersLeft.length === 0) return;
+
+        const newMonster = {
+            id: Date.now(),
+            monster: monstersLeft[Math.floor(Math.random() * monstersLeft.length)],
+            position: new Animated.Value(-100),
+            yPosition: crosshairY - 40,
+            speed: 2000 + Math.random() * 3000,
+            width: 80,
+            height: 80,
+            hit: false,
+            scored: false // Thêm trạng thái scored
+        };
+
+        setMonsters(prev => [...prev, newMonster]);
+
+        Animated.timing(newMonster.position, {
+            toValue: width + 100,
+            duration: newMonster.speed,
+            useNativeDriver: true
+        }).start(({ finished }) => {
+            if (finished) {
+                setMonsters(prev => prev.filter(m => m.id !== newMonster.id));
+            }
+        });
+    };
+
+    // Handle shooting
+    const handleShoot = () => {
+        // Kiểm tra tất cả quái vật hiện có
+        const hitMonsters = monsters.filter(monster => {
+            const monsterX = monster.position.__getValue();
+            const monsterRightEdge = monsterX + monster.width;
+
+            // Vùng crosshair
+            const crosshairLeft = crosshairPosition - crosshairWidth / 2;
+            const crosshairRight = crosshairPosition + crosshairWidth / 2;
+
+            // Kiểm tra va chạm
+            const isHitting = (
+                monsterRightEdge >= crosshairLeft &&
+                monsterX <= crosshairRight &&
+                !monster.scored // Chưa được tính điểm
+            );
+
+            return isHitting;
+        });
+
+        // Nếu có quái vật trúng
+        if (hitMonsters.length > 0) {
+            hitMonsters.forEach(monster => {
+                onHit(monster.monster.id); // Gọi callback tính điểm
+
+                // Đánh dấu đã tính điểm
+                setMonsters(prev => prev.map(m =>
+                    m.id === monster.id ? { ...m, scored: true } : m
+                ));
+            });
+        }
+    };
+
+    // Start game timer
+    useEffect(() => {
+        gameTimerRef.current = setInterval(() => {
+            setTimeLeft(prev => {
+                if (prev <= 1) {
+                    clearInterval(gameTimerRef.current);
+                    onGameEnd();
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(gameTimerRef.current);
+    }, []);
+
+    // Manage monster spawning
+    useEffect(() => {
+        if (monstersLeft.length > 0) {
+            spawnMonster();
+            spawnIntervalRef.current = setInterval(spawnMonster, 1000 + Math.random() * 2000);
+        }
+
+        return () => {
+            if (spawnIntervalRef.current) {
+                clearInterval(spawnIntervalRef.current);
+            }
+        };
+    }, [monstersLeft]);
+
     return (
-        <View style={styles.gameContainer}>
-            {/* Score and shots display */}
-            <View style={styles.gameHeader}>
-                <Text style={styles.scoreText}>Score: {score}</Text>
-                <Text style={styles.shotsText}>Shots: {remainingShots}</Text>
+        <View style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.score}>Score: {score}</Text>
+                <Text style={styles.shots}>Time: {timeLeft}s</Text>
             </View>
 
-            {/* Monsters */}
-            {monstersLeft.map((monster, index) => (
-                <View
-                    key={monster.id}
-                    style={[
-                        styles.gameMonster,
-                        {
-                            top: 50 + (index % 3) * 80,
-                            left: 100 + index * 120,
-                            backgroundColor: monster.color,
-                        },
-                    ]}
-                >
-                    <Text style={styles.monsterLabel}>{monster.name}</Text>
-                </View>
-            ))}
+            <View style={styles.gameArea}>
+                {monsters.map((monster) => (
+                    <Animated.View
+                        key={monster.id}
+                        style={[
+                            styles.monsterContainer,
+                            {
+                                transform: [{ translateX: monster.position }],
+                                top: monster.yPosition,
+                                opacity: monster.scored ? 0.5 : 1 // Giảm opacity khi bị bắn trúng
+                            }
+                        ]}
+                    >
+                        <Image
+                            source={{ uri: monster.monster.image }}
+                            style={styles.monsterImage}
+                            resizeMode="contain"
+                        />
+                    </Animated.View>
+                ))}
 
-            {/* Slingshot base */}
-            <View style={styles.slingshotBase} />
+                <Image
+                    source={{ uri: "https://i.pinimg.com/1200x/25/08/71/250871a8d00791d857fc3b21b1083d34.jpg" }}
+                    style={styles.crosshairImage}
+                    resizeMode="contain"
+                />
+            </View>
 
-            {/* Projectile */}
-            {remainingShots > 0 && (
-                <Animated.View
-                    {...panResponder.panHandlers}
-                    style={[
-                        styles.projectile,
-                        {
-                            transform: [
-                                { translateX: projectilePosition.x },
-                                { translateY: projectilePosition.y }
-                            ]
-                        }
-                    ]}
-                >
-                    <Text style={styles.projectileText}>Pull</Text>
-                </Animated.View>
-            )}
+            <TouchableOpacity
+                style={styles.shootButton}
+                onPress={handleShoot}
+                disabled={timeLeft <= 0}
+            >
+                <Text style={styles.shootText}>SHOOT</Text>
+            </TouchableOpacity>
 
-            {/* Back button */}
             <TouchableOpacity style={styles.quitButton} onPress={onQuit}>
-                <Text style={styles.buttonText}>Quit</Text>
+                <Text style={styles.quitText}>QUIT</Text>
             </TouchableOpacity>
         </View>
     );
 };
 
+// Styles giữ nguyên như trước
 const styles = StyleSheet.create({
-    gameContainer: {
+    container: {
         flex: 1,
-        backgroundColor: "#E3F2FD",
+        backgroundColor: '#f0f8ff',
     },
-    gameHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         padding: 20,
+        backgroundColor: '#6a1b9a',
     },
-    scoreText: {
+    score: {
+        color: 'white',
         fontSize: 18,
-        fontWeight: "bold",
+        fontWeight: 'bold',
     },
-    shotsText: {
+    shots: {
+        color: 'white',
         fontSize: 18,
-        fontWeight: "bold",
+        fontWeight: 'bold',
     },
-    gameMonster: {
-        position: "absolute",
-        width: 70,
-        height: 70,
-        borderRadius: 35,
-        alignItems: "center",
-        justifyContent: "center",
+    gameArea: {
+        flex: 1,
+        position: 'relative',
     },
-    monsterLabel: {
-        color: "white",
-        fontWeight: "bold",
-        textAlign: "center",
+    monsterContainer: {
+        position: 'absolute',
+        width: 80,
+        height: 80,
     },
-    slingshotBase: {
-        position: "absolute",
-        bottom: 20,
-        left: "50%",
-        marginLeft: -20,
-        width: 40,
-        height: 100,
-        backgroundColor: "#8B4513",
-        borderRadius: 10,
+    monsterImage: {
+        width: '100%',
+        height: '100%',
     },
-    projectile: {
-        position: "absolute",
-        bottom: 120,
-        left: "50%",
-        marginLeft: -25,
+    crosshairImage: {
+        position: 'absolute',
+        left: width / 2 - 25,
+        top: height / 2 - 25,
         width: 50,
         height: 50,
-        borderRadius: 25,
-        backgroundColor: "#E53935",
-        alignItems: "center",
-        justifyContent: "center",
     },
-    projectileText: {
-        color: "white",
-        fontWeight: "bold",
+    shootButton: {
+        position: 'absolute',
+        bottom: 100,
+        alignSelf: 'center',
+        backgroundColor: '#FF5722',
+        paddingVertical: 15,
+        paddingHorizontal: 40,
+        borderRadius: 30,
+    },
+    shootText: {
+        color: 'white',
+        fontSize: 20,
+        fontWeight: 'bold',
     },
     quitButton: {
-        position: "absolute",
-        bottom: 20,
-        left: 20,
-        backgroundColor: "#757575",
+        position: 'absolute',
+        bottom: 30,
+        right: 20,
+        backgroundColor: '#E53935',
         paddingVertical: 8,
-        paddingHorizontal: 20,
-        borderRadius: 10,
+        paddingHorizontal: 15,
+        borderRadius: 20,
     },
-    buttonText: {
-        color: "white",
-        fontSize: 18,
-        fontWeight: "bold",
+    quitText: {
+        color: 'white',
+        fontWeight: 'bold',
     },
 });
 

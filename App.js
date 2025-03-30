@@ -171,7 +171,9 @@ function AuthStack() {
 }
 function NegativeKnockoutStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{
+      headerShown: false
+    }}>
       <Stack.Screen name="NegativeKnockout" component={NegativeKnockout} />
     </Stack.Navigator>
   );

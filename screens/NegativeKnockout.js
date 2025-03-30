@@ -1,27 +1,25 @@
-import { useState } from "react";
-import { View, StyleSheet, Alert, PanResponder, Animated } from "react-native";
+import { useState, useEffect } from "react";
+import { View, StyleSheet, Alert } from "react-native";
 import SelectionScreen from "../screens/NegativeKnockout/SelectionScreen";
 import GameScreen from "../screens/NegativeKnockout/GameScreen";
 import EndScreen from "../screens/NegativeKnockout/EndScreen";
 
-// Monster data with negative emotions
 const monsters = [
-    { id: 1, name: "Anger" },
-    { id: 2, name: "Sadness" },
-    { id: 3, name: "Anxiety" },
-    { id: 4, name: "Fear" },
-    { id: 5, name: "Stress" },
-    { id: 6, name: "Doubt" },
+    { id: 1, name: "Anger", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster1.png" },
+    { id: 2, name: "Sadness", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster2.png" },
+    { id: 3, name: "Anxiety", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster3.png" },
+    { id: 4, name: "Fear", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster4.png" },
+    { id: 5, name: "Stress", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster5.png" },
+    { id: 6, name: "Doubt", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster6.png" },
 ];
 
-export default function NegativeKnockout() {
-    const [gameState, setGameState] = useState("selection"); //selection, game, end
+export default function NegativeKnockout({ navigation }) {
+    const [gameState, setGameState] = useState("selection");
     const [selectedMonsters, setSelectedMonsters] = useState([]);
-    const [remainingShots, setRemainingShots] = useState(5);
     const [score, setScore] = useState(0);
     const [monstersLeft, setMonstersLeft] = useState([]);
-    const [projectilePosition] = useState(new Animated.ValueXY({ x: 0, y: 0 }));
-    const [isShooting, setIsShooting] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(30);
+    const [gameStarted, setGameStarted] = useState(false);
 
     // Handle monster selection
     const toggleMonsterSelection = (monster) => {
@@ -34,6 +32,20 @@ export default function NegativeKnockout() {
         }
     };
 
+    // Add custom monster
+    const addCustomMonster = (newMonster) => {
+        if (selectedMonsters.length >= 5) {
+            Alert.alert("Maximum Selection", "You can only select up to 5 monsters!");
+            return;
+        }
+        setSelectedMonsters([...selectedMonsters, newMonster]);
+    };
+
+    // Remove monster
+    const removeMonster = (id) => {
+        setSelectedMonsters(selectedMonsters.filter(monster => monster.id !== id));
+    };
+
     // Start the game with selected monsters
     const startGame = () => {
         if (selectedMonsters.length < 3) {
@@ -43,105 +55,56 @@ export default function NegativeKnockout() {
 
         setGameState("game");
         setMonstersLeft([...selectedMonsters]);
-        setRemainingShots(5);
         setScore(0);
+        setTimeLeft(30);
+        setGameStarted(true);
     };
 
-    // Simulate shooting projectile
-    const shootProjectile = (power, angle) => {
-        setIsShooting(true);
+    // Handle hit
+    const handleHit = (monsterId) => {
+        setScore(prev => prev + 100);
+        setMonstersLeft(prev => prev.filter(m => m.id !== monsterId));
+    };
 
-        // Decrease remaining shots
-        setRemainingShots((prev) => prev - 1);
-
-        // Animate the projectile
-        Animated.timing(projectilePosition, {
-            toValue: {
-                x: Math.cos(angle) * 300,
-                y: Math.sin(angle) * 300
-            },
-            duration: 500,
-            useNativeDriver: true
-        }).start(() => {
-            // Simulate hit detection (random for this example)
-            const hitProbability = Math.min(power / 100, 0.8); // Higher power = better chance to hit
-
-            if (monstersLeft.length > 0 && Math.random() < hitProbability) {
-                // Hit a monster!
-                const hitMonsterIndex = Math.floor(Math.random() * monstersLeft.length);
-                const newMonstersLeft = [...monstersLeft];
-                newMonstersLeft.splice(hitMonsterIndex, 1);
-                setMonstersLeft(newMonstersLeft);
-                setScore((prev) => prev + 100);
-
-                if (newMonstersLeft.length === 0) {
-                    // All monsters defeated!
-                    setTimeout(() => {
-                        setGameState("end");
-                        Alert.alert("Victory!", `You defeated all monsters with ${remainingShots - 1} shots remaining!`);
-                    }, 500);
-                }
-            }
-
-            // Check if out of shots
-            if (remainingShots <= 1 && monstersLeft.length > 0) {
-                setTimeout(() => {
-                    setGameState("end");
-                    Alert.alert("Game Over", `You defeated ${selectedMonsters.length - monstersLeft.length} monsters.`);
-                }, 500);
-            }
-
-            // Reset projectile position
-            Animated.timing(projectilePosition, {
-                toValue: { x: 0, y: 0 },
-                duration: 0,
-                useNativeDriver: true
-            }).start(() => {
-                setIsShooting(false);
-            });
-        });
+    // Handle game end
+    const handleGameEnd = () => {
+        setGameState("end");
+        setGameStarted(false);
     };
 
     // Reset game
     const resetGame = () => {
         setGameState("selection");
         setSelectedMonsters([]);
+        setScore(0);
+        setMonstersLeft([]);
+        setGameStarted(false);
     };
 
-    // Pan responder for slingshot
-    const panResponder = PanResponder.create({
-        onStartShouldSetPanResponder: () => !isShooting && remainingShots > 0,
-        onPanResponderMove: (evt, gestureState) => {
-            // Limit drag distance
-            const dx = Math.min(Math.max(gestureState.dx, -100), 100);
-            const dy = Math.min(Math.max(gestureState.dy, -150), 0);
+    const handleGoBack = () => {
+        navigation.goBack();
+    };
 
-            projectilePosition.setValue({ x: dx, y: dy });
-        },
-        onPanResponderRelease: (evt, gestureState) => {
-            const dx = gestureState.dx;
-            const dy = gestureState.dy;
-
-            // Calculate power and angle
-            const power = Math.sqrt(dx * dx + dy * dy);
-            const angle = Math.atan2(dy, dx);
-
-            // Shoot!
-            shootProjectile(power, angle);
+    // Game timer effect
+    useEffect(() => {
+        let timer;
+        if (gameStarted && timeLeft > 0) {
+            timer = setInterval(() => {
+                setTimeLeft(prev => {
+                    if (prev <= 1) {
+                        clearInterval(timer);
+                        handleGameEnd();
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
         }
-    });
 
-    const addCustomMonster = (newMonster) => {
-        if (selectedMonsters.length >= 5) {
-            Alert.alert("Maximum Selection", "You can only select up to 5 monsters!");
-            return;
-        }
-        setSelectedMonsters([...selectedMonsters, newMonster]);
-    };
-
-    const removeMonster = (id) => {
-        setSelectedMonsters(selectedMonsters.filter(monster => monster.id !== id));
-    };
+        return () => {
+            if (timer) clearInterval(timer);
+        };
+    }, [gameStarted, timeLeft]);
 
     return (
         <View style={styles.mainContainer}>
@@ -150,7 +113,7 @@ export default function NegativeKnockout() {
                     monsters={monsters}
                     selectedMonsters={selectedMonsters}
                     onToggleMonster={toggleMonsterSelection}
-                    onBack={resetGame}
+                    onBack={handleGoBack}
                     onStartGame={startGame}
                     onAddCustomMonster={addCustomMonster}
                     onRemoveMonster={removeMonster}
@@ -160,12 +123,11 @@ export default function NegativeKnockout() {
             {gameState === "game" && (
                 <GameScreen
                     score={score}
-                    remainingShots={remainingShots}
+                    timeLeft={timeLeft}
                     monstersLeft={monstersLeft}
-                    projectilePosition={projectilePosition}
-                    panResponder={panResponder}
-                    isShooting={isShooting}
                     onQuit={resetGame}
+                    onHit={handleHit}
+                    onGameEnd={handleGameEnd}
                 />
             )}
 
@@ -185,5 +147,6 @@ const styles = StyleSheet.create({
     mainContainer: {
         flex: 1,
         backgroundColor: "#fff",
+        marginTop: 32
     },
 });
