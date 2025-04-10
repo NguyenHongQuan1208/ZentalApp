@@ -129,7 +129,7 @@ const GameScreen = ({
                             {
                                 transform: [{ translateX: monster.position }],
                                 top: monster.yPosition,
-                                opacity: monster.scored ? 0.5 : 1 // Giảm opacity khi bị bắn trúng
+                                opacity: monster.scored ? 0.5 : 1
                             }
                         ]}
                     >
@@ -142,7 +142,7 @@ const GameScreen = ({
                 ))}
 
                 <Image
-                    source={{ uri: "https://i.pinimg.com/1200x/25/08/71/250871a8d00791d857fc3b21b1083d34.jpg" }}
+                    source={require("../../assets/crossfire.png")}
                     style={styles.crosshairImage}
                     resizeMode="contain"
                 />

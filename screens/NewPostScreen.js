@@ -170,44 +170,43 @@ function NewPosts({ navigation }) {
     );
   }
 
-  if (posts.length === 0) {
-    return (
-      <View style={styles.noPostsContainer}>
-        <Text>No posts available.</Text>
-      </View>
-    );
-  }
-
   return (
     <ImageBackground
-      source={require("../assets/Background.jpg")} // Adjust the path as necessary
+      source={require("../assets/Background.jpg")}
       style={styles.background}
     >
       <View style={styles.overlay}>
         <View style={styles.innerContainer}>
-          <FlatList
-            data={posts}
-            keyExtractor={(item) => item.id?.toString()}
-            renderItem={renderPost}
-            initialNumToRender={10}
-            maxToRenderPerBatch={10}
-            windowSize={21}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                colors={[GlobalColors.primaryColor]}
-                tintColor={GlobalColors.primaryColor}
-              />
-            }
-            ListHeaderComponent={
-              <ToggleButtons
-                activeTab={activeTab}
-                onToggle={handleToggle}
-                options={toggleOptions}
-              />
-            }
+          {/* Luôn hiển thị ToggleButtons bên ngoài FlatList */}
+          <ToggleButtons
+            activeTab={activeTab}
+            onToggle={handleToggle}
+            options={toggleOptions}
           />
+
+          {posts.length === 0 ? (
+            <View style={styles.noPostsContainer}>
+              <Text>No posts available.</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={posts}
+              keyExtractor={(item) => item.id?.toString()}
+              renderItem={renderPost}
+              initialNumToRender={10}
+              maxToRenderPerBatch={10}
+              windowSize={21}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  colors={[GlobalColors.primaryColor]}
+                  tintColor={GlobalColors.primaryColor}
+                />
+              }
+            // Đã bỏ ListHeaderComponent vì đã hiển thị ToggleButtons bên ngoài
+            />
+          )}
         </View>
       </View>
     </ImageBackground>
@@ -257,6 +256,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: GlobalColors.primaryWhite,
+    backgroundColor: "transparent",
+    marginTop: 20,
   },
 });
