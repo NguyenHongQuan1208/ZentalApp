@@ -339,12 +339,11 @@ function AuthenticatedStack() {
         }}
       />
 
-      {/* Add NegativeKnockoutStack as a Screen */}
       <Stack.Screen
         name="NegativeKnockoutStack"
         component={NegativeKnockoutStack}
         options={{
-          headerShown: false, // or true based on your requirement
+          headerShown: false,
         }}
       />
     </Stack.Navigator>

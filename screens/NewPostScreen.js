@@ -8,6 +8,7 @@ import {
   RefreshControl,
   ImageBackground,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { getAllPosts } from "../util/posts-data-http";
 import { getFollowing } from "../util/follow-http";
 import { GlobalColors } from "../constants/GlobalColors";
@@ -15,15 +16,16 @@ import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import Post from "../components/Posts/Post";
-import { Ionicons } from "@expo/vector-icons";
 import ToggleButtons from "../components/Chat/ToggleButtons";
 
 function NewPosts({ navigation }) {
+  // Contexts
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
   const { token } = authCtx;
   const { refreshToken } = refreshCtx;
 
+  // State
   const [currentUserId, setCurrentUserId] = useState("");
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,88 +34,13 @@ function NewPosts({ navigation }) {
   const [activeTab, setActiveTab] = useState("all");
   const [followingUsers, setFollowingUsers] = useState([]);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const authResponse = await getUserDataWithRetry(
-          token,
-          refreshToken,
-          authCtx,
-          refreshCtx
-        );
-        setCurrentUserId(authResponse.localId);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        authCtx.logout();
-      }
-    };
-    fetchUserData();
-  }, [token, refreshToken, authCtx, refreshCtx]);
+  // Constants
+  const toggleOptions = [
+    { value: "all", label: "For You" },
+    { value: "following", label: "Following" },
+  ];
 
-  // Fetch following users
-  const fetchFollowingUsers = useCallback(async () => {
-    if (currentUserId) {
-      try {
-        const following = await getFollowing(currentUserId);
-        setFollowingUsers(following.map((user) => user.id));
-      } catch (error) {
-        console.error("Error fetching following users: ", error);
-      }
-    }
-  }, [currentUserId]);
-
-  useEffect(() => {
-    fetchFollowingUsers();
-  }, [currentUserId]);
-
-  const fetchPosts = useCallback(async () => {
-    try {
-      setError(null);
-      setLoading(true);
-      const allPosts = await getAllPosts();
-
-      const filteredPosts = allPosts.filter(
-        (post) => post.status === 1 && post.publicStatus === 1
-      );
-
-      // Filter posts based on active tab
-      const sortedPosts = filteredPosts
-        .filter((post) => {
-          if (activeTab === "following") {
-            return followingUsers.includes(post.uid); // Only include posts from followed users
-          }
-          return true; // For "all" tab, include all posts
-        })
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Newest first
-
-      setPosts(sortedPosts);
-    } catch (err) {
-      console.error("Error fetching posts:", err);
-      setError("Unable to fetch posts. Please try again later.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [activeTab, followingUsers]);
-
-  useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await fetchFollowingUsers(); // Refresh the following users
-    await fetchPosts(); // Then fetch the posts
-  };
-
-  const onPrivacyChange = useCallback(() => {
-    fetchPosts();
-  }, [fetchPosts]);
-
-  const onPostDelete = useCallback(() => {
-    fetchPosts();
-  }, [fetchPosts]);
-
+  // Navigation setup
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -128,6 +55,94 @@ function NewPosts({ navigation }) {
     });
   }, [navigation]);
 
+  // Data fetching
+  const fetchUserData = useCallback(async () => {
+    try {
+      const authResponse = await getUserDataWithRetry(
+        token,
+        refreshToken,
+        authCtx,
+        refreshCtx
+      );
+      setCurrentUserId(authResponse.localId);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      authCtx.logout();
+    }
+  }, [token, refreshToken, authCtx, refreshCtx]);
+
+  const fetchFollowingUsers = useCallback(async () => {
+    if (!currentUserId) return;
+
+    try {
+      const following = await getFollowing(currentUserId);
+      setFollowingUsers(following.map((user) => user.id));
+    } catch (error) {
+      console.error("Error fetching following users: ", error);
+    }
+  }, [currentUserId]);
+
+  const fetchPosts = useCallback(async () => {
+    try {
+      setError(null);
+      setLoading(true);
+      const allPosts = await getAllPosts();
+
+      const filteredPosts = allPosts.filter(
+        (post) => post.status === 1 && post.publicStatus === 1
+      );
+
+      const sortedPosts = filteredPosts
+        .filter((post) =>
+          activeTab === "following"
+            ? followingUsers.includes(post.uid)
+            : true
+        )
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      setPosts(sortedPosts);
+    } catch (err) {
+      console.error("Error fetching posts:", err);
+      setError("Unable to fetch posts. Please try again later.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [activeTab, followingUsers]);
+
+  // Initial data load
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
+  useEffect(() => {
+    if (currentUserId) {
+      fetchFollowingUsers();
+    }
+  }, [currentUserId, fetchFollowingUsers]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
+  // Handlers
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([fetchFollowingUsers(), fetchPosts()]);
+  };
+
+  const onPrivacyChange = useCallback(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
+  const onPostDelete = useCallback(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
+  const handleToggle = (value) => {
+    setActiveTab(value);
+  };
+
   const renderPost = useCallback(
     ({ item, index }) => (
       <Post
@@ -141,18 +156,7 @@ function NewPosts({ navigation }) {
     [currentUserId, onPrivacyChange, onPostDelete]
   );
 
-  // Define toggle options
-  const toggleOptions = [
-    { value: "all", label: "For You" },
-    { value: "following", label: "Following" },
-  ];
-
-  // Handle toggle button press
-  const handleToggle = (value) => {
-    setActiveTab(value); // Set the active tab
-    fetchPosts(); // Fetch posts based on the new active tab
-  };
-
+  // Render states
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -177,7 +181,6 @@ function NewPosts({ navigation }) {
     >
       <View style={styles.overlay}>
         <View style={styles.innerContainer}>
-          {/* Luôn hiển thị ToggleButtons bên ngoài FlatList */}
           <ToggleButtons
             activeTab={activeTab}
             onToggle={handleToggle}
@@ -204,7 +207,6 @@ function NewPosts({ navigation }) {
                   tintColor={GlobalColors.primaryColor}
                 />
               }
-            // Đã bỏ ListHeaderComponent vì đã hiển thị ToggleButtons bên ngoài
             />
           )}
         </View>
@@ -212,8 +214,6 @@ function NewPosts({ navigation }) {
     </ImageBackground>
   );
 }
-
-export default NewPosts;
 
 const styles = StyleSheet.create({
   background: {
@@ -223,11 +223,11 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.8)", // White overlay with opacity
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
   },
   innerContainer: {
     flex: 1,
-    paddingHorizontal: 16, // Retain the original padding
+    paddingHorizontal: 16,
   },
   loadingContainer: {
     flex: 1,
@@ -260,3 +260,5 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
+
+export default NewPosts;

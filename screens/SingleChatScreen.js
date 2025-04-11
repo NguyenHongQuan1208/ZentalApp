@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   StyleSheet,
   ImageBackground,
@@ -6,8 +6,8 @@ import {
   Alert,
   Keyboard,
   View,
-  TouchableOpacity, // Import TouchableOpacity
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { getUser } from "../util/user-info-http";
 import { GlobalColors } from "../constants/GlobalColors";
 import HeaderTitle from "../components/Chat/HeaderTitle";
@@ -21,18 +21,23 @@ import {
 import useRealtimeChat from "../hooks/useRealtimeChat";
 import MessageItem from "../components/Chat/MessageItem";
 import ChatInput from "../components/Chat/ChatInput";
-import { useFocusEffect } from "@react-navigation/native";
 
 const SingleChatScreen = ({ route, navigation }) => {
+  // Destructure route params
   const { currentUserId, otherUserId, roomId } = route.params;
+
+  // State
   const [msgInput, setMsgInput] = useState("");
   const [disabled, setDisabled] = useState(false);
   const [allChat, setAllChat] = useState([]);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const flatListRef = React.useRef();
 
+  // Refs
+  const flatListRef = useRef();
+
+  // Fetch user data and set up header
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchAndSetUserData = async () => {
       try {
         const userData = await getUser(otherUserId);
         navigation.setOptions({
@@ -40,9 +45,7 @@ const SingleChatScreen = ({ route, navigation }) => {
             <HeaderTitle
               photoUrl={userData.photoUrl}
               username={userData.username}
-              onPress={() =>
-                navigation.navigate("ChatProfile", { otherUserId })
-              }
+              onPress={() => navigation.navigate("ChatProfile", { otherUserId })}
             />
           ),
           headerTitleAlign: "left",
@@ -55,39 +58,42 @@ const SingleChatScreen = ({ route, navigation }) => {
       }
     };
 
-    fetchUser();
+    fetchAndSetUserData();
+  }, [otherUserId, navigation]);
 
+  // Keyboard listeners
+  useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       "keyboardDidShow",
-      (e) => {
-        setKeyboardHeight(e.endCoordinates.height);
-      }
+      (e) => setKeyboardHeight(e.endCoordinates.height)
     );
     const keyboardDidHideListener = Keyboard.addListener(
       "keyboardDidHide",
-      () => {
-        setKeyboardHeight(0);
-      }
+      () => setKeyboardHeight(0)
     );
 
     return () => {
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
     };
-  }, [otherUserId, navigation]);
+  }, []);
 
+  // Real-time chat updates
   useRealtimeChat(roomId, setAllChat);
 
+  // Scroll to bottom when new messages arrive
   useEffect(() => {
     if (allChat.length > 0 && flatListRef.current) {
       flatListRef.current.scrollToEnd({ animated: true });
     }
   }, [allChat]);
 
-  const msgValid = (txt) => txt && txt.trim().length > 0;
+  // Message validation helper
+  const isMessageValid = useCallback((text) => text?.trim().length > 0, []);
 
+  // Send message handler
   const sendMsg = useCallback(async () => {
-    if (!msgValid(msgInput)) {
+    if (!isMessageValid(msgInput)) {
       Alert.alert("Input Error", "Please enter a valid message.");
       return;
     }
@@ -108,41 +114,43 @@ const SingleChatScreen = ({ route, navigation }) => {
     };
 
     try {
-      const messageResponse = await sendMessage(roomId, msgData);
-      if (!messageResponse) {
-        throw new Error("Failed to send message.");
-      }
+      const [messageResponse, chatListData] = await Promise.all([
+        sendMessage(roomId, msgData),
+        getChatListData(otherUserId, currentUserId),
+      ]);
 
-      const chatListData = await getChatListData(otherUserId, currentUserId);
-      await updateChatList(otherUserId, currentUserId, chatListUpdate);
+      if (!messageResponse) throw new Error("Failed to send message.");
 
-      if (chatListData && !chatListData.userActive) {
-        await incrementUnreadCount(currentUserId, otherUserId);
-      }
+      await Promise.all([
+        updateChatList(otherUserId, currentUserId, chatListUpdate),
+        chatListData && !chatListData.userActive
+          ? incrementUnreadCount(currentUserId, otherUserId)
+          : Promise.resolve(),
+      ]);
 
       setMsgInput("");
     } catch (error) {
+      console.error("Send message error:", error);
       Alert.alert(
         "Error",
         error.message || "Failed to send message. Please try again."
       );
-      console.error("Send message error:", error);
     } finally {
       setDisabled(false);
     }
-  }, [msgInput, currentUserId, otherUserId, roomId]);
+  }, [msgInput, currentUserId, otherUserId, roomId, isMessageValid]);
 
-  const renderMessageItem = ({ item }) => (
-    <MessageItem message={item} currentUserId={currentUserId} />
+  // Render individual message item
+  const renderMessageItem = useCallback(
+    ({ item }) => <MessageItem message={item} currentUserId={currentUserId} />,
+    [currentUserId]
   );
 
+  // Update user active status when screen is focused/unfocused
   useFocusEffect(
     useCallback(() => {
       updateUserActiveStatus(currentUserId, otherUserId, true);
-
-      return () => {
-        updateUserActiveStatus(currentUserId, otherUserId, false);
-      };
+      return () => updateUserActiveStatus(currentUserId, otherUserId, false);
     }, [currentUserId, otherUserId])
   );
 
@@ -165,6 +173,7 @@ const SingleChatScreen = ({ route, navigation }) => {
             flatListRef.current?.scrollToEnd({ animated: true })
           }
           onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          showsVerticalScrollIndicator={false}
         />
         <ChatInput
           msgInput={msgInput}
@@ -186,4 +195,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SingleChatScreen;
+export default React.memo(SingleChatScreen);

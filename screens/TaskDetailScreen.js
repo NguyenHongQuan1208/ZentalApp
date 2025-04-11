@@ -1,23 +1,25 @@
+import React from "react";
 import { StyleSheet, Text, View, ImageBackground } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { WebView } from "react-native-webview";
 import { GlobalColors } from "../constants/GlobalColors";
 import TaskBenefits from "../components/TaskSection/TaskBenefits";
 import DecisionBox from "../components/TaskSection/DecisionBox";
 import Target from "../components/TaskSection/Target";
-import { WebView } from "react-native-webview";
+
+const INSTRUCTION_VIDEO_URL = "https://www.youtube.com/embed/zThE1yg5MBE?autoplay=0&controls=1&showinfo=0";
 
 function TaskDetailScreen({ route }) {
-  const id = route.params.id;
-  const color = route.params.color;
-  const icon = route.params.icon;
-  const benefits = route.params.benefits;
-  const description = route.params.description;
-  const target = route.params.target;
-  const placeholderQuestion = route.params.placeholderQuestion;
-
-  const videoUrl =
-    "https://www.youtube.com/embed/zThE1yg5MBE?autoplay=0&controls=1&showinfo=0";
+  const {
+    id,
+    color,
+    icon,
+    benefits,
+    description,
+    target,
+    placeholderQuestion
+  } = route.params;
 
   return (
     <ImageBackground
@@ -32,33 +34,28 @@ function TaskDetailScreen({ route }) {
           <Target icon={icon} color={color} target={target} />
 
           <View style={[styles.boxContainer, { borderColor: color }]}>
-            <View style={[styles.header, { borderBottomColor: color }]}>
-              <Ionicons name="flask" size={24} color={color} />
-              <Text style={[styles.headerText, { color: color }]}>
-                Benefits
-              </Text>
-            </View>
+            <SectionHeader
+              iconName="flask"
+              title="Benefits"
+              color={color}
+            />
             <TaskBenefits benefits={benefits} color={color} />
 
-            <View
-              style={[
-                styles.header,
-                { borderBottomColor: color, marginTop: 24 },
-              ]}
-            >
-              <Ionicons name="logo-youtube" size={24} color={color} />
-              <Text style={[styles.headerText, { color: color }]}>
-                Instruction Video
-              </Text>
-            </View>
+            <SectionHeader
+              iconName="logo-youtube"
+              title="Instruction Video"
+              color={color}
+              style={{ marginTop: 24 }}
+            />
             <View style={styles.videoContainer}>
               <WebView
-                source={{ uri: videoUrl }}
+                source={{ uri: INSTRUCTION_VIDEO_URL }}
                 style={styles.video}
                 allowsInlineMediaPlayback
                 javaScriptEnabled
               />
             </View>
+
             <DecisionBox
               id={id}
               color={color}
@@ -74,7 +71,15 @@ function TaskDetailScreen({ route }) {
   );
 }
 
-export default TaskDetailScreen;
+// Reusable SectionHeader component
+const SectionHeader = ({ iconName, title, color, style }) => (
+  <View style={[styles.header, { borderBottomColor: color }, style]}>
+    <Ionicons name={iconName} size={24} color={color} />
+    <Text style={[styles.headerText, { color }]}>
+      {title}
+    </Text>
+  </View>
+);
 
 const styles = StyleSheet.create({
   backgroundImage: {
@@ -112,8 +117,8 @@ const styles = StyleSheet.create({
   },
   headerText: {
     marginLeft: 12,
-    fontSize: 20, // Tăng kích thước font
-    fontWeight: "700", // Đậm hơn
+    fontSize: 20,
+    fontWeight: "700",
     letterSpacing: 0.5,
   },
   videoContainer: {
@@ -124,6 +129,8 @@ const styles = StyleSheet.create({
   },
   video: {
     flex: 1,
-    borderRadius: 12, // Bo tròn cho video
+    borderRadius: 12,
   },
 });
+
+export default TaskDetailScreen;

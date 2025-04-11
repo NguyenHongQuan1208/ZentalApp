@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,18 +10,13 @@ import {
   Keyboard,
   Platform,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { launchCameraAsync, launchImageLibraryAsync, useCameraPermissions } from "expo-image-picker";
 import PhotoOptionsModal from "../components/Profile/PhotoOptionsModal";
 import LongButton from "../components/ui/LongButton";
 import NoteImagePreview from "../components/TaskSection/NoteImagePreview";
-import { Ionicons } from "@expo/vector-icons";
-import {
-  launchCameraAsync,
-  launchImageLibraryAsync,
-  useCameraPermissions,
-  PermissionStatus,
-} from "expo-image-picker";
-import { GlobalColors } from "../constants/GlobalColors";
 import Target from "../components/TaskSection/Target";
+import { GlobalColors } from "../constants/GlobalColors";
 import { addPost, getAllPosts, updatePost } from "../util/posts-data-http";
 import { AuthContext } from "../store/auth-context";
 import { supabase } from "../store/supabaseClient";
@@ -29,60 +24,61 @@ import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import { fetchDefaultImageUriBySectionId } from "../util/section-default-image-http";
 
-const { width, height } = Dimensions.get("window");
+const { height, width } = Dimensions.get("window");
 const aspectRatio = height / width;
 
 function TaskNoteScreen({ route, navigation }) {
-  const sectionId = route.params.id;
-  const color = route.params.color;
-  const icon = route.params.icon;
-  const target = route.params.target;
-  const placeholderQuestion = route.params.placeholderQuestion;
+  // Destructure route params
+  const { id: sectionId, color, icon, target, placeholderQuestion } = route.params;
 
+  // State management
   const [textInputValue, setTextInputValue] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const [file, setFile] = useState();
+  const [file, setFile] = useState(null);
   const [imageUri, setImageUri] = useState(null);
   const [defaultImageUri, setDefaultImageUri] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-
-  const authCtx = useContext(AuthContext);
-  const refreshCtx = useContext(RefreshTokenContext);
-  const token = authCtx.token;
-  const refreshToken = refreshCtx.refreshToken;
-
   const [uid, setUid] = useState(null);
 
+  // Contexts
+  const authCtx = useContext(AuthContext);
+  const refreshCtx = useContext(RefreshTokenContext);
+  const [cameraPermissionInformation, requestPermission] = useCameraPermissions();
+
+  // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
-      const authResponse = await getUserDataWithRetry(
-        token,
-        refreshToken,
-        authCtx,
-        refreshCtx
-      );
-      setUid(authResponse.localId);
+      try {
+        const authResponse = await getUserDataWithRetry(
+          authCtx.token,
+          refreshCtx.refreshToken,
+          authCtx,
+          refreshCtx
+        );
+        setUid(authResponse.localId);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
     };
 
     fetchUserData();
-  }, [token, refreshToken]);
+  }, [authCtx, refreshCtx]);
 
+  // Fetch post data
   useEffect(() => {
     const fetchPostData = async () => {
       if (!uid || !sectionId) return;
 
       try {
         const posts = await getAllPosts();
-        const filteredPost = posts.find(
-          (post) =>
-            post.status === 0 &&
-            post.sectionId === sectionId &&
-            post.uid === uid
+        const draftPost = posts.find(
+          post => post.status === 0 && post.sectionId === sectionId && post.uid === uid
         );
-        if (filteredPost) {
-          setTextInputValue(filteredPost.content);
-          setImageUri(filteredPost.imageUri);
+
+        if (draftPost) {
+          setTextInputValue(draftPost.content);
+          setImageUri(draftPost.imageUri);
           setIsFocused(true);
         }
       } catch (error) {
@@ -93,17 +89,16 @@ function TaskNoteScreen({ route, navigation }) {
     fetchPostData();
   }, [sectionId, uid]);
 
+  // Fetch default image
   useEffect(() => {
     const fetchDefaultImage = async () => {
       if (!sectionId) return;
 
       try {
-        const defaultImageUri = await fetchDefaultImageUriBySectionId(
-          sectionId
-        );
-        if (defaultImageUri) {
-          setDefaultImageUri(defaultImageUri);
-          setImageUri((prevUri) => prevUri || defaultImageUri);
+        const uri = await fetchDefaultImageUriBySectionId(sectionId);
+        if (uri) {
+          setDefaultImageUri(uri);
+          setImageUri(prevUri => prevUri || uri);
         }
       } catch (error) {
         console.error("Error fetching default image:", error);
@@ -113,16 +108,31 @@ function TaskNoteScreen({ route, navigation }) {
     fetchDefaultImage();
   }, [sectionId]);
 
-  const [cameraPermissionInformation, requestPermission] =
-    useCameraPermissions();
+  // Keyboard listeners
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => Platform.OS === "android" && setIsKeyboardVisible(true)
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => Platform.OS === "android" && setIsKeyboardVisible(false)
+    );
 
-  async function verifyPermissions() {
-    if (cameraPermissionInformation.status === PermissionStatus.UNDETERMINED) {
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
+  // Camera permissions
+  const verifyPermissions = useCallback(async () => {
+    if (cameraPermissionInformation.status === "UNDETERMINED") {
       const permissionResponse = await requestPermission();
       return permissionResponse.granted;
     }
 
-    if (cameraPermissionInformation.status === PermissionStatus.DENIED) {
+    if (cameraPermissionInformation.status === "DENIED") {
       Alert.alert(
         "Insufficient Permissions!",
         "You need to grant camera permissions to use this app."
@@ -131,9 +141,10 @@ function TaskNoteScreen({ route, navigation }) {
     }
 
     return true;
-  }
+  }, [cameraPermissionInformation]);
 
-  const handleTakePhoto = async () => {
+  // Image handling
+  const handleTakePhoto = useCallback(async () => {
     const hasPermission = await verifyPermissions();
     if (!hasPermission) return;
 
@@ -152,9 +163,9 @@ function TaskNoteScreen({ route, navigation }) {
       Alert.alert("Error", "Failed to take photo.");
     }
     setIsModalVisible(false);
-  };
+  }, [verifyPermissions]);
 
-  const handleSelectPhoto = async () => {
+  const handleSelectPhoto = useCallback(async () => {
     try {
       const result = await launchImageLibraryAsync({
         allowsEditing: true,
@@ -170,18 +181,18 @@ function TaskNoteScreen({ route, navigation }) {
       Alert.alert("Error", "Failed to select photo.");
     }
     setIsModalVisible(false);
-  };
+  }, []);
 
-  const handleDeletePhoto = () => {
+  const handleDeletePhoto = useCallback(() => {
     setImageUri(defaultImageUri);
     setIsModalVisible(false);
-  };
+  }, [defaultImageUri]);
 
-  const uploadImageToSupabase = async (file, uid, sectionId) => {
+  // Supabase image upload
+  const uploadImageToSupabase = useCallback(async (file, uid, sectionId) => {
     try {
       const filePath = `task_notes/${uid}_${sectionId}_${Date.now()}.jpg`;
-
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from("ZentalApp")
         .upload(filePath, {
           uri: file.uri,
@@ -189,145 +200,93 @@ function TaskNoteScreen({ route, navigation }) {
           name: filePath,
         });
 
-      if (error) {
-        console.error("Upload error:", error.message);
-        Alert.alert("Error", "Failed to upload image.");
-        return null;
-      }
+      if (error) throw error;
 
-      const { data: publicData, error: publicError } = supabase.storage
+      const { data: publicData } = supabase.storage
         .from("ZentalApp")
         .getPublicUrl(filePath);
 
-      if (publicError) {
-        console.error("Public URL error:", publicError.message);
-        Alert.alert("Error", "Failed to generate public URL for the image.");
-        return null;
-      }
-
       return publicData.publicUrl;
-    } catch (err) {
-      console.error("Unexpected error during image upload:", err);
-      Alert.alert(
-        "Error",
-        "An unexpected error occurred while uploading the image."
-      );
+    } catch (error) {
+      console.error("Image upload error:", error.message);
+      Alert.alert("Error", "Failed to upload image.");
       return null;
     }
-  };
+  }, []);
 
-  const saveOrUpdatePost = async (postData, sectionId, uid) => {
+  // Post management
+  const saveOrUpdatePost = useCallback(async (postData) => {
     try {
       const posts = await getAllPosts();
       const existingPost = posts.find(
-        (post) =>
-          post.status === 0 && post.sectionId === sectionId && post.uid === uid
+        post => post.status === 0 && post.sectionId === postData.sectionId && post.uid === postData.uid
       );
 
-      if (existingPost) {
-        await updatePost(existingPost.id, postData);
-        Alert.alert("Success", "Your note has been updated.");
-      } else {
-        await addPost(postData);
-        Alert.alert("Success", "Your note has been saved.");
-      }
-    } catch (error) {
-      console.error("Error saving or updating post:", error);
-      Alert.alert("Error", "Failed to save or update post.");
-    }
-  };
+      existingPost
+        ? await updatePost(existingPost.id, postData)
+        : await addPost(postData);
 
-  const handlePledgeToDoIt = async () => {
+      Alert.alert("Success", existingPost ? "Note updated" : "Note saved");
+      navigation.navigate("AppOverview", { screen: "Task" });
+    } catch (error) {
+      console.error("Post error:", error);
+      Alert.alert("Error", "Failed to save note.");
+    }
+  }, [navigation]);
+
+  // Button handlers
+  const handlePledgeToDoIt = useCallback(async () => {
     if (!textInputValue || !uid) {
       Alert.alert("Error", "Please enter your note.");
       return;
     }
 
-    let publicUrl = imageUri;
-
     try {
-      if (file) {
-        const uploadedUrl = await uploadImageToSupabase(file, uid, sectionId);
-        if (uploadedUrl) {
-          publicUrl = uploadedUrl;
-        }
-      } else if (!imageUri) {
-        publicUrl = defaultImageUri;
-      }
+      const publicUrl = file
+        ? await uploadImageToSupabase(file, uid, sectionId)
+        : imageUri || defaultImageUri;
 
-      const postData = {
+      await saveOrUpdatePost({
         content: textInputValue,
         sectionColor: color,
         imageUri: publicUrl,
-        sectionId: sectionId,
+        sectionId,
         status: 0,
         title: target,
-        uid: uid,
-      };
-
-      await saveOrUpdatePost(postData, sectionId, uid);
-      navigation.navigate("AppOverview", { screen: "Task" });
+        uid,
+      });
     } catch (error) {
-      console.error("Error in handlePledgeToDoIt:", error);
+      console.error("Pledge error:", error);
       Alert.alert("Error", "Failed to process your note.");
     }
-  };
+  }, [textInputValue, uid, file, imageUri, defaultImageUri, sectionId, color, target, uploadImageToSupabase, saveOrUpdatePost]);
 
-  const handlePost = async () => {
+  const handlePost = useCallback(async () => {
     if (!textInputValue.trim()) {
       Alert.alert("Error", "Please enter your note.");
       return;
     }
 
-    let publicUrl = imageUri;
-
     try {
-      if (file) {
-        const uploadedUrl = await uploadImageToSupabase(file, uid, sectionId);
-        if (uploadedUrl) {
-          publicUrl = uploadedUrl;
-        }
-      }
+      const publicUrl = file
+        ? await uploadImageToSupabase(file, uid, sectionId)
+        : imageUri;
 
       navigation.navigate("ConfirmPost", {
         content: textInputValue,
         imageUri: publicUrl,
-        sectionId: sectionId,
+        sectionId,
         sectionColor: color,
         title: target,
-        uid: uid,
-        icon: icon,
-        color: color,
+        uid,
+        icon,
+        color,
       });
     } catch (error) {
-      console.error("Error in handlePost:", error);
+      console.error("Post error:", error);
       Alert.alert("Error", "Failed to process your post.");
     }
-  };
-
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      "keyboardDidShow",
-      () => {
-        if (Platform.OS === "android") {
-          setIsKeyboardVisible(true);
-        }
-      }
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      "keyboardDidHide",
-      () => {
-        if (Platform.OS === "android") {
-          setIsKeyboardVisible(false);
-        }
-      }
-    );
-
-    return () => {
-      keyboardDidHideListener.remove();
-      keyboardDidShowListener.remove();
-    };
-  }, []);
+  }, [textInputValue, file, uid, sectionId, imageUri, color, target, icon, navigation, uploadImageToSupabase]);
 
   return (
     <View style={styles.container}>
@@ -340,16 +299,15 @@ function TaskNoteScreen({ route, navigation }) {
             size={13}
           />
         </View>
+
         <View style={styles.headerContainer}>
           <Ionicons name="bulb" size={16} color={color} />
-          <Text style={[styles.textTitle, { color: color }]}>
-            You decide How
-          </Text>
+          <Text style={[styles.textTitle, { color }]}>You decide How</Text>
         </View>
 
         <View style={styles.content}>
           {isFocused && (
-            <Text style={[styles.placeholderText, { color: color }]}>
+            <Text style={[styles.placeholderText, { color }]}>
               {placeholderQuestion}
             </Text>
           )}
@@ -358,7 +316,7 @@ function TaskNoteScreen({ route, navigation }) {
             placeholder={placeholderQuestion}
             value={textInputValue}
             onChangeText={setTextInputValue}
-            multiline={true}
+            multiline
             numberOfLines={4}
             textAlignVertical="top"
             onFocus={() => setIsFocused(true)}
@@ -385,10 +343,7 @@ function TaskNoteScreen({ route, navigation }) {
         <View style={styles.footer}>
           <View style={styles.footerOverlay}>
             <LongButton
-              style={[
-                styles.longButton,
-                { backgroundColor: GlobalColors.inActivetabBarColor },
-              ]}
+              style={[styles.longButton, { backgroundColor: GlobalColors.inActivetabBarColor }]}
               onPress={handlePledgeToDoIt}
             >
               PLEDGE TO DO IT
@@ -402,8 +357,6 @@ function TaskNoteScreen({ route, navigation }) {
     </View>
   );
 }
-
-export default TaskNoteScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -469,3 +422,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
 });
+
+export default TaskNoteScreen;

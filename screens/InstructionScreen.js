@@ -4,28 +4,28 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { GlobalColors } from "../constants/GlobalColors";
 import TaskBenefits from "../components/TaskSection/TaskBenefits";
 import LongButton from "../components/ui/LongButton";
-import { useNavigation } from "@react-navigation/native"; // Import useNavigation
+import { useNavigation } from "@react-navigation/native";
 
 const { width, height } = Dimensions.get("window");
 const aspectRatio = height / width;
 
 function InstructionScreen({ route }) {
-  const { icon, name, color, slogan, instructions, benefits } = route.params; // Fix typo: mame -> name
-  const navigation = useNavigation(); // Initialize the navigation hook
+  const { icon, name, color, slogan, instructions, benefits } = route.params;
+  const navigation = useNavigation();
 
   const handleStartPress = () => {
     switch (name) {
       case "Uplift":
-        navigation.navigate("Uplift"); // Navigate to Uplift screen
+        navigation.navigate("Uplift");
         break;
       case "Negative Knockout":
-        navigation.navigate("NegativeKnockoutStack", { screen: "NegativeKnockout" }); // Navigate to Negative Knockout screen
+        navigation.navigate("NegativeKnockoutStack", { screen: "NegativeKnockout" });
         break;
       case "Breather":
-        navigation.navigate("Breather"); // Navigate to Breather screen
+        navigation.navigate("Breather");
         break;
       case "Serenity Scene":
-        navigation.navigate("SerenityScene"); // Navigate to Serenity Scene screen
+        navigation.navigate("SerenityScene");
         break;
       default:
         console.warn("No matching screen found for:", name);
@@ -53,7 +53,7 @@ function InstructionScreen({ route }) {
       <View style={styles.footer}>
         <LongButton
           style={[styles.longButton, { backgroundColor: color }]}
-          onPress={handleStartPress} // Attach the handler to the button
+          onPress={handleStartPress}
         >
           START NOW
         </LongButton>
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 10,
     backgroundColor: "#fff",
-    justifyContent: "space-between", // Ensure space between header/content and footer
+    justifyContent: "space-between",
   },
   titleContainer: {
     flexDirection: "row",
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: 20,
-    flex: 1, // Allow content to take up available space
+    flex: 1,
   },
   instructionsTitleContainer: {
     flexDirection: "row",
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   footer: {
     padding: 16,
     paddingBottom: aspectRatio <= 1.78 ? 16 : 40,
-    justifyContent: "flex-end", // Push button to the end
+    justifyContent: "flex-end",
   },
   longButton: {
     width: "100%",

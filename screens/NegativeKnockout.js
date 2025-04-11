@@ -1,152 +1,329 @@
-import { useState, useEffect } from "react";
-import { View, StyleSheet, Alert } from "react-native";
-import SelectionScreen from "../screens/NegativeKnockout/SelectionScreen";
-import GameScreen from "../screens/NegativeKnockout/GameScreen";
-import EndScreen from "../screens/NegativeKnockout/EndScreen";
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, TextInput, FlatList, Image, ScrollView } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const monsters = [
-    { id: 1, name: "Anger", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster1.png" },
-    { id: 2, name: "Sadness", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster2.png" },
-    { id: 3, name: "Anxiety", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster3.png" },
-    { id: 4, name: "Fear", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster4.png" },
-    { id: 5, name: "Stress", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster5.png" },
-    { id: 6, name: "Doubt", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster6.png" },
-];
+// Color scheme
+const COLORS = {
+    primary: '#6a1b9a',
+    secondary: '#9c27b0',
+    background: '#f5f5f5',
+    text: '#333',
+    border: '#ddd',
+    selected: '#2196f3',
+    danger: '#e53935'
+};
 
-export default function NegativeKnockout({ navigation }) {
-    const [gameState, setGameState] = useState("selection");
+const NegativeKnockout = ({ navigation }) => {
+    const [monsters] = useState([
+        { id: 1, name: "Anger", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster1.png" },
+        { id: 2, name: "Sadness", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster2.png" },
+        { id: 3, name: "Anxiety", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster3.png" },
+        { id: 4, name: "Fear", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster4.png" },
+        { id: 5, name: "Stress", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster5.png" },
+        { id: 6, name: "Doubt", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster6.png" },
+    ]);
     const [selectedMonsters, setSelectedMonsters] = useState([]);
-    const [score, setScore] = useState(0);
-    const [monstersLeft, setMonstersLeft] = useState([]);
-    const [timeLeft, setTimeLeft] = useState(30);
-    const [gameStarted, setGameStarted] = useState(false);
+    const [customMonsterName, setCustomMonsterName] = useState('');
 
-    // Handle monster selection
-    const toggleMonsterSelection = (monster) => {
-        if (selectedMonsters.find((m) => m.id === monster.id)) {
-            setSelectedMonsters(selectedMonsters.filter((m) => m.id !== monster.id));
-        } else if (selectedMonsters.length < 5) {
-            setSelectedMonsters([...selectedMonsters, monster]);
+    const onToggleMonster = (monster) => {
+        if (selectedMonsters.some(m => m.id === monster.id)) {
+            setSelectedMonsters(selectedMonsters.filter(m => m.id !== monster.id));
         } else {
-            Alert.alert("Maximum Selection", "You can only select up to 5 monsters!");
+            if (selectedMonsters.length < 5) {
+                setSelectedMonsters([...selectedMonsters, monster]);
+            } else {
+                Alert.alert("Limit", "You can only select up to 5 emotions!");
+            }
         }
     };
 
-    // Add custom monster
-    const addCustomMonster = (newMonster) => {
-        if (selectedMonsters.length >= 5) {
-            Alert.alert("Maximum Selection", "You can only select up to 5 monsters!");
-            return;
-        }
-        setSelectedMonsters([...selectedMonsters, newMonster]);
+    const onRemoveMonster = (id) => {
+        setSelectedMonsters(selectedMonsters.filter(m => m.id !== id));
     };
 
-    // Remove monster
-    const removeMonster = (id) => {
-        setSelectedMonsters(selectedMonsters.filter(monster => monster.id !== id));
-    };
-
-    // Start the game with selected monsters
-    const startGame = () => {
-        if (selectedMonsters.length < 3) {
-            Alert.alert("Not Enough Monsters", "Please select at least 3 monsters!");
+    const handleAddCustomMonster = () => {
+        if (!customMonsterName.trim()) {
+            Alert.alert("Error", "Please enter an emotion name!");
             return;
         }
 
-        setGameState("game");
-        setMonstersLeft([...selectedMonsters]);
-        setScore(0);
-        setTimeLeft(30);
-        setGameStarted(true);
-    };
-
-    // Handle hit
-    const handleHit = (monsterId) => {
-        setScore(prev => prev + 100);
-        setMonstersLeft(prev => prev.filter(m => m.id !== monsterId));
-    };
-
-    // Handle game end
-    const handleGameEnd = () => {
-        setGameState("end");
-        setGameStarted(false);
-    };
-
-    // Reset game
-    const resetGame = () => {
-        setGameState("selection");
-        setSelectedMonsters([]);
-        setScore(0);
-        setMonstersLeft([]);
-        setGameStarted(false);
-    };
-
-    const handleGoBack = () => {
-        navigation.goBack();
-    };
-
-    // Game timer effect
-    useEffect(() => {
-        let timer;
-        if (gameStarted && timeLeft > 0) {
-            timer = setInterval(() => {
-                setTimeLeft(prev => {
-                    if (prev <= 1) {
-                        clearInterval(timer);
-                        handleGameEnd();
-                        return 0;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-        }
-
-        return () => {
-            if (timer) clearInterval(timer);
+        const newMonster = {
+            id: Date.now(),
+            name: customMonsterName.trim(),
+            image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster-default.png"
         };
-    }, [gameStarted, timeLeft]);
 
-    return (
-        <View style={styles.mainContainer}>
-            {gameState === "selection" && (
-                <SelectionScreen
-                    monsters={monsters}
-                    selectedMonsters={selectedMonsters}
-                    onToggleMonster={toggleMonsterSelection}
-                    onBack={handleGoBack}
-                    onStartGame={startGame}
-                    onAddCustomMonster={addCustomMonster}
-                    onRemoveMonster={removeMonster}
-                />
-            )}
+        setSelectedMonsters([...selectedMonsters, newMonster]);
+        setCustomMonsterName('');
+    };
 
-            {gameState === "game" && (
-                <GameScreen
-                    score={score}
-                    timeLeft={timeLeft}
-                    monstersLeft={monstersLeft}
-                    onQuit={resetGame}
-                    onHit={handleHit}
-                    onGameEnd={handleGameEnd}
-                />
-            )}
-
-            {gameState === "end" && (
-                <EndScreen
-                    score={score}
-                    selectedMonsters={selectedMonsters}
-                    monstersLeft={monstersLeft}
-                    onPlayAgain={resetGame}
-                />
-            )}
+    const renderSelectedItem = ({ item }) => (
+        <View style={styles.selectedItem}>
+            <Image source={{ uri: item.image }} style={styles.selectedImage} resizeMode="contain" />
+            <Text style={styles.selectedItemText}>{item.name}</Text>
+            <TouchableOpacity style={styles.removeButton} onPress={() => onRemoveMonster(item.id)}>
+                <Text style={styles.removeButtonText}>×</Text>
+            </TouchableOpacity>
         </View>
     );
-}
+
+    return (
+        <View style={styles.container}>
+            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <Ionicons name="chevron-back" size={24} color={COLORS.primary} />
+                    </TouchableOpacity>
+                    <Text style={styles.title}>Select Negative Emotions</Text>
+                    <View style={styles.headerSpacer} />
+                </View>
+
+                {/* Selected emotions */}
+                <View style={styles.selectedContainer}>
+                    <Text style={styles.sectionTitle}>Selected ({selectedMonsters.length}/5):</Text>
+                    {selectedMonsters.length > 0 ? (
+                        <FlatList
+                            horizontal
+                            data={selectedMonsters}
+                            renderItem={renderSelectedItem}
+                            keyExtractor={item => item.id.toString()}
+                            contentContainerStyle={styles.selectedList}
+                            showsHorizontalScrollIndicator={false}
+                        />
+                    ) : (
+                        <Text style={styles.emptyText}>No emotions selected yet</Text>
+                    )}
+                </View>
+
+                {/* Add custom emotion */}
+                <View style={styles.addContainer}>
+                    <Text style={styles.sectionTitle}>Add custom emotion:</Text>
+                    <View style={styles.inputRow}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter emotion name..."
+                            value={customMonsterName}
+                            onChangeText={setCustomMonsterName}
+                        />
+                        <TouchableOpacity style={styles.addButton} onPress={handleAddCustomMonster}>
+                            <Text style={styles.addButtonText}>+</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Default emotions */}
+                <View style={styles.defaultContainer}>
+                    <Text style={styles.sectionTitle}>Default emotions:</Text>
+                    <View style={styles.monsterGrid}>
+                        {monsters.map((monster) => (
+                            <TouchableOpacity
+                                key={monster.id}
+                                style={[
+                                    styles.monsterCard,
+                                    selectedMonsters.some(m => m.id === monster.id) && styles.selectedCard
+                                ]}
+                                onPress={() => onToggleMonster(monster)}
+                            >
+                                <Image source={{ uri: monster.image }} style={styles.monsterImage} resizeMode="contain" />
+                                <Text style={styles.monsterText}>{monster.name}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+            </ScrollView>
+
+            {/* Fixed buttons at bottom */}
+            <View style={styles.fixedFooter}>
+                <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.goBack()}>
+                    <Text style={styles.buttonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.primaryButton, selectedMonsters.length < 3 && styles.disabledButton]}
+                    onPress={() => Alert.alert('Game Started')}
+                    disabled={selectedMonsters.length < 3}
+                >
+                    <Text style={styles.buttonText}>Start</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+};
 
 const styles = StyleSheet.create({
-    mainContainer: {
+    container: {
         flex: 1,
-        backgroundColor: "#fff",
-        marginTop: 32
+        backgroundColor: COLORS.background,
+    },
+    header: {
+        marginTop: 30,
+        flexDirection: 'row',
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border,
+        marginBottom: 8,
+    },
+    backButton: {
+        padding: 4,
+    },
+    title: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: COLORS.primary,
+        textAlign: 'center',
+        flex: 1,
+    },
+    headerSpacer: {
+        width: 40,
+    },
+    scrollView: {
+        flex: 1,
+    },
+    scrollContent: {
+        padding: 20,
+        paddingTop: 10,
+        paddingBottom: 100,
+    },
+    selectedContainer: {
+        marginBottom: 20,
+    },
+    selectedList: {
+        paddingVertical: 5,
+    },
+    selectedItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        paddingVertical: 8,
+        paddingHorizontal: 15,
+        marginRight: 10,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+    },
+    selectedImage: {
+        width: 30,
+        height: 30,
+        marginRight: 8,
+    },
+    selectedItemText: {
+        marginRight: 8,
+        color: COLORS.text,
+    },
+    removeButton: {
+        backgroundColor: COLORS.danger,
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    removeButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        lineHeight: 18,
+    },
+    emptyText: {
+        color: COLORS.text,
+        fontStyle: 'italic',
+    },
+    addContainer: {
+        marginBottom: 20,
+    },
+    inputRow: {
+        flexDirection: 'row',
+    },
+    input: {
+        flex: 1,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        borderRadius: 8,
+        padding: 12,
+        marginRight: 10,
+    },
+    addButton: {
+        backgroundColor: COLORS.secondary,
+        width: 50,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    addButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 20,
+    },
+    defaultContainer: {
+        marginBottom: 20,
+    },
+    monsterGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+    },
+    monsterCard: {
+        width: '48%',
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        padding: 15,
+        marginBottom: 15,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        alignItems: 'center',
+    },
+    selectedCard: {
+        borderColor: COLORS.selected,
+        borderWidth: 2,
+        backgroundColor: '#e3f2fd',
+    },
+    monsterImage: {
+        width: 60,
+        height: 60,
+        marginBottom: 8,
+    },
+    monsterText: {
+        textAlign: 'center',
+        color: COLORS.text,
+    },
+    fixedFooter: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        padding: 20,
+        backgroundColor: COLORS.background,
+        borderTopWidth: 1,
+        borderTopColor: COLORS.border,
+    },
+    primaryButton: {
+        backgroundColor: COLORS.primary,
+        paddingVertical: 14,
+        paddingHorizontal: 30,
+        borderRadius: 8,
+        flex: 1,
+        marginLeft: 10,
+    },
+    secondaryButton: {
+        backgroundColor: COLORS.secondary,
+        paddingVertical: 14,
+        paddingHorizontal: 30,
+        borderRadius: 8,
+        flex: 1,
+        marginRight: 10,
+    },
+    disabledButton: {
+        opacity: 0.6,
+    },
+    buttonText: {
+        color: '#fff',
+        textAlign: 'center',
+        fontWeight: 'bold',
+        fontSize: 16,
     },
 });
+
+export default NegativeKnockout;

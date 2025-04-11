@@ -238,7 +238,7 @@ const ChatsScreen = ({ navigation }) => {
 
   return (
     <ImageBackground
-      source={require("../assets/Background.jpg")} // Adjust the path as necessary
+      source={require("../assets/Background.jpg")}
       style={styles.background}
     >
       <View style={styles.overlay}>
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.5)", // White overlay with opacity
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
   },
   container: {
     flex: 1,

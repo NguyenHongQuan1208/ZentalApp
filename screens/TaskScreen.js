@@ -1,3 +1,4 @@
+import React, { useState, useContext, useEffect, useCallback } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -7,119 +8,111 @@ import {
 } from "react-native";
 import SectionGridTitle from "../components/TaskSection/SectionGridTitle";
 import { GlobalColors } from "../constants/GlobalColors";
-import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
-import useRealtimePosts from "../hooks/useRealtimePosts"; // Import custom hook
+import useRealtimePosts from "../hooks/useRealtimePosts";
 import getAllTaskSections from "../util/task-section-http";
 import CarouselComponent from "../components/TaskSection/CaroselComponent";
 
 function TaskScreen({ navigation }) {
+  // Contexts
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
-  const token = authCtx.token;
-  const refreshToken = refreshCtx.refreshToken;
+  const { token } = authCtx;
+  const { refreshToken } = refreshCtx;
 
+  // State
   const [userId, setUserId] = useState("");
-  const [taskSections, setTaskSections] = useState([]); // State for task sections
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
+  const [taskSections, setTaskSections] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Fetch task sections from API
-  useEffect(() => {
-    async function fetchTaskSections() {
-      try {
-        const sections = await getAllTaskSections(); // Call your API function
-        setTaskSections(sections); // Set the fetched sections
-      } catch (error) {
-        setError(error.message);
-        console.error("Error fetching task sections:", error);
-      } finally {
-        setLoading(false);
-      }
+  // Data fetching
+  const fetchUserData = useCallback(async () => {
+    try {
+      const authResponse = await getUserDataWithRetry(
+        token,
+        refreshToken,
+        authCtx,
+        refreshCtx
+      );
+      setUserId(authResponse.localId);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      authCtx.logout();
     }
-
-    fetchTaskSections();
-  }, []); // Empty dependency array to run only once on mount
-
-  // Get userId after login
-  useEffect(() => {
-    async function fetchUserData() {
-      try {
-        const authResponse = await getUserDataWithRetry(
-          token,
-          refreshToken,
-          authCtx,
-          refreshCtx
-        );
-        const uid = authResponse.localId;
-        setUserId(uid);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        authCtx.logout();
-      }
-    }
-    fetchUserData();
   }, [token, refreshToken, authCtx, refreshCtx]);
 
-  // Use the custom hook to manage the state of sections
+  const fetchTaskSections = useCallback(async () => {
+    try {
+      const sections = await getAllTaskSections();
+      setTaskSections(sections);
+    } catch (error) {
+      setError(error.message);
+      console.error("Error fetching task sections:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Effects
+  useEffect(() => {
+    fetchTaskSections();
+    fetchUserData();
+  }, [fetchTaskSections, fetchUserData]);
+
+  // Custom hook for realtime updates
   const updatedSections = useRealtimePosts(userId, taskSections);
 
-  const renderSectionItem = ({ item }) => {
-    const {
-      id,
-      title,
-      color,
-      icon,
-      benefits,
-      description,
-      target,
-      placeholderQuestion,
-      hasDraft,
-    } = item;
+  // Handlers
+  const handleSectionPress = useCallback((section) => {
+    const { id, color, icon, target, placeholderQuestion, hasDraft } = section;
 
-    const pressHandler = () => {
-      if (hasDraft) {
-        navigation.navigate("TaskNote", {
-          id,
-          color,
-          icon,
-          target,
-          placeholderQuestion,
-        });
-      } else {
-        navigation.navigate("TaskDetail", {
-          id,
-          color,
-          icon,
-          benefits,
-          description,
-          target,
-          placeholderQuestion,
-        });
-      }
-    };
+    if (hasDraft) {
+      navigation.navigate("TaskNote", {
+        id,
+        color,
+        icon,
+        target,
+        placeholderQuestion,
+      });
+    } else {
+      navigation.navigate("TaskDetail", {
+        id,
+        color,
+        icon,
+        benefits: section.benefits,
+        description: section.description,
+        target,
+        placeholderQuestion,
+      });
+    }
+  }, [navigation]);
 
-    return (
-      <SectionGridTitle
-        title={title}
-        color={color}
-        icon={icon}
-        hasDraft={hasDraft}
-        onPress={pressHandler}
-      />
-    );
-  };
+  const renderSectionItem = useCallback(({ item }) => (
+    <SectionGridTitle
+      title={item.title}
+      color={item.color}
+      icon={item.icon}
+      hasDraft={item.hasDraft}
+      onPress={() => handleSectionPress(item)}
+    />
+  ), [handleSectionPress]);
 
+  // Render states
   if (loading) {
-    return <ActivityIndicator size="large" color={GlobalColors.primaryColor} />;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={GlobalColors.primaryColor} />
+      </View>
+    );
   }
 
   if (error) {
     return (
-      <View>
-        <Text>Error: {error}</Text>
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error}</Text>
       </View>
     );
   }
@@ -142,8 +135,6 @@ function TaskScreen({ navigation }) {
   );
 }
 
-export default TaskScreen;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -158,3 +149,5 @@ const styles = StyleSheet.create({
     marginTop: -70,
   },
 });
+
+export default TaskScreen;
