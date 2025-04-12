@@ -1,16 +1,25 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
-import { AuthContext } from "../store/auth-context";
-import Avatar from "../components/Profile/Avatar";
-import { GlobalColors } from "../constants/GlobalColors";
 import { Ionicons } from "@expo/vector-icons";
+import { AuthContext } from "../store/auth-context";
+import { RefreshTokenContext } from "../store/RefreshTokenContext";
+import Avatar from "../components/Profile/Avatar";
 import MenuItem from "../components/Profile/MenuItem";
+import { GlobalColors } from "../constants/GlobalColors";
 import { getUser } from "../util/user-info-http";
 import useRealtimeUser from "../hooks/useRealtimeUser";
-import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 
-function ProfileScreen({ navigation }) {
+const menuItems = [
+  { icon: "person", screen: "PersonalProfile", screenName: "Personal Profile" },
+  { icon: "home", screen: "Home", screenName: "Home" },
+  { icon: "sunny", screen: "Task", screenName: "Task" },
+  { icon: "paper-plane", screen: "Posts", screenName: "Posts" },
+  { icon: "chatbubbles", screen: "Chats", screenName: "Chats" },
+  { icon: "exit", screen: "logout", screenName: "Log out" },
+];
+
+const ProfileScreen = ({ navigation }) => {
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
   const token = authCtx.token;
@@ -20,7 +29,7 @@ function ProfileScreen({ navigation }) {
   const [userName, setUserName] = useState("User Name");
   const [userId, setUserId] = useState("");
 
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       const authResponse = await getUserDataWithRetry(
         token,
@@ -28,7 +37,6 @@ function ProfileScreen({ navigation }) {
         authCtx,
         refreshCtx
       );
-
       const uid = authResponse.localId;
       setUserId(uid);
 
@@ -38,27 +46,31 @@ function ProfileScreen({ navigation }) {
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
-  }
+  }, [token, refreshToken]);
 
   useEffect(() => {
     fetchData();
-  }, [token, refreshToken]);
+  }, [fetchData]);
 
-  const handleUserDataChange = (userData) => {
+  const handleUserDataChange = useCallback((userData) => {
     setUserName(userData.username || "User Name");
     setPhotoUrl(userData.photoUrl || null);
-  };
+  }, []);
 
   useRealtimeUser(userId, handleUserDataChange);
 
-  function pressHandler() {
+  const pressHandler = useCallback(() => {
     navigation.navigate("EditProfile");
-  }
+  }, [navigation]);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       <Avatar photoUrl={photoUrl} size={100} />
       <Text style={styles.userName}>{userName}</Text>
+
       <Pressable
         onPress={pressHandler}
         style={({ pressed }) => [
@@ -71,29 +83,24 @@ function ProfileScreen({ navigation }) {
       </Pressable>
 
       <View style={styles.menuContainer}>
-        <MenuItem
-          icon="person"
-          screen="PersonalProfile"
-          screenName="Personal Profile"
-          userId={userId} // Pass userId to MenuItem
-        />
-        <MenuItem icon="home" screen="Home" screenName="Home" />
-        <MenuItem icon="sunny" screen="Task" screenName="Task" />
-        <MenuItem icon="paper-plane" screen="Posts" screenName="Posts" />
-        <MenuItem icon="chatbubbles" screen="Chats" screenName="Chats" />
-        <MenuItem icon="exit" screen="logout" screenName="Log out" />
+        {menuItems.map((item, index) => (
+          <MenuItem
+            key={`${item.screen}-${index}`}
+            icon={item.icon}
+            screen={item.screen}
+            screenName={item.screenName}
+            userId={userId}
+          />
+        ))}
       </View>
     </ScrollView>
   );
-}
-
-export default ProfileScreen;
+};
 
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
+    paddingVertical: 20,
   },
   userName: {
     marginTop: 10,
@@ -105,6 +112,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 10,
+    alignItems: "center",
   },
   editPressed: {
     opacity: 0.5,
@@ -118,7 +126,9 @@ const styles = StyleSheet.create({
   menuContainer: {
     marginTop: 20,
     width: "90%",
-    borderTopWidth: 1,
+    borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: GlobalColors.primaryGrey,
   },
 });
+
+export default React.memo(ProfileScreen);

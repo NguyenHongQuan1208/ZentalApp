@@ -18,8 +18,8 @@ function InstructionScreen({ route }) {
       case "Uplift":
         navigation.navigate("Uplift");
         break;
-      case "Negative Knockout":
-        navigation.navigate("NegativeKnockoutStack", { screen: "NegativeKnockout" });
+      case "Monster Mind Cleanse":
+        navigation.navigate("MonsterRainScreen");
         break;
       case "Breather":
         navigation.navigate("Breather");

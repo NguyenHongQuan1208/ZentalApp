@@ -36,7 +36,8 @@ import BalloonGame from "./screens/BalloonGame";
 import Breather from "./screens/Breather";
 import SerenitySceneScreen from "./screens/SerenitySceneScreen";
 import VideoPlayerScreen from "./screens/VideoPlayerScreen";
-import NegativeKnockout from "./screens/NegativeKnockout";
+import MonsterRainScreen from "./screens/MonsterRainScreen";
+import MonsterRainGameScreen from "./screens/MonsterRainGameScreen"
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -166,15 +167,6 @@ function AuthStack() {
           headerBackButtonDisplayMode: "minimal",
         }}
       />
-    </Stack.Navigator>
-  );
-}
-function NegativeKnockoutStack() {
-  return (
-    <Stack.Navigator screenOptions={{
-      headerShown: false
-    }}>
-      <Stack.Screen name="NegativeKnockout" component={NegativeKnockout} />
     </Stack.Navigator>
   );
 }
@@ -340,8 +332,15 @@ function AuthenticatedStack() {
       />
 
       <Stack.Screen
-        name="NegativeKnockoutStack"
-        component={NegativeKnockoutStack}
+        name="MonsterRainScreen"
+        component={MonsterRainScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="MonsterRainGameScreen"
+        component={MonsterRainGameScreen}
         options={{
           headerShown: false,
         }}

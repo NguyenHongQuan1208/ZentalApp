@@ -1,19 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, TextInput, FlatList, Image, ScrollView } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { GlobalColors } from '../constants/GlobalColors';
 
-// Color scheme
-const COLORS = {
-    primary: '#6a1b9a',
-    secondary: '#9c27b0',
-    background: '#f5f5f5',
-    text: '#333',
-    border: '#ddd',
-    selected: '#2196f3',
-    danger: '#e53935'
-};
-
-const NegativeKnockout = ({ navigation }) => {
+const MonsterRainScreen = ({ navigation }) => {
     const [monsters] = useState([
         { id: 1, name: "Anger", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster1.png" },
         { id: 2, name: "Sadness", image: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Monster/monster2.png" },
@@ -57,6 +47,16 @@ const NegativeKnockout = ({ navigation }) => {
         setCustomMonsterName('');
     };
 
+    const onStartGame = () => {
+        if (selectedMonsters.length < 3) {
+            Alert.alert("Error", "You need to select at least 3 emotions to start the game!");
+        } else {
+            navigation.navigate('MonsterRainGameScreen', {
+                selectedMonsters: selectedMonsters,
+            });
+        }
+    };
+
     const renderSelectedItem = ({ item }) => (
         <View style={styles.selectedItem}>
             <Image source={{ uri: item.image }} style={styles.selectedImage} resizeMode="contain" />
@@ -72,7 +72,7 @@ const NegativeKnockout = ({ navigation }) => {
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                        <Ionicons name="chevron-back" size={24} color={COLORS.primary} />
+                        <Ionicons name="chevron-back" size={24} color={GlobalColors.primaryColor} />
                     </TouchableOpacity>
                     <Text style={styles.title}>Select Negative Emotions</Text>
                     <View style={styles.headerSpacer} />
@@ -104,6 +104,7 @@ const NegativeKnockout = ({ navigation }) => {
                             placeholder="Enter emotion name..."
                             value={customMonsterName}
                             onChangeText={setCustomMonsterName}
+                            placeholderTextColor={GlobalColors.secondBlack}
                         />
                         <TouchableOpacity style={styles.addButton} onPress={handleAddCustomMonster}>
                             <Text style={styles.addButtonText}>+</Text>
@@ -139,7 +140,7 @@ const NegativeKnockout = ({ navigation }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.primaryButton, selectedMonsters.length < 3 && styles.disabledButton]}
-                    onPress={() => Alert.alert('Game Started')}
+                    onPress={onStartGame}
                     disabled={selectedMonsters.length < 3}
                 >
                     <Text style={styles.buttonText}>Start</Text>
@@ -152,7 +153,7 @@ const NegativeKnockout = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: COLORS.background,
+        backgroundColor: GlobalColors.primaryWhite,
     },
     header: {
         marginTop: 30,
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: COLORS.border,
+        borderBottomColor: GlobalColors.primaryGrey,
         marginBottom: 8,
     },
     backButton: {
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: COLORS.primary,
+        color: GlobalColors.primaryColor,
         textAlign: 'center',
         flex: 1,
     },
@@ -194,13 +195,13 @@ const styles = StyleSheet.create({
     selectedItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: GlobalColors.pureWhite,
         borderRadius: 20,
         paddingVertical: 8,
         paddingHorizontal: 15,
         marginRight: 10,
         borderWidth: 1,
-        borderColor: COLORS.border,
+        borderColor: GlobalColors.primaryGrey,
     },
     selectedImage: {
         width: 30,
@@ -209,10 +210,10 @@ const styles = StyleSheet.create({
     },
     selectedItemText: {
         marginRight: 8,
-        color: COLORS.text,
+        color: GlobalColors.primaryBlack,
     },
     removeButton: {
-        backgroundColor: COLORS.danger,
+        backgroundColor: GlobalColors.errorRed,
         width: 20,
         height: 20,
         borderRadius: 10,
@@ -220,12 +221,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     removeButtonText: {
-        color: '#fff',
+        color: GlobalColors.pureWhite,
         fontSize: 16,
         lineHeight: 18,
     },
     emptyText: {
-        color: COLORS.text,
+        color: GlobalColors.secondBlack,
         fontStyle: 'italic',
     },
     addContainer: {
@@ -236,22 +237,23 @@ const styles = StyleSheet.create({
     },
     input: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: GlobalColors.pureWhite,
         borderWidth: 1,
-        borderColor: COLORS.border,
+        borderColor: GlobalColors.primaryGrey,
         borderRadius: 8,
         padding: 12,
         marginRight: 10,
+        color: GlobalColors.primaryBlack,
     },
     addButton: {
-        backgroundColor: COLORS.secondary,
+        backgroundColor: GlobalColors.thirdColor,
         width: 50,
         borderRadius: 8,
         justifyContent: 'center',
         alignItems: 'center',
     },
     addButtonText: {
-        color: '#fff',
+        color: GlobalColors.pureWhite,
         fontWeight: 'bold',
         fontSize: 20,
     },
@@ -265,18 +267,18 @@ const styles = StyleSheet.create({
     },
     monsterCard: {
         width: '48%',
-        backgroundColor: '#fff',
+        backgroundColor: GlobalColors.pureWhite,
         borderRadius: 8,
         padding: 15,
         marginBottom: 15,
         borderWidth: 1,
-        borderColor: COLORS.border,
+        borderColor: GlobalColors.primaryGrey,
         alignItems: 'center',
     },
     selectedCard: {
-        borderColor: COLORS.selected,
+        borderColor: GlobalColors.primaryColor,
         borderWidth: 2,
-        backgroundColor: '#e3f2fd',
+        backgroundColor: GlobalColors.secondColor + '40', // Adding opacity
     },
     monsterImage: {
         width: 60,
@@ -285,7 +287,7 @@ const styles = StyleSheet.create({
     },
     monsterText: {
         textAlign: 'center',
-        color: COLORS.text,
+        color: GlobalColors.primaryBlack,
     },
     fixedFooter: {
         position: 'absolute',
@@ -295,12 +297,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         padding: 20,
-        backgroundColor: COLORS.background,
+        backgroundColor: GlobalColors.primaryWhite,
         borderTopWidth: 1,
-        borderTopColor: COLORS.border,
+        borderTopColor: GlobalColors.primaryGrey,
     },
     primaryButton: {
-        backgroundColor: COLORS.primary,
+        backgroundColor: GlobalColors.primaryColor,
         paddingVertical: 14,
         paddingHorizontal: 30,
         borderRadius: 8,
@@ -308,7 +310,7 @@ const styles = StyleSheet.create({
         marginLeft: 10,
     },
     secondaryButton: {
-        backgroundColor: COLORS.secondary,
+        backgroundColor: GlobalColors.thirdColor,
         paddingVertical: 14,
         paddingHorizontal: 30,
         borderRadius: 8,
@@ -319,11 +321,11 @@ const styles = StyleSheet.create({
         opacity: 0.6,
     },
     buttonText: {
-        color: '#fff',
+        color: GlobalColors.pureWhite,
         textAlign: 'center',
         fontWeight: 'bold',
         fontSize: 16,
     },
 });
 
-export default NegativeKnockout;
+export default MonsterRainScreen;

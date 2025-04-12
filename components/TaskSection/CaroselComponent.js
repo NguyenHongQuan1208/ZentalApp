@@ -34,18 +34,18 @@ const slideData = [
   {
     id: "s2",
     icon: "fast-food",
-    name: "Negative Knockout",
+    name: "Monster Mind Cleanse",
     color: "#D500A9",
-    slogan: "Wipe out your worries",
+    slogan: "Smash Away Your Stress",
     instructions:
-      "In this game, you'll visually eliminate negative thoughts and work toward a more positive mindset.\nOn the next screen, pick a few words to describe your negative thoughts and feelings, or add your own. Then, aim your slingshot at those words to get rid of them!",
+      "In this game, you'll eliminate pesky monsters representing negative thoughts and work toward a more positive mindset. On the next screen, select a few monsters that symbolize your negative thoughts and feelings, or add your own. Then, tap on these monsters to get rid of them and boost your positivity!",
     benefits: [
       "Reduce the impact of your negative thoughts",
       "Stop ruminating on your worries",
       "Feel empowered to control your thoughts",
     ],
     slideImg:
-      "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Slider/negative-knockout.jpg",
+      "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Slider/monster-mind-cleanse.jpg",
   },
   {
     id: "s3",

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   View,
   Animated,
@@ -16,14 +16,15 @@ import { getAllUsers } from "../util/user-info-http";
 import ProfileBar from "../components/Posts/ProfileBar";
 import SearchInput from "../components/Search/SearchInput";
 
-function SearchScreen({ navigation, route }) {
+const SearchScreen = ({ navigation, route }) => {
   const [searchValue, setSearchValue] = useState("");
-  const [inputAnimation] = useState(new Animated.Value(0));
-  const [fadeAnimation] = useState(new Animated.Value(0));
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const inputAnimation = useRef(new Animated.Value(0)).current;
+  const fadeAnimation = useRef(new Animated.Value(0)).current;
   const showInput = route.params?.showInput;
 
+  // Fetch users on mount
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -39,8 +40,9 @@ function SearchScreen({ navigation, route }) {
     fetchUsers();
   }, []);
 
+  // Filter users based on search value
   const filteredUsers = useMemo(() => {
-    if (!searchValue) return [];
+    if (!searchValue.trim()) return [];
     const lowerSearchValue = searchValue.toLowerCase();
     return users.filter(
       (user) =>
@@ -49,6 +51,27 @@ function SearchScreen({ navigation, route }) {
     );
   }, [searchValue, users]);
 
+  // Animate search input when showInput changes
+  useEffect(() => {
+    if (showInput) {
+      Animated.parallel([
+        Animated.timing(inputAnimation, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: false,
+        }),
+        Animated.timing(fadeAnimation, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: false,
+        }),
+      ]).start();
+    } else {
+      fadeAnimation.setValue(0);
+    }
+  }, [showInput]);
+
+  // Set header options
   useEffect(() => {
     navigation.setOptions({
       headerTitle: () => (
@@ -66,28 +89,12 @@ function SearchScreen({ navigation, route }) {
               value={searchValue}
               onChangeText={setSearchValue}
               onClear={() => setSearchValue("")}
+              autoFocus={true}
             />
           )}
         </Animated.View>
       ),
     });
-
-    if (showInput) {
-      Animated.parallel([
-        Animated.timing(inputAnimation, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: false,
-        }),
-        Animated.timing(fadeAnimation, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: false,
-        }),
-      ]).start();
-    } else {
-      fadeAnimation.setValue(0);
-    }
   }, [navigation, showInput, searchValue]);
 
   const renderItem = useCallback(
@@ -116,20 +123,23 @@ function SearchScreen({ navigation, route }) {
               data={filteredUsers}
               keyExtractor={(item) => item.id.toString()}
               renderItem={renderItem}
-              ListEmptyComponent={<Text>No users found.</Text>}
+              ListEmptyComponent={
+                <Text style={styles.noResultsText}>No users found</Text>
+              }
               initialNumToRender={10}
               windowSize={5}
+              maxToRenderPerBatch={10}
             />
           ) : (
-            <Text>No users to display. Please enter a search term.</Text>
+            <Text style={styles.placeholderText}>
+              Search for users by username or email
+            </Text>
           )}
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
-}
-
-export default SearchScreen;
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -139,10 +149,23 @@ const styles = StyleSheet.create({
   innerContainer: {
     flex: 1,
     paddingHorizontal: 16,
-    marginTop: 8,
+    paddingTop: 8,
   },
   loadingContainer: {
-    padding: 12,
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
   },
+  placeholderText: {
+    textAlign: "center",
+    marginTop: 20,
+    color: GlobalColors.textSecondary,
+  },
+  noResultsText: {
+    textAlign: "center",
+    marginTop: 20,
+    color: GlobalColors.textSecondary,
+  },
 });
+
+export default React.memo(SearchScreen);
