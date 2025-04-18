@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -81,79 +81,67 @@ const slideData = [
   },
 ];
 
-const extendedSlideData = [
-  slideData[slideData.length - 1],
-  ...slideData,
-  slideData[0],
-];
-
-const SlideComponent = () => {
+const CaroselComponent = () => {
   const scrollViewRef = useRef(null);
-  const [currentIndex, setCurrentIndex] = useState(0); // Set initial index to 0
+  const [currentIndex, setCurrentIndex] = useState(1); // Start at first real slide
   const scrollX = useRef(new Animated.Value(0)).current;
-  const navigation = useNavigation(); // Initialize the navigation hook
+  const navigation = useNavigation();
+  const intervalRef = useRef(null);
 
-  const handleScroll = Animated.event(
-    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-    { useNativeDriver: false }
+  // Memoize extended slide data to prevent recreation on every render
+  const extendedSlideData = useMemo(() => [
+    slideData[slideData.length - 1],
+    ...slideData,
+    slideData[0],
+  ], []);
+
+  const handleScroll = useCallback(
+    Animated.event(
+      [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+      { useNativeDriver: false }
+    ),
+    []
   );
 
-  const handleScrollEnd = (event) => {
+  const handleScrollEnd = useCallback((event) => {
     const contentOffset = event.nativeEvent.contentOffset.x;
     const index = Math.round(contentOffset / screenWidth);
-    setCurrentIndex(index);
 
-    // If scrolled to the first fake slide, go to the real last slide
+    // Handle infinite scroll
     if (index === 0) {
-      setTimeout(() => {
-        scrollViewRef.current.scrollTo({
-          x: screenWidth * (extendedSlideData.length - 2),
-          animated: false,
-        });
-      }, 10);
-      setCurrentIndex(extendedSlideData.length - 2);
-    }
-
-    // If scrolled to the last fake slide, go to the real first slide
-    if (index === extendedSlideData.length - 1) {
-      setTimeout(() => {
-        scrollViewRef.current.scrollTo({ x: screenWidth, animated: false });
-      }, 10);
-      setCurrentIndex(1);
-    }
-  };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const nextIndex = (currentIndex + 1) % extendedSlideData.length;
-      scrollViewRef.current.scrollTo({
-        x: screenWidth * nextIndex,
-        animated: true,
+      scrollViewRef.current?.scrollTo({
+        x: screenWidth * (extendedSlideData.length - 2),
+        animated: false,
       });
-      setCurrentIndex(nextIndex);
-    }, 5000); // Change slide every 5 seconds
+      setCurrentIndex(extendedSlideData.length - 2);
+    } else if (index === extendedSlideData.length - 1) {
+      scrollViewRef.current?.scrollTo({ x: screenWidth, animated: false });
+      setCurrentIndex(1);
+    } else {
+      setCurrentIndex(index);
+    }
+  }, [extendedSlideData.length]);
 
-    // Clear the interval on component unmount
-    return () => clearInterval(interval);
-  }, [currentIndex]);
-
-  const goToSlide = (index) => {
-    scrollViewRef.current.scrollTo({ x: screenWidth * index, animated: true });
+  const goToSlide = useCallback((index) => {
+    scrollViewRef.current?.scrollTo({ x: screenWidth * index, animated: true });
     setCurrentIndex(index);
-  };
+  }, []);
 
-  const goToPreviousSlide = () => {
-    const previousIndex =
-      (currentIndex - 1 + extendedSlideData.length) % extendedSlideData.length;
+  const goToPreviousSlide = useCallback(() => {
+    const previousIndex = currentIndex > 1
+      ? currentIndex - 1
+      : extendedSlideData.length - 2;
     goToSlide(previousIndex);
-  };
+  }, [currentIndex, extendedSlideData.length, goToSlide]);
 
-  const goToNextSlide = () => {
-    const nextIndex = (currentIndex + 1) % extendedSlideData.length;
+  const goToNextSlide = useCallback(() => {
+    const nextIndex = currentIndex < extendedSlideData.length - 2
+      ? currentIndex + 1
+      : 1;
     goToSlide(nextIndex);
-  };
+  }, [currentIndex, extendedSlideData.length, goToSlide]);
 
-  const handleStartPress = () => {
+  const handleStartPress = useCallback(() => {
     const currentSlide = extendedSlideData[currentIndex];
     navigation.navigate("Instruction", {
       icon: currentSlide.icon,
@@ -163,7 +151,25 @@ const SlideComponent = () => {
       instructions: currentSlide.instructions,
       benefits: currentSlide.benefits,
     });
-  };
+  }, [currentIndex, extendedSlideData, navigation]);
+
+  // Auto-scroll effect with cleanup
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      goToNextSlide();
+    }, 5000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [goToNextSlide]);
+
+  // Initial scroll to first real slide
+  useEffect(() => {
+    scrollViewRef.current?.scrollTo({ x: screenWidth, animated: false });
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -176,43 +182,48 @@ const SlideComponent = () => {
         onScroll={handleScroll}
         onMomentumScrollEnd={handleScrollEnd}
         scrollEventThrottle={16}
-        initialScrollIndex={0} // Set initial scroll index to 0
       >
         {extendedSlideData.map((item, index) => (
-          <View key={index} style={styles.slide}>
-            <Image source={{ uri: item.slideImg }} style={styles.image} />
+          <View key={`${item.id}-${index}`} style={styles.slide}>
+            <Image
+              source={{ uri: item.slideImg }}
+              style={styles.image}
+              resizeMode="cover"
+            />
             <View
-              style={[styles.overlay, { backgroundColor: item.color + "99" }]}
+              style={[styles.overlay, { backgroundColor: `${item.color}99` }]}
             />
             <View style={styles.textContainer}>
               <Ionicons name={item.icon} size={44} color="#fff" />
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.slogan}>{item.slogan}</Text>
-              <StartButton
-                onPress={handleStartPress} // Updated onPress handler
-              />
+              <StartButton onPress={handleStartPress} />
             </View>
           </View>
         ))}
       </Animated.ScrollView>
+
       <TouchableOpacity
         style={styles.chevronButtonLeft}
         onPress={goToPreviousSlide}
       >
         <Ionicons name="chevron-back" size={30} color="#fff" />
       </TouchableOpacity>
+
       <TouchableOpacity
         style={styles.chevronButtonRight}
         onPress={goToNextSlide}
       >
         <Ionicons name="chevron-forward" size={30} color="#fff" />
       </TouchableOpacity>
+
       <View style={styles.dotsContainer}>
         {slideData.map((_, index) => (
           <TouchableOpacity
-            key={index}
+            key={`dot-${index}`}
             onPress={() => goToSlide(index + 1)}
             style={styles.dot}
+            activeOpacity={0.7}
           >
             <View
               style={[
@@ -229,11 +240,12 @@ const SlideComponent = () => {
   );
 };
 
+// Memoize styles to prevent recreation on every render
 const styles = StyleSheet.create({
   container: {
-    width: "100%", // Ensure it takes full width
-    height: 240, // Fixed height for the carousel
-    position: "relative", // Position relative to allow absolute positioning of icons
+    width: "100%",
+    height: 240,
+    position: "relative",
   },
   scrollContainer: {
     alignItems: "center",
@@ -246,18 +258,10 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   image: {
-    width: "100%",
-    height: "100%",
-    position: "absolute",
-    top: 0,
-    left: 0,
+    ...StyleSheet.absoluteFillObject,
   },
   overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
+    ...StyleSheet.absoluteFillObject,
     opacity: 0.8,
   },
   textContainer: {
@@ -270,32 +274,36 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     marginTop: 10,
+    textAlign: "center",
   },
   slogan: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+    textAlign: "center",
   },
   chevronButtonLeft: {
     position: "absolute",
     left: 10,
     top: "50%",
-    transform: [{ translateY: -15 }], // Center the icon vertically
-    zIndex: 2, // Ensure it's above other elements
+    transform: [{ translateY: -15 }],
+    zIndex: 2,
+    padding: 10,
   },
   chevronButtonRight: {
     position: "absolute",
     right: 10,
     top: "50%",
-    transform: [{ translateY: -15 }], // Center the icon vertically
-    zIndex: 2, // Ensure it's above other elements
+    transform: [{ translateY: -15 }],
+    zIndex: 2,
+    padding: 10,
   },
   dotsContainer: {
     flexDirection: "row",
     justifyContent: "center",
     position: "absolute",
     bottom: 10,
-    width: "100%", // Ensure dots are centered horizontally
+    width: "100%",
   },
   dot: {
     marginHorizontal: 5,
@@ -313,4 +321,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SlideComponent;
+export default React.memo(CaroselComponent);

@@ -98,3 +98,32 @@ export async function changePublicStatus(postId, newStatus) {
     throw new Error("Could not update public status.");
   }
 }
+export async function countPostsByUser(userId) {
+  try {
+    // Lấy tất cả bài đăng
+    const response = await axios.get(`${BACKEND_URL}/posts.json`);
+
+    if (!response.data) {
+      return {}; // Không có bài đăng nào
+    }
+
+    // Khởi tạo đối tượng đếm cho mỗi section
+    const sections = ["s1", "s2", "s3", "s4", "s5", "s6"];
+    const counts = sections.reduce((acc, section) => {
+      acc[section] = 0;
+      return acc;
+    }, {});
+
+    // Lọc và đếm bài đăng theo userId và sectionId
+    Object.values(response.data).forEach((post) => {
+      if (post.uid === userId && sections.includes(post.sectionId)) {
+        counts[post.sectionId]++;
+      }
+    });
+
+    return counts;
+  } catch (error) {
+    console.error("Error counting posts:", error);
+    throw new Error("Could not count posts.");
+  }
+}

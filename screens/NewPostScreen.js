@@ -207,6 +207,7 @@ function NewPosts({ navigation }) {
                   tintColor={GlobalColors.primaryColor}
                 />
               }
+              showsVerticalScrollIndicator={false}
             />
           )}
         </View>
