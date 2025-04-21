@@ -1,5 +1,11 @@
-import { useContext, useState, useEffect, useCallback, useMemo } from "react";
-import { ScrollView, View, Text, StyleSheet, Image, RefreshControl } from "react-native";
+import { useContext, useState, useEffect, useCallback } from "react";
+import {
+  ScrollView,
+  View,
+  RefreshControl,
+  StyleSheet,
+  Text,
+} from "react-native";
 import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import useRealtimeUser from "../hooks/useRealtimeUser";
@@ -7,9 +13,11 @@ import { getUser } from "../util/user-info-http";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import { countPostsByUser } from "../util/posts-data-http";
 import { getColorAndTitle } from "../util/section-default-image-http";
-import { GlobalColors } from '../constants/GlobalColors';
-import ProgressBar from "../components/Home/ProgressBar";
+import { GlobalColors } from "../constants/GlobalColors";
 import ProfileContainer from "../components/Home/ProfileContainer";
+import StatsSection from "../components/Home/StatsSection";
+import ArticleList from "../components/Home/ArticleList";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 function HomeScreen() {
   const authCtx = useContext(AuthContext);
@@ -25,10 +33,10 @@ function HomeScreen() {
   const [sectionTitles, setSectionTitles] = useState({});
   const [sectionLevels, setSectionLevels] = useState({});
   const [sectionProgress, setSectionProgress] = useState({});
-  const [refreshing, setRefreshing] = useState(false); // State for pull-to-refresh
-  const [placeholderSections, setPlaceholderSections] = useState([]); // Store section keys for placeholders during refresh
+  const [refreshing, setRefreshing] = useState(false);
+  const [placeholderSections, setPlaceholderSections] = useState([]);
 
-  const POSTS_PER_LEVEL = 5; // Number of posts needed to level up
+  const POSTS_PER_LEVEL = 5;
 
   const calculateLevelAndProgress = (count) => {
     const level = Math.floor(count / POSTS_PER_LEVEL);
@@ -51,7 +59,6 @@ function HomeScreen() {
       setUserName(userData.username || "No name available");
       setPhotoUrl(userData.photoUrl || "");
 
-      // Explicitly fetch and recount posts for the user to ensure fresh data
       const counts = await countPostsByUser(uid);
       setPostCounts(counts);
 
@@ -81,7 +88,7 @@ function HomeScreen() {
           return { section, color, title };
         } catch (error) {
           console.error(`Error fetching data for section ${section}:`, error);
-          return { section, color: "#ccc", title: "Unknown Section" }; // Default values if error occurs
+          return { section, color: "#ccc", title: "Unknown Section" };
         }
       })
     );
@@ -110,59 +117,13 @@ function HomeScreen() {
 
   useRealtimeUser(userId, handleUserDataChange);
 
-  // Function to handle pull-to-refresh with explicit post count refresh
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    // Store current section keys for placeholders to maintain container height
     setPlaceholderSections(Object.keys(postCounts));
     setPostCounts({});
-    await fetchUserData(); // This will recount posts via countPostsByUser
+    await fetchUserData();
     setRefreshing(false);
   }, [fetchUserData, postCounts]);
-
-  const progressBarElements = useMemo(() => {
-    // If refreshing and we have placeholder sections, render placeholders to maintain height
-    if (refreshing && placeholderSections.length > 0) {
-      return placeholderSections.map((section) => (
-        <View key={section} style={styles.progressItemContainer}>
-          <Text style={styles.sectionTitle}>Loading...</Text>
-          <ProgressBar
-            progress={0}
-            level={0}
-            color="#ccc"
-            barStyle={{ borderWidth: 0.5, borderColor: "#ccc" }}
-          />
-        </View>
-      ));
-    }
-
-    // If no post counts, show no data message
-    if (Object.keys(postCounts).length === 0 && !refreshing) {
-      return (
-        <Text style={styles.noDataText}>No posts yet. Start posting to see your progress!</Text>
-      );
-    }
-
-    // Render actual progress bars
-    return Object.entries(postCounts).map(([section, count]) => {
-      const sectionColor = sectionColors[section] || "#000";
-      const sectionTitle = sectionTitles[section] || "Unknown Section";
-      const level = sectionLevels[section] || 0;
-      const progress = sectionProgress[section] || 0;
-
-      return (
-        <View key={section} style={styles.progressItemContainer}>
-          <Text style={styles.sectionTitle}>{sectionTitle}</Text>
-          <ProgressBar
-            progress={progress}
-            level={level}
-            color={sectionColor}
-            barStyle={{ borderWidth: 0.5, borderColor: sectionColor }}
-          />
-        </View>
-      );
-    });
-  }, [postCounts, sectionColors, sectionTitles, sectionLevels, sectionProgress, refreshing, placeholderSections]);
 
   return (
     <ScrollView
@@ -178,12 +139,21 @@ function HomeScreen() {
       }
     >
       <ProfileContainer photoUrl={photoUrl} userName={userName} />
-      <View style={styles.progressBarsContainer}>
-        <View style={styles.headerContainer}>
-          <Image source={require("../assets/stats.png")} style={styles.statsImage} />
-          <Text style={styles.headerText}>My Stats</Text>
+      <StatsSection
+        postCounts={postCounts}
+        sectionColors={sectionColors}
+        sectionTitles={sectionTitles}
+        sectionLevels={sectionLevels}
+        sectionProgress={sectionProgress}
+        refreshing={refreshing}
+        placeholderSections={placeholderSections}
+      />
+      <View style={styles.articlesContainer}>
+        <View style={styles.articlesHeader}>
+          <Ionicons name="flask" size={24} color={GlobalColors.primaryColor} />
+          <Text style={styles.articlesTitle}>The Science</Text>
         </View>
-        {progressBarElements}
+        <ArticleList />
       </View>
     </ScrollView>
   );
@@ -193,53 +163,39 @@ export default HomeScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    backgroundColor: GlobalColors.primaryGrey,
     justifyContent: "flex-start",
     alignItems: "center",
-    backgroundColor: "#f8f9fa",
-    padding: 20,
+    padding: 8,
   },
-  headerContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  statsImage: {
-    width: 24,
-    height: 24,
-    marginRight: 8,
-  },
-  headerText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: GlobalColors.primaryBlack,
-  },
-  progressBarsContainer: {
+  articlesContainer: {
     width: "100%",
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 12,
+    marginTop: 24,
+    paddingHorizontal: 16,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  progressItemContainer: {
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: GlobalColors.primaryBlack,
-    marginBottom: 4,
-  },
-  noDataText: {
-    fontSize: 14,
-    color: "#6c757d",
-    textAlign: "center",
+    shadowRadius: 4,
+    elevation: 3,
     padding: 16,
-    fontWeight: "500",
+    marginBottom: 60,
+  },
+  articlesHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  articlesTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: GlobalColors.primaryBlack,
+    textAlign: "center",
+    letterSpacing: 0.5,
+    marginLeft: 8,
   },
 });
