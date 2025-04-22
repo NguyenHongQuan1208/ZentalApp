@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,10 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Linking,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { interval } from "date-fns";
 
 const articles = [
   {
@@ -18,6 +21,7 @@ const articles = [
       "https://storage.googleapis.com/a1aa/image/e2d4d9bf-c89e-4e6d-00de-94e4dd294ca8.jpg",
     bgColor: "#f3f4f6",
     textColor: "#1f2937",
+    link: "https://www.happify.com/hd/what-is-happiness-anyway/",
   },
   {
     id: "2",
@@ -28,6 +32,7 @@ const articles = [
       "https://storage.googleapis.com/a1aa/image/2cf95416-2b1e-4c3e-5ed6-a3f3edead7d2.jpg",
     bgColor: "#fcd34d",
     textColor: "#1f2937",
+    link: "https://www.happify.com/hd/what-is-the-science-of-happiness/",
   },
   {
     id: "3",
@@ -38,10 +43,17 @@ const articles = [
       "https://storage.googleapis.com/a1aa/image/b6b08ea8-d85a-4b61-23d6-671a6034ae1d.jpg",
     bgColor: "#bfdbfe",
     textColor: "#1f2937",
+    link: "https://www.happify.com/hd/the-6-skills-that-will-increase-your-well-being/",
   },
 ];
 
 const ArticleCard = ({ item }) => {
+  const navigation = useNavigation();
+
+  const handleReadMore = useCallback(() => {
+    Linking.openURL(item.link);
+  }, [item.link]);
+
   return (
     <View style={[styles.card, { backgroundColor: item.bgColor }]}>
       <Image
@@ -55,12 +67,15 @@ const ArticleCard = ({ item }) => {
         </Text>
         <Text
           style={[styles.description, { color: item.textColor }]}
-          numberOfLines={2} // Reduced to 2 lines for compactness
+          numberOfLines={2}
           ellipsizeMode="tail"
         >
           {item.description}
         </Text>
-        <TouchableOpacity style={styles.readMoreButton}>
+        <TouchableOpacity
+          style={styles.readMoreButton}
+          onPress={handleReadMore}
+        >
           <Text style={[styles.readMore, { color: item.textColor }]}>
             Read More
           </Text>
@@ -79,10 +94,10 @@ const ArticleList = () => {
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.listContainer}
-      initialNumToRender={2} 
-      maxToRenderPerBatch={2} 
-      windowSize={3} 
-      removeClippedSubviews={true} 
+      initialNumToRender={2}
+      maxToRenderPerBatch={2}
+      windowSize={3}
+      removeClippedSubviews={true}
     />
   );
 };
@@ -90,51 +105,51 @@ const ArticleList = () => {
 const styles = StyleSheet.create({
   listContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 10, 
+    paddingVertical: 10,
   },
   card: {
-    borderRadius: 12, 
-    marginRight: 12, 
-    width: 240, 
+    borderRadius: 12,
+    marginRight: 12,
+    width: 240,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15, 
-    shadowRadius: 4, 
-    elevation: 2, 
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
     overflow: "hidden",
   },
   image: {
     width: "100%",
-    height: 120, 
+    height: 120,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
   },
   content: {
-    padding: 12, 
+    padding: 12,
     flex: 1,
     justifyContent: "space-between",
   },
   title: {
-    fontSize: 16, 
+    fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 6, 
-    lineHeight: 20, 
+    marginBottom: 6,
+    lineHeight: 20,
   },
   description: {
-    fontSize: 12, 
-    lineHeight: 16, 
+    fontSize: 12,
+    lineHeight: 16,
     opacity: 0.8,
-    marginBottom: 8, 
+    marginBottom: 8,
   },
   readMoreButton: {
     alignSelf: "flex-start",
-    paddingVertical: 4, 
-    paddingHorizontal: 10, 
-    borderRadius: 16, 
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 16,
     backgroundColor: "rgba(0, 0, 0, 0.05)",
   },
   readMore: {
-    fontSize: 12, 
+    fontSize: 12,
     fontWeight: "600",
   },
 });

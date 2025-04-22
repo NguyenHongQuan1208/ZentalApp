@@ -155,6 +155,16 @@ function HomeScreen() {
         </View>
         <ArticleList />
       </View>
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>
+          2025 ©Zental, Inc. All Rights Reserved. Twill does not provide medical
+          advice, psychiatric diagnosis or treatment. All third-party
+          trademarks, service marks, logos and domain names appearing on this
+          web page are the property of their respective owners. None of these
+          companies endorse, sponsor or are in any way affiliated with Twill.
+          See additional information.
+        </Text>
+      </View>
     </ScrollView>
   );
 }
@@ -183,7 +193,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     padding: 16,
-    marginBottom: 60,
+    marginBottom: 20,
   },
   articlesHeader: {
     flexDirection: "row",
@@ -197,5 +207,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     letterSpacing: 0.5,
     marginLeft: 8,
+  },
+  footer: {
+    marginBottom: 20,
+  },
+  footerText: {
+    fontSize: 14,
+    textAlign: "center",
+    color: "#959393",
   },
 });
