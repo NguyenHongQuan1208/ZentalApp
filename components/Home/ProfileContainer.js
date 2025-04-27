@@ -2,8 +2,10 @@ import { View, Text, StyleSheet } from "react-native";
 import { memo } from "react";
 import { GlobalColors } from "../../constants/GlobalColors";
 import Avatar from "../Profile/Avatar";
+import { useTranslation } from "react-i18next";
 
 const ProfileContainer = ({ photoUrl, userName }) => {
+  const { t } = useTranslation();
   return (
     <View style={styles.profileContainer}>
       <View style={styles.profileCard}>
@@ -12,7 +14,7 @@ const ProfileContainer = ({ photoUrl, userName }) => {
             <Avatar photoUrl={photoUrl} size={80} />
           </View>
           <View style={styles.textContainer}>
-            <Text style={styles.welcomeText}>Welcome </Text>
+            <Text style={styles.welcomeText}>{t("welcome")}</Text>
             <Text
               style={[
                 styles.userNameText,
