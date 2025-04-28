@@ -33,11 +33,12 @@
     "PLEDGE TO DO IT": "CAM KẾT THỰC HIỆN",
     "I'VE DONE IT, POST": "TÔI ĐÃ THỰC HIỆN, ĐĂNG BÀI",
     "Take or Choose Photo": "Chụp hoặc chọn ảnh",
-    "PersonalProfile": "Hồ sơ cá nhân",
+    "Personal Profile": "Hồ sơ cá nhân",
     "Home": "Trang chủ",
-    "Task": "Nhiệm vụ",
+    "Tasks": "Nhiệm vụ",
     "Posts": "Bài đăng",
     "Chats": "Trò chuyện",
-    "logout": "Đăng xuất",
-    "EditProfile": "Chỉnh sửa hồ sơ"
+    "Log out": "Đăng xuất",
+    "Edit profile": "Chỉnh sửa hồ sơ",
+    "Language": "Ngôn ngữ"
 }

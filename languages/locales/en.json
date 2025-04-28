@@ -33,11 +33,12 @@
     "PLEDGE TO DO IT": "PLEDGE TO DO IT",
     "I'VE DONE IT, POST": "I'VE DONE IT, POST",
     "Take or Choose Photo": "Take or Choose Photo",
-    "PersonalProfile": "Personal Profile",
+    "Personal Profile": "Personal Profile",
     "Home": "Home",
-    "Task": "Task",
+    "Tasks": "Tasks",
     "Posts": "Posts",
     "Chats": "Chats",
-    "logout": "Log out",
-    "EditProfile": "Edit Profile"
+    "Log out": "Log out",
+    "Edit profile": "Edit Profile",
+    "Language": "Language"
 }

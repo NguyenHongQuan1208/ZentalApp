@@ -85,17 +85,14 @@ const slideData = [
 const CaroselComponent = () => {
   const { t } = useTranslation();
   const scrollViewRef = useRef(null);
-  const [currentIndex, setCurrentIndex] = useState(1); // Start at first real slide
+  const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
   const intervalRef = useRef(null);
 
-  // Memoize extended slide data to prevent recreation on every render
-  const extendedSlideData = useMemo(() => [
-    slideData[slideData.length - 1],
-    ...slideData,
-    slideData[0],
-  ], []);
+  const extendedSlideData = useMemo(() => {
+    return [...slideData, ...slideData, ...slideData];
+  }, []);
 
   const handleScroll = useCallback(
     Animated.event(
@@ -108,21 +105,22 @@ const CaroselComponent = () => {
   const handleScrollEnd = useCallback((event) => {
     const contentOffset = event.nativeEvent.contentOffset.x;
     const index = Math.round(contentOffset / screenWidth);
+    setCurrentIndex(index);
 
-    // Handle infinite scroll
-    if (index === 0) {
+    if (index >= slideData.length * 2) {
       scrollViewRef.current?.scrollTo({
-        x: screenWidth * (extendedSlideData.length - 2),
+        x: screenWidth * slideData.length,
         animated: false,
       });
-      setCurrentIndex(extendedSlideData.length - 2);
-    } else if (index === extendedSlideData.length - 1) {
-      scrollViewRef.current?.scrollTo({ x: screenWidth, animated: false });
-      setCurrentIndex(1);
-    } else {
-      setCurrentIndex(index);
+      setCurrentIndex(slideData.length);
+    } else if (index < slideData.length) {
+      scrollViewRef.current?.scrollTo({
+        x: screenWidth * slideData.length,
+        animated: false,
+      });
+      setCurrentIndex(slideData.length);
     }
-  }, [extendedSlideData.length]);
+  }, [slideData.length]);
 
   const goToSlide = useCallback((index) => {
     scrollViewRef.current?.scrollTo({ x: screenWidth * index, animated: true });
@@ -130,21 +128,32 @@ const CaroselComponent = () => {
   }, []);
 
   const goToPreviousSlide = useCallback(() => {
-    const previousIndex = currentIndex > 1
-      ? currentIndex - 1
-      : extendedSlideData.length - 2;
+    let previousIndex = currentIndex - 1;
+    if (previousIndex < slideData.length) {
+      previousIndex = slideData.length;
+      scrollViewRef.current?.scrollTo({
+        x: screenWidth * previousIndex,
+        animated: false,
+      });
+    }
     goToSlide(previousIndex);
-  }, [currentIndex, extendedSlideData.length, goToSlide]);
+  }, [currentIndex, slideData.length, goToSlide]);
 
   const goToNextSlide = useCallback(() => {
-    const nextIndex = currentIndex < extendedSlideData.length - 2
-      ? currentIndex + 1
-      : 1;
+    let nextIndex = currentIndex + 1;
+    if (nextIndex >= slideData.length * 2) {
+      nextIndex = slideData.length;
+      scrollViewRef.current?.scrollTo({
+        x: screenWidth * nextIndex,
+        animated: false,
+      });
+    }
     goToSlide(nextIndex);
-  }, [currentIndex, extendedSlideData.length, goToSlide]);
+  }, [currentIndex, slideData.length, goToSlide]);
 
   const handleStartPress = useCallback(() => {
-    const currentSlide = extendedSlideData[currentIndex];
+    const realIndex = currentIndex % slideData.length;
+    const currentSlide = slideData[realIndex];
     navigation.navigate("Instruction", {
       icon: currentSlide.icon,
       name: currentSlide.name,
@@ -153,9 +162,8 @@ const CaroselComponent = () => {
       instructions: currentSlide.instructions,
       benefits: currentSlide.benefits,
     });
-  }, [currentIndex, extendedSlideData, navigation]);
+  }, [currentIndex, slideData, navigation]);
 
-  // Auto-scroll effect with cleanup
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       goToNextSlide();
@@ -168,10 +176,12 @@ const CaroselComponent = () => {
     };
   }, [goToNextSlide]);
 
-  // Initial scroll to first real slide
   useEffect(() => {
-    scrollViewRef.current?.scrollTo({ x: screenWidth, animated: false });
-  }, []);
+    scrollViewRef.current?.scrollTo({ x: screenWidth * slideData.length, animated: false });
+    setCurrentIndex(slideData.length);
+  }, [slideData.length]);
+
+  const dotIndex = currentIndex % slideData.length;
 
   return (
     <View style={styles.container}>
@@ -223,14 +233,14 @@ const CaroselComponent = () => {
         {slideData.map((_, index) => (
           <TouchableOpacity
             key={`dot-${index}`}
-            onPress={() => goToSlide(index + 1)}
+            onPress={() => goToSlide(index + slideData.length)}
             style={styles.dot}
             activeOpacity={0.7}
           >
             <View
               style={[
                 styles.dotIndicator,
-                currentIndex === index + 1
+                dotIndex === index
                   ? styles.activeDot
                   : styles.inactiveDot,
               ]}
@@ -242,7 +252,6 @@ const CaroselComponent = () => {
   );
 };
 
-// Memoize styles to prevent recreation on every render
 const styles = StyleSheet.create({
   container: {
     width: "100%",
