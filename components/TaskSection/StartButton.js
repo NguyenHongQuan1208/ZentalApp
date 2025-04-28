@@ -1,7 +1,9 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, Text, StyleSheet } from "react-native";
 
 const StartButton = ({ onPress }) => {
+  const { t } = useTranslation();
   return (
     <Pressable
       style={({ pressed }) => [
@@ -10,7 +12,7 @@ const StartButton = ({ onPress }) => {
       ]}
       onPress={onPress}
     >
-      <Text style={styles.startButtonText}>Start</Text>
+      <Text style={styles.startButtonText}>{t('start')}</Text>
     </Pressable>
   );
 };

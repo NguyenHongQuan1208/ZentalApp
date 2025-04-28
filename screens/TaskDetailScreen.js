@@ -7,10 +7,12 @@ import { GlobalColors } from "../constants/GlobalColors";
 import TaskBenefits from "../components/TaskSection/TaskBenefits";
 import DecisionBox from "../components/TaskSection/DecisionBox";
 import Target from "../components/TaskSection/Target";
+import { useTranslation } from "react-i18next";
 
 const INSTRUCTION_VIDEO_URL = "https://www.youtube.com/embed/zThE1yg5MBE?autoplay=0&controls=1&showinfo=0";
 
 function TaskDetailScreen({ route }) {
+  const { t } = useTranslation();
   const {
     id,
     color,
@@ -36,14 +38,14 @@ function TaskDetailScreen({ route }) {
           <View style={[styles.boxContainer, { borderColor: color }]}>
             <SectionHeader
               iconName="flask"
-              title="Benefits"
+              title={t("benefits")}
               color={color}
             />
             <TaskBenefits benefits={benefits} color={color} />
 
             <SectionHeader
               iconName="logo-youtube"
-              title="Instruction Video"
+              title={t("Instruction Video")}
               color={color}
               style={{ marginTop: 24 }}
             />

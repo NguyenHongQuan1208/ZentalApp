@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import LongButton from "../ui/LongButton";
 import { useNavigation } from "@react-navigation/native";
 import DescribeBox from "./DescribeBox";
+import { useTranslation } from "react-i18next";
 
 function DecisionBox({
   id,
@@ -15,6 +16,7 @@ function DecisionBox({
   target,
   placeholderQuestion,
 }) {
+  const { t } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
   const navigation = useNavigation();
   // console.log(description);
@@ -34,7 +36,7 @@ function DecisionBox({
         style={[styles.box, { backgroundColor: color }]}
         onPress={() => setModalVisible(true)}
       >
-        <Text style={styles.boxText}>You decide how</Text>
+        <Text style={styles.boxText}>{t("You decide How")}</Text>
       </Pressable>
 
       <Modal
@@ -50,7 +52,7 @@ function DecisionBox({
             >
               <Ionicons name="bulb" size={18} color={color} />
               <Text style={[styles.modalText, { color: color }]}>
-                This is your decision!
+                {t("This is your decision!")}
               </Text>
             </View>
             <DescribeBox color={color} description={description} />
@@ -58,9 +60,9 @@ function DecisionBox({
               onPress={startHandler}
               style={{ backgroundColor: color, marginBottom: 8 }}
             >
-              Start
+              {t("start")}
             </LongButton>
-            <Button onPress={() => setModalVisible(false)}>Close</Button>
+            <Button onPress={() => setModalVisible(false)}>{t("close")}</Button>
           </View>
         </View>
       </Modal>

@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { interval } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 const articles = [
   {
@@ -49,6 +50,7 @@ const articles = [
 
 const ArticleCard = ({ item }) => {
   const navigation = useNavigation();
+  const { t } = useTranslation();
 
   const handleReadMore = useCallback(() => {
     Linking.openURL(item.link);
@@ -63,7 +65,7 @@ const ArticleCard = ({ item }) => {
       />
       <View style={styles.content}>
         <Text style={[styles.title, { color: item.textColor }]}>
-          {item.title}
+          {t(item.title)}
         </Text>
         <Text
           style={[styles.description, { color: item.textColor }]}
@@ -77,7 +79,7 @@ const ArticleCard = ({ item }) => {
           onPress={handleReadMore}
         >
           <Text style={[styles.readMore, { color: item.textColor }]}>
-            Read More
+            {t("read_more")}
           </Text>
         </TouchableOpacity>
       </View>

@@ -1,12 +1,14 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { GlobalColors } from "../../constants/GlobalColors";
+import { useTranslation } from "react-i18next";
 
 function TaskBenefits({ benefits, color }) {
+  const { t } = useTranslation();
   return (
     <View>
       <Text style={[styles.contentText, styles.titleText]}>
-        This activity can help you:
+        {t("This activity can help you:")}
       </Text>
       {benefits.map((benefit, index) => (
         <View key={index} style={styles.benefitContainer}>

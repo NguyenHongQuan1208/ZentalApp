@@ -18,8 +18,10 @@ import ProfileContainer from "../components/Home/ProfileContainer";
 import StatsSection from "../components/Home/StatsSection";
 import ArticleList from "../components/Home/ArticleList";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useTranslation } from "react-i18next";
 
 function HomeScreen() {
+  const { t } = useTranslation();
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
   const token = authCtx.token;
@@ -151,7 +153,7 @@ function HomeScreen() {
       <View style={styles.articlesContainer}>
         <View style={styles.articlesHeader}>
           <Ionicons name="flask" size={24} color={GlobalColors.primaryColor} />
-          <Text style={styles.articlesTitle}>The Science</Text>
+          <Text style={styles.articlesTitle}>{t("the_science")}</Text>
         </View>
         <ArticleList />
       </View>

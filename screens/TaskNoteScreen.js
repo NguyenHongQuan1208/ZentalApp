@@ -23,11 +23,13 @@ import { supabase } from "../store/supabaseClient";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import { fetchDefaultImageUriBySectionId } from "../util/section-default-image-http";
+import { useTranslation } from "react-i18next";
 
 const { height, width } = Dimensions.get("window");
 const aspectRatio = height / width;
 
 function TaskNoteScreen({ route, navigation }) {
+  const { t } = useTranslation();
   // Destructure route params
   const { id: sectionId, color, icon, target, placeholderQuestion } = route.params;
 
@@ -302,7 +304,7 @@ function TaskNoteScreen({ route, navigation }) {
 
         <View style={styles.headerContainer}>
           <Ionicons name="bulb" size={16} color={color} />
-          <Text style={[styles.textTitle, { color }]}>You decide How</Text>
+          <Text style={[styles.textTitle, { color }]}>{t("You decide How")}</Text>
         </View>
 
         <View style={styles.content}>
@@ -346,10 +348,10 @@ function TaskNoteScreen({ route, navigation }) {
               style={[styles.longButton, { backgroundColor: GlobalColors.inActivetabBarColor }]}
               onPress={handlePledgeToDoIt}
             >
-              PLEDGE TO DO IT
+              {t("PLEDGE TO DO IT")}
             </LongButton>
             <LongButton style={styles.longButton} onPress={handlePost}>
-              I'VE DONE IT, POST
+              {t("I'VE DONE IT, POST")}
             </LongButton>
           </View>
         </View>

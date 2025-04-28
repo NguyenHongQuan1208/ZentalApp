@@ -3,13 +3,15 @@ import React, { useMemo } from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import ProgressBar from "./ProgressBar";
 import { GlobalColors } from '../../constants/GlobalColors';
+import { useTranslation } from "react-i18next";
 
 const StatsSection = ({ postCounts, sectionColors, sectionTitles, sectionLevels, sectionProgress, refreshing, placeholderSections }) => {
+  const { t } = useTranslation();
   const progressBarElements = useMemo(() => {
     if (refreshing && placeholderSections.length > 0) {
       return placeholderSections.map((section) => (
         <View key={section} style={styles.progressItemContainer}>
-          <Text style={styles.sectionTitle}>Loading...</Text>
+          <Text style={styles.sectionTitle}>{t('loading')}...</Text>
           <ProgressBar
             progress={0}
             level={0}
@@ -23,20 +25,20 @@ const StatsSection = ({ postCounts, sectionColors, sectionTitles, sectionLevels,
     // If no post counts, show no data message
     if (Object.keys(postCounts).length === 0 && !refreshing) {
       return (
-        <Text style={styles.noDataText}>No posts yet. Start posting to see your progress!</Text>
+        <Text style={styles.noDataText}>{t('no_post_msg')}</Text>
       );
     }
 
     // Render actual progress bars
     return Object.entries(postCounts).map(([section, count]) => {
       const sectionColor = sectionColors[section] || "#000";
-      const sectionTitle = sectionTitles[section] || "Unknown Section";
+      const sectionTitle = sectionTitles[section] || t("unknown_section");
       const level = sectionLevels[section] || 0;
       const progress = sectionProgress[section] || 0;
 
       return (
         <View key={section} style={styles.progressItemContainer}>
-          <Text style={styles.sectionTitle}>{sectionTitle}</Text>
+          <Text style={styles.sectionTitle}>{t(sectionTitle)}</Text>
           <ProgressBar
             progress={progress}
             level={level}
@@ -52,7 +54,7 @@ const StatsSection = ({ postCounts, sectionColors, sectionTitles, sectionLevels,
     <View style={styles.progressBarsContainer}>
       <View style={styles.headerContainer}>
         <Image source={require("../../assets/stats.png")} style={styles.statsImage} />
-        <Text style={styles.headerText}>My Stats</Text>
+        <Text style={styles.headerText}>{t('my_stats')}</Text>
       </View>
       {progressBarElements}
     </View>

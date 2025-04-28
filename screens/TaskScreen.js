@@ -14,8 +14,10 @@ import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import useRealtimePosts from "../hooks/useRealtimePosts";
 import getAllTaskSections from "../util/task-section-http";
 import CarouselComponent from "../components/TaskSection/CaroselComponent";
+import { useTranslation } from "react-i18next";
 
 function TaskScreen({ navigation }) {
+  const { t } = useTranslation();
   // Contexts
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
@@ -92,7 +94,7 @@ function TaskScreen({ navigation }) {
 
   const renderSectionItem = useCallback(({ item }) => (
     <SectionGridTitle
-      title={item.title}
+      title={t(item.title)}
       color={item.color}
       icon={item.icon}
       hasDraft={item.hasDraft}

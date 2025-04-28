@@ -11,6 +11,7 @@ import {
 import Ionicons from "react-native-vector-icons/Ionicons";
 import StartButton from "./StartButton";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -82,6 +83,7 @@ const slideData = [
 ];
 
 const CaroselComponent = () => {
+  const { t } = useTranslation();
   const scrollViewRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(1); // Start at first real slide
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -195,8 +197,8 @@ const CaroselComponent = () => {
             />
             <View style={styles.textContainer}>
               <Ionicons name={item.icon} size={44} color="#fff" />
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.slogan}>{item.slogan}</Text>
+              <Text style={styles.name}>{t(item.name)}</Text>
+              <Text style={styles.slogan}>{t(item.slogan)}</Text>
               <StartButton onPress={handleStartPress} />
             </View>
           </View>
