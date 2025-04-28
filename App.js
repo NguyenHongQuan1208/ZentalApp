@@ -38,9 +38,8 @@ import Breather from "./screens/Breather";
 import SerenitySceneScreen from "./screens/SerenitySceneScreen";
 import VideoPlayerScreen from "./screens/VideoPlayerScreen";
 import MonsterRainScreen from "./screens/MonsterRainScreen";
-import MonsterRainGameScreen from "./screens/MonsterRainGameScreen"
+import MonsterRainGameScreen from "./screens/MonsterRainGameScreen";
 import { useTranslation } from "react-i18next";
-
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -177,6 +176,7 @@ function AuthStack() {
 }
 
 function AuthenticatedStack() {
+  const { t } = useTranslation();
   const authCtx = useContext(AuthContext);
   function logoutHandler() {
     Alert.alert("Confirm", "Are you sure you want to logout?", [
@@ -285,7 +285,13 @@ function AuthenticatedStack() {
         }}
       />
       <Stack.Screen name="SingleChat" component={SingleChatScreen} />
-      <Stack.Screen name="ChatProfile" component={ChatProfileScreen} />
+      <Stack.Screen
+        name="ChatProfile"
+        component={ChatProfileScreen}
+        options={{
+          headerTitle: "",
+        }}
+      />
       <Stack.Screen name="Search" component={SearchScreen} />
       <Stack.Screen
         name="FollowList"

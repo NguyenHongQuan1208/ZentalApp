@@ -1,5 +1,12 @@
 import React, { useContext, useEffect, useState, useCallback } from "react";
-import { View, Text, Pressable, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AuthContext } from "../store/auth-context";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
@@ -89,34 +96,6 @@ const ProfileScreen = ({ navigation }) => {
         <Text style={styles.editText}>{t("Edit profile")}</Text>
       </Pressable>
 
-      {/* Language Selection Radio Buttons */}
-      <View style={styles.languageContainer}>
-        <Text style={styles.languageTitle}>{t("Language")}</Text>
-        <View style={styles.radioContainer}>
-          <TouchableOpacity
-            style={styles.radioButton}
-            onPress={() => handleLanguageChange('en')}
-          >
-            <View style={[
-              styles.radioCircle,
-              selectedLanguage === 'en' && styles.selectedRadioCircle
-            ]} />
-            <Text style={styles.radioText}>English</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.radioButton, styles.radioButtonRight]}
-            onPress={() => handleLanguageChange('vi')}
-          >
-            <View style={[
-              styles.radioCircle,
-              selectedLanguage === 'vi' && styles.selectedRadioCircle
-            ]} />
-            <Text style={styles.radioText}>Tiếng Việt</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
       <View style={styles.menuContainer}>
         {menuItems.map((item, index) => (
           <MenuItem
@@ -127,6 +106,38 @@ const ProfileScreen = ({ navigation }) => {
             userId={userId}
           />
         ))}
+      </View>
+
+      {/* Language Selection Radio Buttons */}
+      <View style={styles.languageContainer}>
+        <Text style={styles.languageTitle}>{t("Language")}</Text>
+        <View style={styles.radioContainer}>
+          <TouchableOpacity
+            style={styles.radioButton}
+            onPress={() => handleLanguageChange("en")}
+          >
+            <View
+              style={[
+                styles.radioCircle,
+                selectedLanguage === "en" && styles.selectedRadioCircle,
+              ]}
+            />
+            <Text style={styles.radioText}>English</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.radioButton}
+            onPress={() => handleLanguageChange("vi")}
+          >
+            <View
+              style={[
+                styles.radioCircle,
+                selectedLanguage === "vi" && styles.selectedRadioCircle,
+              ]}
+            />
+            <Text style={styles.radioText}>Tiếng Việt</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
@@ -167,9 +178,12 @@ const styles = StyleSheet.create({
   languageContainer: {
     marginTop: 20,
     width: "90%",
+    paddingVertical: 4,
     paddingHorizontal: 10,
     backgroundColor: "#f5f5f5",
     borderRadius: 8,
+    borderWidth: 0.5,
+    borderColor: GlobalColors.primaryColor,
   },
   languageTitle: {
     fontSize: 16,
@@ -178,13 +192,13 @@ const styles = StyleSheet.create({
     color: GlobalColors.primaryBlack,
   },
   radioContainer: {
-    flexDirection: "row",
+    flexDirection: "column",
     justifyContent: "center",
   },
   radioButton: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1,
+    marginVertical: 8,
   },
   radioButtonRight: {
     justifyContent: "flex-end",

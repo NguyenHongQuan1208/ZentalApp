@@ -14,13 +14,16 @@ import {
 import { GlobalColors } from "../constants/GlobalColors";
 import LongButton from "../components/ui/LongButton";
 import { reportPost } from "../util/report-http";
+import { useTranslation } from "react-i18next";
 
 function ReportScreen({ route, navigation }) {
+  const { t } = useTranslation();
   const { postId, currentUserId, headerTitle } = route.params;
   const [reason, setReason] = useState("");
   const [additionalDetails, setAdditionalDetails] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Keep these values in English for database
   const reportReasons = [
     "Inappropriate Content",
     "Spam",
@@ -31,24 +34,18 @@ function ReportScreen({ route, navigation }) {
 
   useEffect(() => {
     navigation.setOptions({
-      headerTitle: headerTitle || "Report Post",
+      headerTitle: t("Report Post"),
     });
-  }, [navigation, headerTitle]);
+  }, [navigation, t]);
 
   const handleReport = async () => {
     if (!reason.trim() || (reason === "Other" && !additionalDetails.trim())) {
-      Alert.alert(
-        "Incomplete Report",
-        "Please provide a detailed reason for reporting this post."
-      );
+      Alert.alert(t("Incomplete Report"), t("report_validation_message"));
       return;
     }
 
     if (reason === "Other" && additionalDetails.trim().length < 10) {
-      Alert.alert(
-        "Incomplete Report",
-        "Please provide at least 10 characters of additional details."
-      );
+      Alert.alert(t("Incomplete Report"), t("details_validation_message"));
       return;
     }
 
@@ -65,22 +62,15 @@ function ReportScreen({ route, navigation }) {
 
       await reportPost(postId, reportData);
 
-      Alert.alert(
-        "Report Submitted",
-        "Thank you for helping us maintain a safe community. We'll review your report soon.",
-        [
-          {
-            text: "OK",
-            onPress: () => navigation.goBack(),
-          },
-        ]
-      );
+      Alert.alert(t("Report Submitted"), t("report_success_message"), [
+        {
+          text: "OK",
+          onPress: () => navigation.goBack(),
+        },
+      ]);
     } catch (error) {
       console.error("Report Submission Error:", error);
-      Alert.alert(
-        "Submission Failed",
-        "Unable to submit report. Please check your connection and try again."
-      );
+      Alert.alert(t("Submission Failed"), t("submission_error_message"));
     } finally {
       setIsSubmitting(false);
     }
@@ -90,13 +80,10 @@ function ReportScreen({ route, navigation }) {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
     >
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.title}>Report Post</Text>
-        <Text style={styles.description}>
-          Help us understand why this post violates our community guidelines:
-        </Text>
+        <Text style={styles.title}>{t("Report Post")}</Text>
+        <Text style={styles.description}>{t("report_description")}</Text>
 
         <View style={styles.reasonsContainer}>
           {reportReasons.map((reportReason, index) => (
@@ -109,9 +96,9 @@ function ReportScreen({ route, navigation }) {
               onPress={() => {
                 setReason(reportReason);
                 if (reportReason !== "Other") {
-                  setAdditionalDetails(reportReason); // Set additional details to the chosen reason
+                  setAdditionalDetails(reportReason);
                 } else {
-                  setAdditionalDetails(""); // Reset additional details
+                  setAdditionalDetails("");
                 }
               }}
             >
@@ -121,16 +108,15 @@ function ReportScreen({ route, navigation }) {
                   reason === reportReason && styles.selectedReasonButtonText,
                 ]}
               >
-                {reportReason}
+                {t(reportReason)}
               </Text>
             </Pressable>
           ))}
         </View>
 
-        {/* Always show the input field */}
         <TextInput
           style={styles.input}
-          placeholder="Additional details"
+          placeholder={t("additional_details_placeholder")}
           value={additionalDetails}
           onChangeText={setAdditionalDetails}
           multiline
@@ -142,7 +128,11 @@ function ReportScreen({ route, navigation }) {
           onPress={handleReport}
           disabled={isSubmitting || !reason}
         >
-          {isSubmitting ? <ActivityIndicator color="white" /> : "Submit Report"}
+          {isSubmitting ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            t("submit_report")
+          )}
         </LongButton>
       </ScrollView>
     </KeyboardAvoidingView>

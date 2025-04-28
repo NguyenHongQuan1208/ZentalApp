@@ -43,18 +43,19 @@ function ConfirmPostScreen({ navigation, route }) {
 
   // Handlers
   const handleSelectEmotion = (index) => setSelectedEmotion(index);
-  const toggleCommunityVisibility = () => setIsCommunityVisible(prev => !prev);
+  const toggleCommunityVisibility = () =>
+    setIsCommunityVisible((prev) => !prev);
 
   const handlePost = async () => {
     try {
       const publicStatus = isCommunityVisible ? 1 : 0;
-      const pleasurePoint = selectedEmotion !== null
-        ? EMOTIONS[selectedEmotion].value
-        : 1;
+      const pleasurePoint =
+        selectedEmotion !== null ? EMOTIONS[selectedEmotion].value : 1;
 
       const posts = await getAllPosts();
       const existingPost = posts.find(
-        post => post.sectionId === sectionId && post.uid === uid && post.status === 0
+        (post) =>
+          post.sectionId === sectionId && post.uid === uid && post.status === 0
       );
 
       const postData = {
@@ -79,7 +80,7 @@ function ConfirmPostScreen({ navigation, route }) {
       }
 
       navigation.navigate("AppOverview", {
-        screen: publicStatus === 0 ? "Task" : "Posts"
+        screen: publicStatus === 0 ? "Task" : "Posts",
       });
     } catch (error) {
       console.error("Post error:", error);
@@ -121,7 +122,9 @@ function ConfirmPostScreen({ navigation, route }) {
       </ScrollView>
 
       <View style={styles.footer}>
-        <LongButton onPress={handlePost}>POST IT!</LongButton>
+        <LongButton style={styles.longButton} onPress={handlePost}>
+          POST IT!
+        </LongButton>
       </View>
     </View>
   );
@@ -179,8 +182,16 @@ const styles = StyleSheet.create({
     width: "80%",
   },
   footer: {
-    padding: 16,
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    alignItems: "center",
+    backgroundColor: "transparent",
     paddingBottom: aspectRatio <= 1.78 ? 16 : 32,
+  },
+  longButton: {
+    marginTop: 8,
+    paddingVertical: 12,
   },
 });
 

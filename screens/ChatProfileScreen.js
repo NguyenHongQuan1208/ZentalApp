@@ -4,8 +4,10 @@ import { getUser } from "../util/user-info-http";
 import Avatar from "../components/Profile/Avatar";
 import SelectItem from "../components/ui/SelectItem";
 import { GlobalColors } from "../constants/GlobalColors";
+import { useTranslation } from "react-i18next";
 
 const ChatProfileScreen = ({ route, navigation }) => {
+  const { t } = useTranslation();
   const { otherUserId } = route.params;
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -46,7 +48,7 @@ const ChatProfileScreen = ({ route, navigation }) => {
       <View style={styles.optionsContainer}>
         <SelectItem
           icon="person"
-          itemName="View Profile"
+          itemName={t("View Profile")}
           userId={otherUserId}
           onPress={() =>
             navigation.navigate("PersonalProfile", { userId: otherUserId })
@@ -54,13 +56,13 @@ const ChatProfileScreen = ({ route, navigation }) => {
         />
         <SelectItem
           icon="person-add"
-          itemName="Set Nickname"
+          itemName={t("Set Nickname")}
           userId={otherUserId}
           onPress={() => console.log("Set Nickname")}
         />
         <SelectItem
           icon="alert-circle"
-          itemName="Report Account"
+          itemName={t("Report Account")}
           userId={otherUserId}
           onPress={() => console.log("Report Account")}
         />

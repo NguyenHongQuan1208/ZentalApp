@@ -2,12 +2,14 @@ import React from "react";
 import { Pressable, Text, StyleSheet } from "react-native";
 import PropTypes from "prop-types";
 import { GlobalColors } from "../../constants/GlobalColors";
+import { useTranslation } from "react-i18next";
 
 const OptionButton = ({ title, onSelect }) => {
+  const { t } = useTranslation();
   // Xác định style dựa trên title
   const getButtonStyle = () => {
     switch (title) {
-      case "Delete Post":
+      case t("Delete Post"):
         return {
           color: "red",
           fontWeight: "bold",
