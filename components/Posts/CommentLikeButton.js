@@ -5,6 +5,7 @@ import { ref, update, onValue, off } from "firebase/database";
 import { database } from "../../util/firebase-config";
 import { GlobalColors } from "../../constants/GlobalColors";
 import InfoModal from "./InfoModal";
+import { useTranslation } from "react-i18next";
 
 const CommentLikeButton = ({
   postId,
@@ -13,6 +14,7 @@ const CommentLikeButton = ({
   initialLikeCount,
   initialLikedBy,
 }) => {
+  const { t } = useTranslation();
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(initialLikeCount || 0);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -74,7 +76,7 @@ const CommentLikeButton = ({
         visible={isModalVisible}
         onClose={closeModal}
         userIds={likedBy}
-        title="Comments Likes"
+        title={t("Comments Likes")}
       />
     </View>
   );

@@ -4,8 +4,10 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { GlobalColors } from "../../constants/GlobalColors";
 import useRealtimeLikes from "../../hooks/useRealtimeLikes";
 import InfoModal from "./InfoModal";
+import { useTranslation } from "react-i18next";
 
 const LikeButton = memo(({ postId, currentUserId }) => {
+  const { t } = useTranslation();
   const { isLiked, likeCount, toggleLike, likedUserIds, loading } =
     useRealtimeLikes(postId, currentUserId);
   const [modalVisible, setModalVisible] = useState(false);
@@ -56,7 +58,7 @@ const LikeButton = memo(({ postId, currentUserId }) => {
         visible={modalVisible}
         onClose={closeModal}
         userIds={likedUserIds}
-        title="Posts Likes"
+        title={t("Posts Likes")}
       />
     </>
   );

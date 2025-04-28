@@ -39,12 +39,15 @@ import SerenitySceneScreen from "./screens/SerenitySceneScreen";
 import VideoPlayerScreen from "./screens/VideoPlayerScreen";
 import MonsterRainScreen from "./screens/MonsterRainScreen";
 import MonsterRainGameScreen from "./screens/MonsterRainGameScreen"
+import { useTranslation } from "react-i18next";
 
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
 
 function AppOverview() {
+  const { t } = useTranslation();
+
   return (
     <BottomTabs.Navigator
       screenOptions={() => ({
@@ -61,7 +64,7 @@ function AppOverview() {
         component={HomeScreen}
         options={{
           title: "Zental Home",
-          tabBarLabel: "Home",
+          tabBarLabel: t("Home"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
@@ -71,8 +74,8 @@ function AppOverview() {
         name="Task"
         component={TaskScreen}
         options={{
-          title: "Instant Tasks",
-          tabBarLabel: "Tasks",
+          title: t("Instant Tasks"),
+          tabBarLabel: t("Tasks"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="sunny" size={size} color={color} />
           ),
@@ -83,8 +86,8 @@ function AppOverview() {
         name="Posts"
         component={NewPosts}
         options={{
-          title: "New Posts",
-          tabBarLabel: "Posts",
+          title: t("New Posts"),
+          tabBarLabel: t("Posts"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="paper-plane" size={size} color={color} />
           ),
@@ -96,7 +99,7 @@ function AppOverview() {
         name="Chats"
         component={ChatsScreen}
         options={{
-          tabBarLabel: "Chats",
+          tabBarLabel: t("Chats"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubbles" size={size} color={color} />
           ),
@@ -106,8 +109,8 @@ function AppOverview() {
         name="Profile"
         component={ProfileScreen}
         options={{
-          title: "Profile",
-          tabBarLabel: "Profile",
+          title: t("Profile"),
+          tabBarLabel: t("Profile"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="list" size={size} color={color} />
           ),

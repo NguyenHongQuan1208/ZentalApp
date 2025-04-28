@@ -26,10 +26,12 @@ import { GlobalColors } from "../constants/GlobalColors";
 import { debounce } from "lodash";
 import ToggleButtons from "../components/Chat/ToggleButtons";
 import { getFollowing } from "../util/follow-http";
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get("window");
 
 const ChatsScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
   const token = authCtx.token;
@@ -140,7 +142,7 @@ const ChatsScreen = ({ navigation }) => {
           />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search..."
+            placeholder={t("Search") + `...`}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -232,8 +234,8 @@ const ChatsScreen = ({ navigation }) => {
   }
 
   const toggleOptions = [
-    { value: "Recent", label: "Recently" },
-    { value: "Following", label: "Following Users" },
+    { value: "Recent", label: t("Recently") },
+    { value: "Following", label: t("Following") },
   ];
 
   return (

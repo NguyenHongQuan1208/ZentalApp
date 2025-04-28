@@ -13,7 +13,7 @@ import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import useRealtimePosts from "../hooks/useRealtimePosts";
 import getAllTaskSections from "../util/task-section-http";
-import CarouselComponent from "../components/TaskSection/CaroselComponent";
+import CarouselComponent from "../components/TaskSection/CarouselComponent";
 import { useTranslation } from "react-i18next";
 
 function TaskScreen({ navigation }) {

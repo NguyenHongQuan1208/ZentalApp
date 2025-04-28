@@ -2,13 +2,15 @@ import React from "react";
 import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { GlobalColors } from "../../constants/GlobalColors";
+import { useTranslation } from "react-i18next";
 
 const SearchInput = ({ value, onChangeText, onClear }) => {
+  const { t } = useTranslation();
   return (
     <View style={styles.inputContainer}>
       <TextInput
         style={styles.input}
-        placeholder="Search..."
+        placeholder={t("Search") + `...`}
         value={value}
         onChangeText={onChangeText}
         autoFocus

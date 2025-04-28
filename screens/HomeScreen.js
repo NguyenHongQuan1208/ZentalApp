@@ -21,7 +21,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useTranslation } from "react-i18next";
 
 function HomeScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
   const token = authCtx.token;
@@ -112,6 +112,15 @@ function HomeScreen() {
   useEffect(() => {
     fetchUserData();
   }, [fetchUserData]);
+
+  useEffect(() => {
+    const refetchSectionTitles = async () => {
+      if (userId && Object.keys(postCounts).length > 0) {
+        await fetchSectionData(postCounts);
+      }
+    };
+    refetchSectionTitles();
+  }, [i18n.language, userId, postCounts, fetchSectionData]);
 
   const handleUserDataChange = useCallback((userData) => {
     setUserName(userData.username || "User Name");

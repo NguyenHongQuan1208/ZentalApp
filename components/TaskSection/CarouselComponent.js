@@ -82,7 +82,7 @@ const slideData = [
   },
 ];
 
-const CaroselComponent = () => {
+const CarouselComponent = () => {
   const { t } = useTranslation();
   const scrollViewRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -91,7 +91,11 @@ const CaroselComponent = () => {
   const intervalRef = useRef(null);
 
   const extendedSlideData = useMemo(() => {
-    return [...slideData, ...slideData, ...slideData];
+    return [
+      slideData[slideData.length - 1],
+      ...slideData,
+      slideData[0]
+    ];
   }, []);
 
   const handleScroll = useCallback(
@@ -105,55 +109,47 @@ const CaroselComponent = () => {
   const handleScrollEnd = useCallback((event) => {
     const contentOffset = event.nativeEvent.contentOffset.x;
     const index = Math.round(contentOffset / screenWidth);
-    setCurrentIndex(index);
 
-    if (index >= slideData.length * 2) {
+    if (index === 0) {
       scrollViewRef.current?.scrollTo({
-        x: screenWidth * slideData.length,
+        x: screenWidth * (slideData.length),
         animated: false,
       });
-      setCurrentIndex(slideData.length);
-    } else if (index < slideData.length) {
+      setCurrentIndex(slideData.length - 1);
+    } else if (index === slideData.length + 1) {
       scrollViewRef.current?.scrollTo({
-        x: screenWidth * slideData.length,
+        x: screenWidth,
         animated: false,
       });
-      setCurrentIndex(slideData.length);
+      setCurrentIndex(0);
+    } else {
+      setCurrentIndex(index - 1);
     }
-  }, [slideData.length]);
+  }, []);
 
   const goToSlide = useCallback((index) => {
-    scrollViewRef.current?.scrollTo({ x: screenWidth * index, animated: true });
+    scrollViewRef.current?.scrollTo({ x: screenWidth * (index + 1), animated: true });
     setCurrentIndex(index);
   }, []);
 
   const goToPreviousSlide = useCallback(() => {
     let previousIndex = currentIndex - 1;
-    if (previousIndex < slideData.length) {
-      previousIndex = slideData.length;
-      scrollViewRef.current?.scrollTo({
-        x: screenWidth * previousIndex,
-        animated: false,
-      });
+    if (previousIndex < 0) {
+      previousIndex = slideData.length - 1;
     }
     goToSlide(previousIndex);
-  }, [currentIndex, slideData.length, goToSlide]);
+  }, [currentIndex, goToSlide]);
 
   const goToNextSlide = useCallback(() => {
     let nextIndex = currentIndex + 1;
-    if (nextIndex >= slideData.length * 2) {
-      nextIndex = slideData.length;
-      scrollViewRef.current?.scrollTo({
-        x: screenWidth * nextIndex,
-        animated: false,
-      });
+    if (nextIndex >= slideData.length) {
+      nextIndex = 0;
     }
     goToSlide(nextIndex);
-  }, [currentIndex, slideData.length, goToSlide]);
+  }, [currentIndex, goToSlide]);
 
   const handleStartPress = useCallback(() => {
-    const realIndex = currentIndex % slideData.length;
-    const currentSlide = slideData[realIndex];
+    const currentSlide = slideData[currentIndex];
     navigation.navigate("Instruction", {
       icon: currentSlide.icon,
       name: currentSlide.name,
@@ -162,7 +158,7 @@ const CaroselComponent = () => {
       instructions: currentSlide.instructions,
       benefits: currentSlide.benefits,
     });
-  }, [currentIndex, slideData, navigation]);
+  }, [currentIndex, navigation]);
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {
@@ -177,11 +173,8 @@ const CaroselComponent = () => {
   }, [goToNextSlide]);
 
   useEffect(() => {
-    scrollViewRef.current?.scrollTo({ x: screenWidth * slideData.length, animated: false });
-    setCurrentIndex(slideData.length);
-  }, [slideData.length]);
-
-  const dotIndex = currentIndex % slideData.length;
+    scrollViewRef.current?.scrollTo({ x: screenWidth, animated: false });
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -202,9 +195,7 @@ const CaroselComponent = () => {
               style={styles.image}
               resizeMode="cover"
             />
-            <View
-              style={[styles.overlay, { backgroundColor: `${item.color}99` }]}
-            />
+            <View style={[styles.overlay, { backgroundColor: `${item.color}99` }]} />
             <View style={styles.textContainer}>
               <Ionicons name={item.icon} size={44} color="#fff" />
               <Text style={styles.name}>{t(item.name)}</Text>
@@ -215,17 +206,11 @@ const CaroselComponent = () => {
         ))}
       </Animated.ScrollView>
 
-      <TouchableOpacity
-        style={styles.chevronButtonLeft}
-        onPress={goToPreviousSlide}
-      >
+      <TouchableOpacity style={styles.chevronButtonLeft} onPress={goToPreviousSlide}>
         <Ionicons name="chevron-back" size={30} color="#fff" />
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.chevronButtonRight}
-        onPress={goToNextSlide}
-      >
+      <TouchableOpacity style={styles.chevronButtonRight} onPress={goToNextSlide}>
         <Ionicons name="chevron-forward" size={30} color="#fff" />
       </TouchableOpacity>
 
@@ -233,16 +218,14 @@ const CaroselComponent = () => {
         {slideData.map((_, index) => (
           <TouchableOpacity
             key={`dot-${index}`}
-            onPress={() => goToSlide(index + slideData.length)}
+            onPress={() => goToSlide(index)}
             style={styles.dot}
             activeOpacity={0.7}
           >
             <View
               style={[
                 styles.dotIndicator,
-                dotIndex === index
-                  ? styles.activeDot
-                  : styles.inactiveDot,
+                currentIndex === index ? styles.activeDot : styles.inactiveDot,
               ]}
             />
           </TouchableOpacity>
@@ -332,4 +315,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default React.memo(CaroselComponent);
+export default React.memo(CarouselComponent);

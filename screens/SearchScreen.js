@@ -15,8 +15,10 @@ import { GlobalColors } from "../constants/GlobalColors";
 import { getAllUsers } from "../util/user-info-http";
 import ProfileBar from "../components/Posts/ProfileBar";
 import SearchInput from "../components/Search/SearchInput";
+import { useTranslation } from "react-i18next";
 
 const SearchScreen = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const [searchValue, setSearchValue] = useState("");
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -132,7 +134,7 @@ const SearchScreen = ({ navigation, route }) => {
             />
           ) : (
             <Text style={styles.placeholderText}>
-              Search for users by username or email
+              {t("Search for users by username or email")}
             </Text>
           )}
         </View>

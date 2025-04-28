@@ -100,9 +100,9 @@ const InfoModal = ({ visible, onClose, userIds, title }) => {
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         contentContainerStyle={styles.listContent}
-        initialNumToRender={5} // Adjust based on expected size
-        maxToRenderPerBatch={10} // Adjust for performance
-        windowSize={5} // Number of items to render off-screen
+        initialNumToRender={5}
+        maxToRenderPerBatch={10}
+        windowSize={5}
       />
     ),
     [userIds, renderItem, keyExtractor]

@@ -38,7 +38,20 @@
     "Tasks": "Tasks",
     "Posts": "Posts",
     "Chats": "Chats",
+    "Profile": "Profile",
     "Log out": "Log out",
     "Edit profile": "Edit Profile",
-    "Language": "Language"
+    "Language": "Language",
+    "No posts available": "No posts available",
+    "For You": "For You",
+    "Following": "Following",
+    "Savor the Small Stuff": "Savor the Small Stuff",
+    "Posts Likes": "Posts Likes",
+    "Comments Likes": "Comments Likes",
+    "Instant Tasks": "Instant Tasks",
+    "New Posts": "New Posts",
+    "Search": "Search",
+    "Search for users by username or email": "Search for users by username or email",
+    "Recently": "Recently",
+    "Type a message": "Type a message"
 }

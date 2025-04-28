@@ -17,8 +17,10 @@ import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
 import Post from "../components/Posts/Post";
 import ToggleButtons from "../components/Chat/ToggleButtons";
+import { useTranslation } from "react-i18next";
 
 function NewPosts({ navigation }) {
+  const { t } = useTranslation();
   // Contexts
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
@@ -36,8 +38,8 @@ function NewPosts({ navigation }) {
 
   // Constants
   const toggleOptions = [
-    { value: "all", label: "For You" },
-    { value: "following", label: "Following" },
+    { value: "all", label: t("For You") },
+    { value: "following", label: t("Following") },
   ];
 
   // Navigation setup
@@ -161,7 +163,7 @@ function NewPosts({ navigation }) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={GlobalColors.primaryColor} />
-        <Text style={styles.loadingText}>Loading...</Text>
+        <Text style={styles.loadingText}>{t('loading')}...</Text>
       </View>
     );
   }
@@ -189,7 +191,7 @@ function NewPosts({ navigation }) {
 
           {posts.length === 0 ? (
             <View style={styles.noPostsContainer}>
-              <Text>No posts available.</Text>
+              <Text>{t("No posts available")}</Text>
             </View>
           ) : (
             <FlatList

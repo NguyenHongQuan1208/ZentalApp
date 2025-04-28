@@ -38,7 +38,19 @@
     "Tasks": "Nhiệm vụ",
     "Posts": "Bài đăng",
     "Chats": "Trò chuyện",
+    "Profile": "Hồ sơ",
     "Log out": "Đăng xuất",
     "Edit profile": "Chỉnh sửa hồ sơ",
-    "Language": "Ngôn ngữ"
+    "Language": "Ngôn ngữ",
+    "No posts available": "Không có bài viết nào",
+    "For You": "Dành cho bạn",
+    "Following": "Đang theo dõi",
+    "Posts Likes": "Lượt thích bài viết",
+    "Comments Likes": "Lượt thích bình luận",
+    "Instant Tasks": "Nhiệm Vụ Tức Thì",
+    "New Posts": "Bài Đăng Mới",
+    "Search": "Tìm kiếm",
+    "Search for users by username or email": "Tìm kiếm theo tên hoặc email",
+    "Recently": "Gần đây",
+    "Type a message": "Nhập tin nhắn"
 }

@@ -12,11 +12,13 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { GlobalColors } from "../../constants/GlobalColors";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("window");
 const aspectRatio = height / width;
 
 const ChatInput = ({ msgInput, setMsgInput, sendMsg, disabled, onBlur }) => {
+  const { t } = useTranslation();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const inputRef = useRef(null);
   const paddingBottomAnim = useRef(
@@ -87,7 +89,7 @@ const ChatInput = ({ msgInput, setMsgInput, sendMsg, disabled, onBlur }) => {
         <TextInput
           ref={inputRef}
           style={styles.textInput}
-          placeholder="Type a message..."
+          placeholder={t("Type a message") + `...`}
           placeholderTextColor="rgba(0, 0, 0, 0.4)"
           value={msgInput}
           onChangeText={setMsgInput}
