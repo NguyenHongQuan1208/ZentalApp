@@ -5,11 +5,13 @@ import { GlobalColors } from "../constants/GlobalColors";
 import TaskBenefits from "../components/TaskSection/TaskBenefits";
 import LongButton from "../components/ui/LongButton";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("window");
 const aspectRatio = height / width;
 
 function InstructionScreen({ route }) {
+  const { t } = useTranslation();
   const { icon, name, color, slogan, instructions, benefits } = route.params;
   const navigation = useNavigation();
 
@@ -44,7 +46,7 @@ function InstructionScreen({ route }) {
           <View style={[styles.iconContainer, { borderColor: color }]}>
             <Ionicons name="bulb" size={24} color={color} />
           </View>
-          <Text style={styles.instructionsTitle}>Instructions</Text>
+          <Text style={styles.instructionsTitle}>{t("Instructions")}</Text>
         </View>
         <Text style={styles.instructions}>{instructions}</Text>
         <TaskBenefits benefits={benefits} color={color} />
@@ -55,7 +57,7 @@ function InstructionScreen({ route }) {
           style={[styles.longButton, { backgroundColor: color }]}
           onPress={handleStartPress}
         >
-          START NOW
+          {t("START NOW")}
         </LongButton>
       </View>
     </View>

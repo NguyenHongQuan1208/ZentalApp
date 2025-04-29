@@ -38,6 +38,7 @@
   "This is your decision!": "This is your decision!",
   "PLEDGE TO DO IT": "PLEDGE TO DO IT",
   "I'VE DONE IT, POST": "I'VE DONE IT, POST",
+  "START NOW": "START NOW",
   "Take or Choose Photo": "Take or Choose Photo",
   "Personal Profile": "Personal Profile",
   "Home": "Home",
@@ -91,5 +92,6 @@
   "report_success_message": "Thank you for helping us maintain a safe community. We'll review your report soon.",
   "Submission Failed": "Submission Failed",
   "submission_error_message": "Unable to submit report. Please check your connection and try again.",
-  "Select Filter": "Select Filter"
+  "Select Filter": "Select Filter",
+  "Instructions": "Instructions"
 }

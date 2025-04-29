@@ -306,7 +306,7 @@ function AuthenticatedStack() {
         name="Instruction"
         component={InstructionScreen}
         options={{
-          headerTitle: "Instructions",
+          headerTitle: t("Instructions"),
           headerTitleAlign: "center",
         }}
       />

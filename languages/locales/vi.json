@@ -38,6 +38,7 @@
   "This is your decision!": "Đây là quyết định của bạn!",
   "PLEDGE TO DO IT": "CAM KẾT THỰC HIỆN",
   "I'VE DONE IT, POST": "TÔI ĐÃ THỰC HIỆN, ĐĂNG BÀI",
+  "START NOW": "BẮT ĐẦU NGAY",
   "Take or Choose Photo": "Chụp hoặc chọn ảnh",
   "Personal Profile": "Hồ sơ cá nhân",
   "Home": "Trang chủ",
@@ -91,5 +92,6 @@
   "report_success_message": "Cảm ơn bạn đã giúp chúng tôi duy trì một cộng đồng an toàn. Chúng tôi sẽ xem xét báo cáo của bạn sớm.",
   "Submission Failed": "Gửi không thành công",
   "submission_error_message": "Không thể gửi báo cáo. Vui lòng kiểm tra kết nối và thử lại.",
-  "Select Filter": "Lựa chọn bộ lọc"
+  "Select Filter": "Lựa chọn bộ lọc",
+  "Instructions": "Hướng Dẫn"
 }
