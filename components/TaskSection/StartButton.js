@@ -12,7 +12,7 @@ const StartButton = ({ onPress }) => {
       ]}
       onPress={onPress}
     >
-      <Text style={styles.startButtonText}>{t('start')}</Text>
+      <Text style={styles.startButtonText}>{t("start")}</Text>
     </Pressable>
   );
 };

@@ -6,6 +6,7 @@ import CheckFollowButton from "./CheckFollowButton";
 import FilterButton from "./FilterButton";
 import FollowButton from "./FollowButton";
 import { GlobalColors } from "../../constants/GlobalColors";
+import { useTranslation } from "react-i18next";
 
 const ProfileHeader = ({
   userData,
@@ -15,6 +16,7 @@ const ProfileHeader = ({
   toggleFollow,
   openModal,
 }) => {
+  const { t } = useTranslation();
   const navigation = useNavigation(); // Lấy đối tượng navigation
 
   // Hàm điều hướng đến danh sách người theo dõi
@@ -40,11 +42,11 @@ const ProfileHeader = ({
       <UserProfileHeader {...userData} />
       <View style={styles.buttonsContainer}>
         <CheckFollowButton
-          title="Following"
+          title={t("Following")}
           onPress={navigateToFollowingList} // Điều hướng đến danh sách người đang theo dõi
         />
         <CheckFollowButton
-          title="Followers"
+          title={t("Followers")}
           onPress={navigateToFollowersList} // Điều hướng đến danh sách người theo dõi
         />
         {currentUserId === userId ? (

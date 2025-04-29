@@ -3,8 +3,10 @@ import { View, Text, FlatList, StyleSheet } from "react-native";
 import { getFollowing, getFollowers } from "../util/follow-http";
 import ProfileBar from "../components/Posts/ProfileBar";
 import Ionicons from "react-native-vector-icons/Ionicons"; // Thêm biểu tượng
+import { useTranslation } from "react-i18next";
 
 const FollowListScreen = ({ route, navigation }) => {
+  const { t } = useTranslation();
   const { type, userId, currentUserId } = route.params;
   const [listData, setListData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +28,7 @@ const FollowListScreen = ({ route, navigation }) => {
         // Set the header title after the data has been fetched
         navigation.setOptions({
           headerTitle: `${list.length} ${
-            type === "following" ? "Following" : "Followers"
+            type === "following" ? t("Following") : t("Followers")
           }`,
         });
       } catch (error) {

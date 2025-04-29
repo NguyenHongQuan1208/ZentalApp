@@ -9,7 +9,8 @@ import DecisionBox from "../components/TaskSection/DecisionBox";
 import Target from "../components/TaskSection/Target";
 import { useTranslation } from "react-i18next";
 
-const INSTRUCTION_VIDEO_URL = "https://www.youtube.com/embed/zThE1yg5MBE?autoplay=0&controls=1&showinfo=0";
+const INSTRUCTION_VIDEO_URL =
+  "https://www.youtube.com/embed/zThE1yg5MBE?autoplay=0&controls=1&showinfo=0";
 
 function TaskDetailScreen({ route }) {
   const { t } = useTranslation();
@@ -20,7 +21,7 @@ function TaskDetailScreen({ route }) {
     benefits,
     description,
     target,
-    placeholderQuestion
+    placeholderQuestion,
   } = route.params;
 
   return (
@@ -33,7 +34,7 @@ function TaskDetailScreen({ route }) {
         style={styles.gradient}
       >
         <View style={styles.rootContainer}>
-          <Target icon={icon} color={color} target={target} />
+          <Target icon={icon} color={color} target={t(target)} />
 
           <View style={[styles.boxContainer, { borderColor: color }]}>
             <SectionHeader
@@ -77,9 +78,7 @@ function TaskDetailScreen({ route }) {
 const SectionHeader = ({ iconName, title, color, style }) => (
   <View style={[styles.header, { borderBottomColor: color }, style]}>
     <Ionicons name={iconName} size={24} color={color} />
-    <Text style={[styles.headerText, { color }]}>
-      {title}
-    </Text>
+    <Text style={[styles.headerText, { color }]}>{title}</Text>
   </View>
 );
 

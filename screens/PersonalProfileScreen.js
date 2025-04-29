@@ -29,8 +29,10 @@ import {
   checkIfFollowing,
 } from "../util/follow-http";
 import ProfileHeader from "../components/PersonalProfile/ProfileHeader";
+import { useTranslation } from "react-i18next";
 
 const PersonalProfileScreen = ({ route, navigation }) => {
+  const { t } = useTranslation();
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
   const { token } = authCtx;
@@ -47,7 +49,7 @@ const PersonalProfileScreen = ({ route, navigation }) => {
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedFilter, setSelectedFilter] = useState("Public Posts");
+  const [selectedFilter, setSelectedFilter] = useState(t("Public Posts")); // Sử dụng t() cho Public Posts
   const [viewMode, setViewMode] = useState("grid");
   const [loading, setLoading] = useState(true);
   const [loadingFilter, setLoadingFilter] = useState(true);
@@ -76,10 +78,10 @@ const PersonalProfileScreen = ({ route, navigation }) => {
       const allPosts = await getAllPosts();
       const filteredPosts = allPosts.filter((post) => {
         const isUserPost = post.uid === userId && post.status === 1;
-        if (selectedFilter === "All Posts") return isUserPost;
+        if (selectedFilter === t("All Posts")) return isUserPost;
         return (
           isUserPost &&
-          post.publicStatus === (selectedFilter === "Public Posts" ? 1 : 0)
+          post.publicStatus === (selectedFilter === t("Public Posts") ? 1 : 0)
         );
       });
 
@@ -94,7 +96,7 @@ const PersonalProfileScreen = ({ route, navigation }) => {
       setRefreshing(false);
       setLoadingFilter(false);
     }
-  }, [userId, selectedFilter]);
+  }, [userId, selectedFilter, t]);
 
   // Fetch current user data
   const fetchCurrentUserData = useCallback(async () => {
@@ -129,7 +131,7 @@ const PersonalProfileScreen = ({ route, navigation }) => {
       setLoadingFollowStatus(false); // End loading
     }
   }, [currentUserId, userId]);
-  // Toggle follow/unfollow
+
   const toggleFollow = useCallback(async () => {
     if (!currentUserId || !userId) return;
 
@@ -160,11 +162,11 @@ const PersonalProfileScreen = ({ route, navigation }) => {
   useEffect(() => {
     if (currentUserId && userId) {
       setSelectedFilter(
-        currentUserId === userId ? "All Posts" : "Public Posts"
+        currentUserId === userId ? t("All Posts") : t("Public Posts")
       );
       fetchFollowStatus();
     }
-  }, [currentUserId, userId, fetchFollowStatus]);
+  }, [currentUserId, userId, fetchFollowStatus, t]);
 
   const handleUserDataChange = useCallback((userData) => {
     setUserData({
@@ -240,8 +242,8 @@ const PersonalProfileScreen = ({ route, navigation }) => {
   const openModal = () => setModalVisible(true);
   const closeModal = () => setModalVisible(false);
   const options = useMemo(
-    () => ["All Posts", "Public Posts", "Private Posts"],
-    []
+    () => [t("All Posts"), t("Public Posts"), t("Private Posts")],
+    [t]
   );
 
   const handleSelect = (option) => {
@@ -289,7 +291,7 @@ const PersonalProfileScreen = ({ route, navigation }) => {
             { marginTop: viewMode === "grid" ? 15 : 0 },
           ]}
         >
-          <Text style={styles.noPostsText}>No Posts yet</Text>
+          <Text style={styles.noPostsText}>{t("No post available")}</Text>
         </View>
       )}
     </>
@@ -333,7 +335,7 @@ const PersonalProfileScreen = ({ route, navigation }) => {
             visible={modalVisible}
             onClose={closeModal}
             onSelect={handleSelect}
-            title="Select Filter"
+            title={t("Select Filter")}
             options={options}
           />
         </View>

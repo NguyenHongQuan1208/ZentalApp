@@ -11,7 +11,11 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { launchCameraAsync, launchImageLibraryAsync, useCameraPermissions } from "expo-image-picker";
+import {
+  launchCameraAsync,
+  launchImageLibraryAsync,
+  useCameraPermissions,
+} from "expo-image-picker";
 import PhotoOptionsModal from "../components/Profile/PhotoOptionsModal";
 import LongButton from "../components/ui/LongButton";
 import NoteImagePreview from "../components/TaskSection/NoteImagePreview";
@@ -31,7 +35,13 @@ const aspectRatio = height / width;
 function TaskNoteScreen({ route, navigation }) {
   const { t } = useTranslation();
   // Destructure route params
-  const { id: sectionId, color, icon, target, placeholderQuestion } = route.params;
+  const {
+    id: sectionId,
+    color,
+    icon,
+    target,
+    placeholderQuestion,
+  } = route.params;
 
   // State management
   const [textInputValue, setTextInputValue] = useState("");
@@ -46,7 +56,8 @@ function TaskNoteScreen({ route, navigation }) {
   // Contexts
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
-  const [cameraPermissionInformation, requestPermission] = useCameraPermissions();
+  const [cameraPermissionInformation, requestPermission] =
+    useCameraPermissions();
 
   // Fetch user data
   useEffect(() => {
@@ -75,7 +86,10 @@ function TaskNoteScreen({ route, navigation }) {
       try {
         const posts = await getAllPosts();
         const draftPost = posts.find(
-          post => post.status === 0 && post.sectionId === sectionId && post.uid === uid
+          (post) =>
+            post.status === 0 &&
+            post.sectionId === sectionId &&
+            post.uid === uid
         );
 
         if (draftPost) {
@@ -100,7 +114,7 @@ function TaskNoteScreen({ route, navigation }) {
         const uri = await fetchDefaultImageUriBySectionId(sectionId);
         if (uri) {
           setDefaultImageUri(uri);
-          setImageUri(prevUri => prevUri || uri);
+          setImageUri((prevUri) => prevUri || uri);
         }
       } catch (error) {
         console.error("Error fetching default image:", error);
@@ -217,24 +231,30 @@ function TaskNoteScreen({ route, navigation }) {
   }, []);
 
   // Post management
-  const saveOrUpdatePost = useCallback(async (postData) => {
-    try {
-      const posts = await getAllPosts();
-      const existingPost = posts.find(
-        post => post.status === 0 && post.sectionId === postData.sectionId && post.uid === postData.uid
-      );
+  const saveOrUpdatePost = useCallback(
+    async (postData) => {
+      try {
+        const posts = await getAllPosts();
+        const existingPost = posts.find(
+          (post) =>
+            post.status === 0 &&
+            post.sectionId === postData.sectionId &&
+            post.uid === postData.uid
+        );
 
-      existingPost
-        ? await updatePost(existingPost.id, postData)
-        : await addPost(postData);
+        existingPost
+          ? await updatePost(existingPost.id, postData)
+          : await addPost(postData);
 
-      Alert.alert("Success", existingPost ? "Note updated" : "Note saved");
-      navigation.navigate("AppOverview", { screen: "Task" });
-    } catch (error) {
-      console.error("Post error:", error);
-      Alert.alert("Error", "Failed to save note.");
-    }
-  }, [navigation]);
+        Alert.alert("Success", existingPost ? "Note updated" : "Note saved");
+        navigation.navigate("AppOverview", { screen: "Task" });
+      } catch (error) {
+        console.error("Post error:", error);
+        Alert.alert("Error", "Failed to save note.");
+      }
+    },
+    [navigation]
+  );
 
   // Button handlers
   const handlePledgeToDoIt = useCallback(async () => {
@@ -261,7 +281,18 @@ function TaskNoteScreen({ route, navigation }) {
       console.error("Pledge error:", error);
       Alert.alert("Error", "Failed to process your note.");
     }
-  }, [textInputValue, uid, file, imageUri, defaultImageUri, sectionId, color, target, uploadImageToSupabase, saveOrUpdatePost]);
+  }, [
+    textInputValue,
+    uid,
+    file,
+    imageUri,
+    defaultImageUri,
+    sectionId,
+    color,
+    target,
+    uploadImageToSupabase,
+    saveOrUpdatePost,
+  ]);
 
   const handlePost = useCallback(async () => {
     if (!textInputValue.trim()) {
@@ -288,7 +319,18 @@ function TaskNoteScreen({ route, navigation }) {
       console.error("Post error:", error);
       Alert.alert("Error", "Failed to process your post.");
     }
-  }, [textInputValue, file, uid, sectionId, imageUri, color, target, icon, navigation, uploadImageToSupabase]);
+  }, [
+    textInputValue,
+    file,
+    uid,
+    sectionId,
+    imageUri,
+    color,
+    target,
+    icon,
+    navigation,
+    uploadImageToSupabase,
+  ]);
 
   return (
     <View style={styles.container}>
@@ -296,7 +338,7 @@ function TaskNoteScreen({ route, navigation }) {
         <View style={styles.targetContainer}>
           <Target
             icon={icon}
-            target={target}
+            target={t(target)}
             color={GlobalColors.secondBlack}
             size={13}
           />
@@ -304,7 +346,9 @@ function TaskNoteScreen({ route, navigation }) {
 
         <View style={styles.headerContainer}>
           <Ionicons name="bulb" size={16} color={color} />
-          <Text style={[styles.textTitle, { color }]}>{t("You decide How")}</Text>
+          <Text style={[styles.textTitle, { color }]}>
+            {t("You decide How")}
+          </Text>
         </View>
 
         <View style={styles.content}>
@@ -345,7 +389,10 @@ function TaskNoteScreen({ route, navigation }) {
         <View style={styles.footer}>
           <View style={styles.footerOverlay}>
             <LongButton
-              style={[styles.longButton, { backgroundColor: GlobalColors.inActivetabBarColor }]}
+              style={[
+                styles.longButton,
+                { backgroundColor: GlobalColors.inActivetabBarColor },
+              ]}
               onPress={handlePledgeToDoIt}
             >
               {t("PLEDGE TO DO IT")}

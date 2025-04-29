@@ -14,7 +14,7 @@ const ProfileContainer = ({ photoUrl, userName }) => {
             <Avatar photoUrl={photoUrl} size={80} />
           </View>
           <View style={styles.textContainer}>
-            <Text style={styles.welcomeText}>{t("welcome")}</Text>
+            <Text style={styles.welcomeText}>{t("welcome")} </Text>
             <Text
               style={[
                 styles.userNameText,

@@ -10,6 +10,7 @@ import useUser from "../../hooks/useUser";
 import LikeButton from "../../components/Posts/LikeButton";
 import CommentButton from "../../components/Posts/CommentButton";
 import useRealtimeComments from "../../hooks/useRealtimeComments";
+import { useTranslation } from "react-i18next";
 
 const Post = memo(
   ({
@@ -20,6 +21,7 @@ const Post = memo(
     onPostDelete,
     style,
   }) => {
+    const { t } = useTranslation();
     const navigation = useNavigation();
     const postId = item?.id;
     const userId = item?.uid || "";
@@ -91,7 +93,7 @@ const Post = memo(
           />
 
           <Text style={[styles.title, { color: sectionColor }]}>
-            {item?.title || "No title"}
+            {t(item?.title) || "No title"}
           </Text>
 
           <PostContent content={item?.content} />

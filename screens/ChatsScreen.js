@@ -268,7 +268,7 @@ const ChatsScreen = ({ navigation }) => {
             ) : null
           }
           ListEmptyComponent={
-            <Text style={styles.emptyText}>No users found.</Text>
+            <Text style={styles.emptyText}>{t("No users found.")}</Text>
           }
           refreshing={refreshing}
           onRefresh={fetchUsers}

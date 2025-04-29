@@ -7,11 +7,13 @@ import PostImage from "./PostImage";
 import { Ionicons } from "@expo/vector-icons";
 import OptionsModal from "../ui/OptionsModal";
 import { changePublicStatus, deletePost } from "../../util/posts-data-http";
+import { useTranslation } from "react-i18next";
 
 const screenWidth = Dimensions.get("window").width;
 const itemWidth = screenWidth / 3;
 
 function PostGridItem({ item, currentUserId, onPrivacyChange, onPostDelete }) {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const postId = item?.id;
   const userId = item?.uid || "";
@@ -55,7 +57,7 @@ function PostGridItem({ item, currentUserId, onPrivacyChange, onPostDelete }) {
     handleCloseModal();
 
     switch (option) {
-      case "Change Post to Public":
+      case t("Change Post to Public"):
         try {
           await changePublicStatus(postId, 1);
           item.publicStatus = 1;
@@ -64,7 +66,7 @@ function PostGridItem({ item, currentUserId, onPrivacyChange, onPostDelete }) {
           console.error("Failed to change post to public:", error);
         }
         break;
-      case "Change Post to Private":
+      case t("Change Post to Private"):
         try {
           await changePublicStatus(postId, 0);
           item.publicStatus = 0;
@@ -73,17 +75,17 @@ function PostGridItem({ item, currentUserId, onPrivacyChange, onPostDelete }) {
           console.error("Failed to change post to private:", error);
         }
         break;
-      case "Delete Post":
+      case t("Delete Post"):
         Alert.alert(
           "Confirm Deletion",
           "Are you sure you want to delete this post?",
           [
             {
-              text: "Cancel",
+              text: t("Cancel"),
               style: "cancel",
             },
             {
-              text: "Delete",
+              text: t("Delete"),
               onPress: async () => {
                 try {
                   await deletePost(postId);
@@ -96,13 +98,13 @@ function PostGridItem({ item, currentUserId, onPrivacyChange, onPostDelete }) {
           ]
         );
         break;
-      case "Report Post":
+      case t("Report Post"):
         navigation.navigate("Report", {
           postId: postId,
           headerTitle: "Report Post",
         });
         break;
-      case "Cancel":
+      case t("Cancel"):
         break;
       default:
         break;
@@ -114,12 +116,12 @@ function PostGridItem({ item, currentUserId, onPrivacyChange, onPostDelete }) {
     userId === currentUserId
       ? [
           publicStatus === 1
-            ? "Change Post to Private"
-            : "Change Post to Public",
-          "Delete Post",
-          "Cancel",
+            ? t("Change Post to Private")
+            : t("Change Post to Public"),
+          t("Delete Post"),
+          t("Cancel"),
         ]
-      : ["Report Post", "Cancel"];
+      : [t("Report Post"), t("Cancel")];
 
   return (
     <View>
@@ -148,7 +150,7 @@ function PostGridItem({ item, currentUserId, onPrivacyChange, onPostDelete }) {
         visible={showOptionsModal}
         onClose={handleCloseModal}
         onSelect={handleSelectOption}
-        title="Options"
+        title={t("Options")}
         options={options}
       />
     </View>

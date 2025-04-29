@@ -273,7 +273,7 @@ function AuthenticatedStack() {
         name="PersonalProfile"
         component={PersonalProfileScreen}
         options={{
-          headerTitle: "Personal Profile",
+          headerTitle: t("Personal Profile"),
           headerTitleAlign: "center",
         }}
       />
