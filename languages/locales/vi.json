@@ -93,5 +93,6 @@
   "Submission Failed": "Gửi không thành công",
   "submission_error_message": "Không thể gửi báo cáo. Vui lòng kiểm tra kết nối và thử lại.",
   "Select Filter": "Lựa chọn bộ lọc",
-  "Instructions": "Hướng Dẫn"
+  "Instructions": "Hướng Dẫn",
+  "test git": "test git"
 }
