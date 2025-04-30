@@ -23,14 +23,14 @@ function ReportScreen({ route, navigation }) {
   const [additionalDetails, setAdditionalDetails] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Keep these values in English for database
-  const reportReasons = [
-    "Inappropriate Content",
-    "Spam",
-    "Harassment",
-    "False Information",
-    "Other",
-  ];
+  // Giữ lý do báo cáo bằng tiếng Anh
+  const reportReasons = {
+    inappropriate: "Inappropriate Content",
+    spam: "Spam",
+    harassment: "Harassment",
+    false_info: "False Information",
+    other: "Other",
+  };
 
   useEffect(() => {
     navigation.setOptions({
@@ -39,12 +39,18 @@ function ReportScreen({ route, navigation }) {
   }, [navigation, t]);
 
   const handleReport = async () => {
-    if (!reason.trim() || (reason === "Other" && !additionalDetails.trim())) {
+    if (
+      !reason.trim() ||
+      (reason === reportReasons.other && !additionalDetails.trim())
+    ) {
       Alert.alert(t("Incomplete Report"), t("report_validation_message"));
       return;
     }
 
-    if (reason === "Other" && additionalDetails.trim().length < 10) {
+    if (
+      reason === reportReasons.other &&
+      additionalDetails.trim().length < 10
+    ) {
       Alert.alert(t("Incomplete Report"), t("details_validation_message"));
       return;
     }
@@ -54,7 +60,7 @@ function ReportScreen({ route, navigation }) {
     try {
       const timestamp = new Date().toISOString();
       const reportData = {
-        reason: reason === "Other" ? additionalDetails : reason,
+        reason: reason === reportReasons.other ? additionalDetails : reason,
         timestamp: timestamp,
         repporterId: currentUserId,
         isViewed: 0,
@@ -86,17 +92,17 @@ function ReportScreen({ route, navigation }) {
         <Text style={styles.description}>{t("report_description")}</Text>
 
         <View style={styles.reasonsContainer}>
-          {reportReasons.map((reportReason, index) => (
+          {Object.entries(reportReasons).map(([key, value]) => (
             <Pressable
-              key={index}
+              key={key}
               style={[
                 styles.reasonButton,
-                reason === reportReason && styles.selectedReasonButton,
+                reason === value && styles.selectedReasonButton,
               ]}
               onPress={() => {
-                setReason(reportReason);
-                if (reportReason !== "Other") {
-                  setAdditionalDetails(reportReason);
+                setReason(value);
+                if (value !== reportReasons.other) {
+                  setAdditionalDetails(value);
                 } else {
                   setAdditionalDetails("");
                 }
@@ -105,10 +111,10 @@ function ReportScreen({ route, navigation }) {
               <Text
                 style={[
                   styles.reasonButtonText,
-                  reason === reportReason && styles.selectedReasonButtonText,
+                  reason === value && styles.selectedReasonButtonText,
                 ]}
               >
-                {t(reportReason)}
+                {t(key)}
               </Text>
             </Pressable>
           ))}
