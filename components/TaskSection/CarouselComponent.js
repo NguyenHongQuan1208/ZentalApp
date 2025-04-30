@@ -1,4 +1,10 @@
-import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   View,
   Text,
@@ -37,7 +43,7 @@ const slideData = [
     icon: "fast-food",
     name: "Monster Mind Cleanse",
     color: "#D500A9",
-    slogan: "Smash Away Your Stress",
+    slogan: "Clean Away Your Stress",
     instructions:
       "In this game, you'll eliminate pesky monsters representing negative thoughts and work toward a more positive mindset. On the next screen, select a few monsters that symbolize your negative thoughts and feelings, or add your own. Then, tap on these monsters to get rid of them and boost your positivity!",
     benefits: [
@@ -91,18 +97,13 @@ const CarouselComponent = () => {
   const intervalRef = useRef(null);
 
   const extendedSlideData = useMemo(() => {
-    return [
-      slideData[slideData.length - 1],
-      ...slideData,
-      slideData[0]
-    ];
+    return [slideData[slideData.length - 1], ...slideData, slideData[0]];
   }, []);
 
   const handleScroll = useCallback(
-    Animated.event(
-      [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-      { useNativeDriver: false }
-    ),
+    Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+      useNativeDriver: false,
+    }),
     []
   );
 
@@ -112,7 +113,7 @@ const CarouselComponent = () => {
 
     if (index === 0) {
       scrollViewRef.current?.scrollTo({
-        x: screenWidth * (slideData.length),
+        x: screenWidth * slideData.length,
         animated: false,
       });
       setCurrentIndex(slideData.length - 1);
@@ -128,7 +129,10 @@ const CarouselComponent = () => {
   }, []);
 
   const goToSlide = useCallback((index) => {
-    scrollViewRef.current?.scrollTo({ x: screenWidth * (index + 1), animated: true });
+    scrollViewRef.current?.scrollTo({
+      x: screenWidth * (index + 1),
+      animated: true,
+    });
     setCurrentIndex(index);
   }, []);
 
@@ -195,7 +199,9 @@ const CarouselComponent = () => {
               style={styles.image}
               resizeMode="cover"
             />
-            <View style={[styles.overlay, { backgroundColor: `${item.color}99` }]} />
+            <View
+              style={[styles.overlay, { backgroundColor: `${item.color}99` }]}
+            />
             <View style={styles.textContainer}>
               <Ionicons name={item.icon} size={44} color="#fff" />
               <Text style={styles.name}>{t(item.name)}</Text>
@@ -206,11 +212,17 @@ const CarouselComponent = () => {
         ))}
       </Animated.ScrollView>
 
-      <TouchableOpacity style={styles.chevronButtonLeft} onPress={goToPreviousSlide}>
+      <TouchableOpacity
+        style={styles.chevronButtonLeft}
+        onPress={goToPreviousSlide}
+      >
         <Ionicons name="chevron-back" size={30} color="#fff" />
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.chevronButtonRight} onPress={goToNextSlide}>
+      <TouchableOpacity
+        style={styles.chevronButtonRight}
+        onPress={goToNextSlide}
+      >
         <Ionicons name="chevron-forward" size={30} color="#fff" />
       </TouchableOpacity>
 

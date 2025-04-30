@@ -11,12 +11,14 @@ import {
 import { CountdownCircleTimer } from "react-native-countdown-circle-timer";
 import { Video } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
-import BackButton from '../components/ui/BackButton'; // Import the BackButton component
+import BackButton from "../components/ui/BackButton"; // Import the BackButton component
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get("window");
 const circleSize = width * 0.7;
 
 const Breather = ({ navigation }) => {
+  const { t } = useTranslation(); // Hook to access translation function
   const [isPlaying, setIsPlaying] = useState(false);
   const [phase, setPhase] = useState("Inhale");
   const [key, setKey] = useState(0);
@@ -108,7 +110,9 @@ const Breather = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Video
-        source={{ uri: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Breather/relax-ocean.mp4" }}
+        source={{
+          uri: "https://mtgvdotkhgwbvsmxgjol.supabase.co/storage/v1/object/public/ZentalApp/Breather/relax-ocean.mp4",
+        }}
         ref={videoRef}
         style={StyleSheet.absoluteFill}
         resizeMode="cover"
@@ -124,10 +128,13 @@ const Breather = ({ navigation }) => {
       />
 
       {/* Use the BackButton component */}
-      <BackButton onPress={() => navigation.goBack()} style={{ marginTop: 32, marginLeft: 16 }} />
+      <BackButton
+        onPress={() => navigation.goBack()}
+        style={{ marginTop: 32, marginLeft: 16 }}
+      />
 
       <View style={styles.content}>
-        <Text style={styles.title}>Mindful Breathing</Text>
+        <Text style={styles.title}>{t("Mindful Breathing")}</Text>
 
         <Animated.Text
           style={[
@@ -146,7 +153,7 @@ const Breather = ({ navigation }) => {
             },
           ]}
         >
-          {phase}
+          {t(phase)}
         </Animated.Text>
 
         <View style={styles.circleContainer}>
@@ -173,10 +180,10 @@ const Breather = ({ navigation }) => {
 
         <Text style={styles.guideText}>
           {phase === "Inhale"
-            ? "Breathe in deeply..."
+            ? t("Breathe in deeply...")
             : phase === "Hold"
-              ? "Hold your breath..."
-              : "Release slowly..."}
+            ? t("Hold your breath...")
+            : t("Release slowly...")}
         </Text>
 
         <TouchableOpacity
@@ -189,7 +196,9 @@ const Breather = ({ navigation }) => {
           ]}
           onPress={toggleBreathing}
         >
-          <Text style={styles.buttonText}>{isPlaying ? "Pause" : "Begin"}</Text>
+          <Text style={styles.buttonText}>
+            {isPlaying ? t("Pause") : t("Begin")}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

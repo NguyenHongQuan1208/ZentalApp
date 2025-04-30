@@ -13,7 +13,8 @@ import {
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { GlobalColors } from "../constants/GlobalColors";
 import GameModal from "../components/BalloonGame/GameModal";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("window");
 
@@ -66,8 +67,9 @@ const negativeWords = [
 ];
 
 const BalloonGame = ({ navigation }) => {
+  const { t } = useTranslation();
   const [score, setScore] = useState(0);
-  const [highScore, setHighScore] = useState(0); // State for high score
+  const [highScore, setHighScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [balloons, setBalloons] = useState([]);
   const [isPaused, setIsPaused] = useState(false);
@@ -200,10 +202,9 @@ const BalloonGame = ({ navigation }) => {
     setIsPaused(true);
     animations.forEach((anim) => anim.stop());
 
-    // Check and update high score
     if (score > highScore) {
       setHighScore(score);
-      AsyncStorage.setItem("highScore", score.toString()); // Save new high score
+      AsyncStorage.setItem("highScore", score.toString());
     }
   };
 
@@ -236,21 +237,23 @@ const BalloonGame = ({ navigation }) => {
         >
           <Ionicons name="chevron-back" size={30} />
         </TouchableOpacity>
-        <Text style={styles.highScore}>High Score: {highScore}</Text>
+        <Text style={styles.highScore}>
+          {t("High Score")}: {highScore}
+        </Text>
         <TouchableOpacity onPress={togglePause} style={styles.pauseButton}>
-          <Ionicons
-            name={isPaused ? "play" : "pause"}
-            size={30}
-            color={GlobalColors.secondaryColor}
-          />
+          <Ionicons name={isPaused ? "play" : "pause"} size={30} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.scoreBoard}>
         <View style={styles.scoreBoardTextContainer}>
-          <Text style={styles.score}>Score: {score}</Text>
+          <Text style={styles.score}>
+            {t("Score")}: {score}
+          </Text>
 
-          <Text style={styles.lives}>Lives: {lives}</Text>
+          <Text style={styles.lives}>
+            {t("Lives")}: {lives}
+          </Text>
         </View>
       </View>
 
@@ -273,23 +276,24 @@ const BalloonGame = ({ navigation }) => {
               source={require("../assets/hot-air-ballon.png")}
               style={styles.balloon}
             />
-            <Text style={styles.word}>{balloon.word}</Text>
+            {/* Translation of balloon word for display */}
+            <Text style={styles.word}>{t(balloon.word)}</Text>
           </TouchableOpacity>
         </Animated.View>
       ))}
 
       <GameModal
         visible={!isGameStarted && !isGameOver}
-        message="Tap the positive word"
+        message={t("Tap the positive word")}
         onClose={startGame}
-        buttonText="Start"
+        buttonText={t("start")}
       />
 
       <GameModal
         visible={isGameOver}
-        message={`Game Over!\nFinal Score: ${score}`}
+        message={`${t("Game Over")}\n${t("Final Score")}: ${score}`}
         onClose={startGame}
-        buttonText="Start Again"
+        buttonText={t("Start Again")}
       />
     </ImageBackground>
   );
@@ -359,7 +363,7 @@ const styles = StyleSheet.create({
   highScore: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#FFD700", // Gold color for high score
+    color: "#FFD700",
     backgroundColor: "rgba(255, 255, 255, 0.9)",
     paddingVertical: 5,
     paddingHorizontal: 15,
