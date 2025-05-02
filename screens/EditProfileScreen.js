@@ -23,8 +23,10 @@ import {
 } from "expo-image-picker";
 import { RefreshTokenContext } from "../store/RefreshTokenContext";
 import { getUserDataWithRetry } from "../util/refresh-auth-token";
+import { useTranslation } from "react-i18next";
 
 function EditProfileScreen({ navigation }) {
+  const { t } = useTranslation();
   const authCtx = useContext(AuthContext);
   const refreshCtx = useContext(RefreshTokenContext);
   const token = authCtx.token;
@@ -36,11 +38,8 @@ function EditProfileScreen({ navigation }) {
   const [bio, setBio] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [file, setFile] = useState();
-
-  // Thêm trạng thái loading
   const [isLoading, setIsLoading] = useState(false);
 
-  // Camera permission
   const [cameraPermissionInformation, requestPermission] =
     useCameraPermissions();
 
@@ -52,8 +51,8 @@ function EditProfileScreen({ navigation }) {
 
     if (cameraPermissionInformation.status === PermissionStatus.DENIED) {
       Alert.alert(
-        "Insufficient Permissions!",
-        "You need to grant camera permissions to use this app."
+        t("editProfile.permissionTitle"),
+        t("editProfile.permissionMessage")
       );
       return false;
     }
@@ -62,7 +61,7 @@ function EditProfileScreen({ navigation }) {
   }
 
   async function fetchData() {
-    setIsLoading(true); // Hiển thị trạng thái đang tải
+    setIsLoading(true);
     try {
       const authResponse = await getUserDataWithRetry(
         token,
@@ -80,7 +79,7 @@ function EditProfileScreen({ navigation }) {
     } catch (error) {
       console.error("Error fetching user data:", error);
     } finally {
-      setIsLoading(false); // Tắt trạng thái tải
+      setIsLoading(false);
     }
   }
 
@@ -88,7 +87,6 @@ function EditProfileScreen({ navigation }) {
     fetchData();
   }, [token, refreshToken]);
 
-  // Handle taking photo
   const handleTakePhoto = async () => {
     const hasPermission = await verifyPermissions();
 
@@ -105,16 +103,15 @@ function EditProfileScreen({ navigation }) {
 
       if (result) {
         setFile(result.assets[0]);
-        setPhotoUrl(result.assets[0].uri); // Set the photo URL after taking the picture
+        setPhotoUrl(result.assets[0].uri);
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to take photo.");
+      Alert.alert(t("editProfile.errorTitle"), t("editProfile.cameraError"));
     }
 
-    setIsModalVisible(false); // Close the modal after taking the photo
+    setIsModalVisible(false);
   };
 
-  // Handle selecting photo from library
   const handleSelectPhoto = async () => {
     try {
       const result = await launchImageLibraryAsync({
@@ -125,34 +122,32 @@ function EditProfileScreen({ navigation }) {
 
       if (!result.canceled) {
         setFile(result.assets[0]);
-        setPhotoUrl(result.assets[0].uri); // Set the selected image URL
+        setPhotoUrl(result.assets[0].uri);
       }
-      setIsModalVisible(false); // Close the modal after selecting a photo
+      setIsModalVisible(false);
     } catch (error) {
-      Alert.alert("Error", "Failed to select photo.");
+      Alert.alert(t("editProfile.errorTitle"), t("editProfile.libraryError"));
     }
   };
 
   async function handleDeletePhoto() {
     try {
-      setPhotoUrl(""); // Remove photo from the interface
-      setIsModalVisible(false); // Close the modal
-      Alert.alert("Success", "Profile photo deleted successfully.");
+      setPhotoUrl("");
+      setIsModalVisible(false);
+      Alert.alert(t("editProfile.successTitle"), t("editProfile.photoDeleted"));
     } catch (error) {
       console.error("Failed to delete photo:", error);
-      Alert.alert("Error", "Failed to delete profile photo.");
+      Alert.alert(t("editProfile.errorTitle"), t("editProfile.deleteError"));
     }
   }
 
   async function handleSave() {
-    setIsLoading(true); // Bắt đầu trạng thái tải
+    setIsLoading(true);
 
-    let publicUrl = photoUrl; // Giữ lại photoUrl cũ nếu không có ảnh mới
+    let publicUrl = photoUrl;
 
-    // Chỉ cập nhật ảnh khi có tệp ảnh mới
     if (file) {
       try {
-        // Lấy userId từ Firebase Auth
         const authResponse = await getUserDataWithRetry(
           token,
           refreshToken,
@@ -161,8 +156,6 @@ function EditProfileScreen({ navigation }) {
         );
 
         const uid = authResponse.localId;
-
-        // Tạo tên tệp với userId
         const filePath = `profile_photos/${uid}_${Date.now()}.jpg`;
         const { data, error } = await supabase.storage
           .from("ZentalApp")
@@ -174,11 +167,13 @@ function EditProfileScreen({ navigation }) {
 
         if (error) {
           console.error("Upload error:", error.message);
-          Alert.alert("Error", "Failed to upload profile photo.");
+          Alert.alert(
+            t("editProfile.errorTitle"),
+            t("editProfile.uploadFailed")
+          );
           return;
         }
 
-        // Lấy link công khai
         const { data: publicData, error: publicError } = supabase.storage
           .from("ZentalApp")
           .getPublicUrl(filePath);
@@ -186,24 +181,25 @@ function EditProfileScreen({ navigation }) {
         if (publicError) {
           console.error("Public URL error:", publicError.message);
           Alert.alert(
-            "Error",
-            "Failed to generate public URL for the profile photo."
+            t("editProfile.errorTitle"),
+            t("editProfile.urlGenerationError")
           );
           return;
         }
 
-        // Gán giá trị publicUrl từ ảnh mới
         publicUrl = publicData.publicUrl;
       } catch (uploadError) {
-        Alert.alert("Error", "Failed to upload profile photo.");
+        Alert.alert(t("editProfile.errorTitle"), t("editProfile.uploadFailed"));
         console.error("Error uploading photo:", uploadError);
         return;
       }
     }
 
-    // Đảm bảo userName không trống
     if (!userName.trim()) {
-      Alert.alert("Validation Error", "Username cannot be empty.");
+      Alert.alert(
+        t("editProfile.validationError"),
+        t("editProfile.usernameRequired")
+      );
       return;
     }
 
@@ -216,53 +212,49 @@ function EditProfileScreen({ navigation }) {
       );
       const uid = authResponse.localId;
 
-      // Chuẩn bị dữ liệu người dùng
       const updateUserData = {
         username: userName,
-        bio: bio, // Set bio thành null nếu không có dữ liệu
-        photoUrl: publicUrl, // Sử dụng publicUrl mới hoặc photoUrl cũ nếu không thay đổi ảnh
+        bio: bio,
+        photoUrl: publicUrl,
       };
 
-      // Cập nhật thông tin trong Firebase Auth
       await updateProfile(token, userName, publicUrl);
-
-      // Cập nhật thông tin trong Firebase Realtime Database
       await updateUser(uid, updateUserData);
 
-      Alert.alert("Success", "Your profile has been updated.");
+      Alert.alert(
+        t("editProfile.successTitle"),
+        t("editProfile.profileUpdated")
+      );
       navigation.navigate("AppOverview", { screen: "Profile" });
     } catch (error) {
-      Alert.alert("Error", "Failed to save profile. Please try again later.");
+      Alert.alert(t("editProfile.errorTitle"), t("editProfile.saveError"));
       console.error("Error saving profile:", error);
     } finally {
-      setIsLoading(false); // Tắt trạng thái tải
+      setIsLoading(false);
     }
   }
 
-  // Hiển thị trạng thái tải
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading...</Text>
+        <Text style={styles.loadingText}>{t("editProfile.loading")}</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* Avatar */}
       <View style={styles.avatarContainer}>
         <Avatar photoUrl={photoUrl} />
         <Pressable
           style={styles.editIcon}
-          onPress={() => setIsModalVisible(true)} // Show modal
+          onPress={() => setIsModalVisible(true)}
         >
           <Ionicons name="pencil" size={18} color={GlobalColors.primaryBlack} />
         </Pressable>
       </View>
       <Text style={styles.userEmail}>{userEmail}</Text>
 
-      {/* Modal */}
       <PhotoOptionsModal
         visible={isModalVisible}
         onTakePhoto={handleTakePhoto}
@@ -271,35 +263,32 @@ function EditProfileScreen({ navigation }) {
         onClose={() => setIsModalVisible(false)}
       />
 
-      {/* Username */}
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>User Name</Text>
+        <Text style={styles.label}>{t("editProfile.usernameLabel")}</Text>
         <TextInput
           style={styles.input}
-          placeholder="Enter your username"
+          placeholder={t("editProfile.usernamePlaceholder")}
           value={userName}
           onChangeText={setUserName}
         />
       </View>
 
-      {/* Bio */}
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Bio</Text>
+        <Text style={styles.label}>{t("editProfile.bioLabel")}</Text>
         <TextInput
           style={[styles.input, styles.bioInput]}
-          placeholder="Enter your bio"
+          placeholder={t("editProfile.bioPlaceholder")}
           value={bio}
           onChangeText={setBio}
           multiline
         />
       </View>
 
-      {/* Save Button */}
       <Pressable
         style={({ pressed }) => [styles.saveButton, pressed && styles.pressed]}
         onPress={handleSave}
       >
-        <Text style={styles.saveButtonText}>Save</Text>
+        <Text style={styles.saveButtonText}>{t("editProfile.saveButton")}</Text>
       </Pressable>
     </View>
   );
@@ -323,7 +312,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: GlobalColors.inActivetabBarColor,
   },
-
   editIcon: {
     position: "absolute",
     bottom: -5,

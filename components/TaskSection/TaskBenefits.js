@@ -18,7 +18,7 @@ function TaskBenefits({ benefits, color }) {
             color={color}
             style={styles.icon}
           />
-          <Text style={styles.contentText}>{benefit}</Text>
+          <Text style={styles.contentText}>{t(benefit)}</Text>
         </View>
       ))}
     </View>

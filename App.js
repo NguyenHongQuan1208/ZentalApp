@@ -265,7 +265,7 @@ function AuthenticatedStack() {
         name="EditProfile"
         component={EditProfileScreen}
         options={{
-          headerTitle: "Edit Profile",
+          headerTitle: t("Edit profile"),
           headerTitleAlign: "center",
         }}
       />

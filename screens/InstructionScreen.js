@@ -39,7 +39,7 @@ function InstructionScreen({ route }) {
     <View style={styles.container}>
       <View style={styles.titleContainer}>
         <Ionicons name={icon} size={24} color={color} />
-        <Text style={[styles.slogan, { color: color }]}>{slogan}</Text>
+        <Text style={[styles.slogan, { color: color }]}>{t(slogan)}</Text>
       </View>
       <View style={styles.contentContainer}>
         <View style={styles.instructionsTitleContainer}>
@@ -48,7 +48,7 @@ function InstructionScreen({ route }) {
           </View>
           <Text style={styles.instructionsTitle}>{t("Instructions")}</Text>
         </View>
-        <Text style={styles.instructions}>{instructions}</Text>
+        <Text style={styles.instructions}>{t(instructions)}</Text>
         <TaskBenefits benefits={benefits} color={color} />
       </View>
 
