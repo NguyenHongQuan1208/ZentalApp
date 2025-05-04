@@ -13,6 +13,7 @@ import CustomSwitch from "../components/ui/CustomSwitch";
 import EmotionButton from "../components/TaskSection/EmotionButton";
 import LongButton from "../components/ui/LongButton";
 import { getAllPosts, updatePost, addPost } from "../util/posts-data-http";
+import { useTranslation } from "react-i18next";
 
 const { height, width } = Dimensions.get("window");
 const aspectRatio = height / width;
@@ -25,6 +26,7 @@ const EMOTIONS = [
 ];
 
 function ConfirmPostScreen({ navigation, route }) {
+  const { t } = useTranslation();
   // Destructure route params
   const {
     content,
@@ -93,11 +95,13 @@ function ConfirmPostScreen({ navigation, route }) {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.headerContainer}>
           <Target icon={icon} target={title} color={color} size={13} />
-          <Text style={[styles.title, { color }]}>You decide How</Text>
+          <Text style={[styles.title, { color }]}>{t("You decide How")}</Text>
         </View>
 
         <View style={styles.emotionSection}>
-          <Text style={styles.question}>How much did you enjoy this?</Text>
+          <Text style={styles.question}>
+            {t("How much did you enjoy this?")}
+          </Text>
           <View style={styles.buttonsContainer}>
             {EMOTIONS.map((emotion, index) => (
               <EmotionButton
@@ -112,7 +116,7 @@ function ConfirmPostScreen({ navigation, route }) {
 
         <View style={styles.communitySection}>
           <Text style={styles.communityText}>
-            Zental Community can see this post
+            {t("Zental Community can see this post")}
           </Text>
           <CustomSwitch
             isOn={isCommunityVisible}
@@ -123,7 +127,7 @@ function ConfirmPostScreen({ navigation, route }) {
 
       <View style={styles.footer}>
         <LongButton style={styles.longButton} onPress={handlePost}>
-          POST IT!
+          {t("POST IT!")}
         </LongButton>
       </View>
     </View>
