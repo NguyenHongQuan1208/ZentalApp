@@ -39,6 +39,7 @@ const styles = StyleSheet.create({
   benefitContainer: {
     flexDirection: "row", // Đặt icon và text trên cùng một hàng
     alignItems: "center", // Căn giữa theo chiều dọc
+    marginRight: 8,
     marginBottom: 8, // Khoảng cách giữa các mục
   },
   icon: {
