@@ -3,8 +3,10 @@ import { Pressable, StyleSheet, Alert } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { GlobalColors } from "../../constants/GlobalColors";
 import ConfirmationDialog from "./ConfirmationDialog";
+import { useTranslation } from "react-i18next";
 
 const FollowButton = ({ isFollowing, onToggleFollow }) => {
+  const { t } = useTranslation();
   const [dialogVisible, setDialogVisible] = useState(false);
 
   const handlePress = () => {
@@ -46,10 +48,10 @@ const FollowButton = ({ isFollowing, onToggleFollow }) => {
 
       <ConfirmationDialog
         visible={dialogVisible}
-        title={isFollowing ? "Confirm Unfollow" : "Confirm Follow"}
-        message={`Are you sure you want to ${
-          isFollowing ? "unfollow" : "follow"
-        } this user?`}
+        title={isFollowing ? t("Confirm Unfollow") : t("Confirm Follow")}
+        message={`${t("Are you sure you want to")} ${
+          isFollowing ? t("unfollow") : t("follow")
+        } ${t("this user?")}`}
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />

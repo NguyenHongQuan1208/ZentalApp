@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
+import { useTranslation } from "react-i18next";
 
 const ConfirmationDialog = ({
   visible,
@@ -8,9 +9,8 @@ const ConfirmationDialog = ({
   message,
   onConfirm,
   onCancel,
-  confirmText = "OK",
-  cancelText = "Cancel",
 }) => {
+  const { t } = useTranslation();
   return (
     <Modal transparent={true} visible={visible} animationType="fade">
       <View style={styles.overlay}>
@@ -22,13 +22,13 @@ const ConfirmationDialog = ({
               style={[styles.button, styles.cancelButton]}
               onPress={onCancel}
             >
-              <Text style={styles.cancelButtonText}>{cancelText}</Text>
+              <Text style={styles.cancelButtonText}>{t("Cancel")}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.confirmButton]}
               onPress={onConfirm}
             >
-              <Text style={styles.confirmButtonText}>{confirmText}</Text>
+              <Text style={styles.confirmButtonText}>OK</Text>
             </TouchableOpacity>
           </View>
         </View>
