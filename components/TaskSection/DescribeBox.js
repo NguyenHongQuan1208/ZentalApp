@@ -1,9 +1,11 @@
 import { View, Text, StyleSheet } from "react-native";
 import { GlobalColors } from "../../constants/GlobalColors";
+import { useTranslation } from "react-i18next";
 function DescribeBox({ color, description }) {
+  const { t } = useTranslation();
   return (
     <View style={[styles.descriptionBox, { borderColor: color }]}>
-      <Text style={styles.description}>{description}</Text>
+      <Text style={styles.description}>{t(description)}</Text>
     </View>
   );
 }
