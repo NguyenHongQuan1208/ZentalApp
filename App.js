@@ -108,8 +108,8 @@ function AppOverview() {
         name="Profile"
         component={ProfileScreen}
         options={{
-          title: t("Profile"),
-          tabBarLabel: t("Profile"),
+          title: t("Settings"),
+          tabBarLabel: t("Settings"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="list" size={size} color={color} />
           ),
