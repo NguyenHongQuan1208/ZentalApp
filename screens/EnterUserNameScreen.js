@@ -19,7 +19,7 @@ function EnterUserNameScreen({ navigation }) {
   async function checkIfUserNameSet() {
     try {
       if (!refreshToken) {
-        console.error("No refresh token available.");
+        console.log("No refresh token available.");
         authCtx.logout();
         return;
       }
@@ -31,7 +31,7 @@ function EnterUserNameScreen({ navigation }) {
       );
 
       if (response?.error) {
-        console.error("Error fetching user data:", response.error);
+        console.log("Error fetching user data:", response.error);
         authCtx.logout();
         return;
       }
